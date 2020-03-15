@@ -98,12 +98,12 @@ class AppsFlyerTracker(
     }
 
 
-
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>?) {
                 // TODO set up tealium getInstance to get correct tracker instance
-                Tealium.getInstance("instance").trackEvent("conversion_data_received", conversionData)
+                Tealium.getInstance("instance")
+                    .trackEvent("conversion_data_received", conversionData)
             }
 
             override fun onConversionDataFail(errorMessage: String) {

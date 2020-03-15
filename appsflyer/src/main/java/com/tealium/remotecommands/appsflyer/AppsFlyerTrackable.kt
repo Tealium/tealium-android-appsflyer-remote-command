@@ -1,7 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
-import org.json.JSONObject
 
 interface AppsFlyerTrackable {
 

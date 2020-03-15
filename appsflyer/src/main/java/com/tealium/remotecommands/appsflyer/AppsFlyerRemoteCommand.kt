@@ -124,7 +124,6 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                         )
                     }
                 }
-
                 else -> {
                     standardEvent(command)?.let { eventType ->
                         val eventParameters: JSONObject? =

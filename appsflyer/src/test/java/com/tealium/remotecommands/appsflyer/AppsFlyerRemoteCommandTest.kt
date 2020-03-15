@@ -123,7 +123,6 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(mockTracker)
-
     }
 
     @Test
@@ -143,7 +142,6 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(mockTracker)
-
     }
 
     @Test
@@ -163,7 +161,6 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(mockTracker)
-
     }
 
     @Test
@@ -209,21 +206,4 @@ class AppsFlyerRemoteCommandTest {
 
         confirmVerified(mockTracker)
     }
-
-    @Test
-    fun testStandardEvents() {
-//        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_HOST), payload)
-
-//        every {
-//
-//        } just Runs
-//
-//        verify {
-//
-//        }
-//
-//        confirmVerified(mockTracker)
-    }
-
-
 }
