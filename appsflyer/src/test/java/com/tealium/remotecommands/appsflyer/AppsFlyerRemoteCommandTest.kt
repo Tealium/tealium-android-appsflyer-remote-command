@@ -20,7 +20,7 @@ class AppsFlyerRemoteCommandTest {
     lateinit var mockTracker: AppsFlyerTrackable
 
     @InjectMockKs
-    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand()
+    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand("test")
 
     @Before
     fun setUp() {
@@ -183,25 +183,25 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun testResolveDeeplinkUrls() {
-        val deeplinkProperties = JSONArray()
-        deeplinkProperties.put("val1")
-        deeplinkProperties.put("val2")
-        deeplinkProperties.put("val3")
+    fun testResolveDeepLinkUrls() {
+        val deepLinkProperties = JSONArray()
+        deepLinkProperties.put("val1")
+        deepLinkProperties.put("val2")
+        deepLinkProperties.put("val3")
 
 
         val payload = JSONObject()
-        payload.put(Deeplinking.DEEPLINK_URLS, deeplinkProperties)
+        payload.put(DeepLink.URLS, deepLinkProperties)
         payload.put(COMMAND_NAME_KEY, Commands.RESOLVE_DEEPLINK_URLS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.RESOLVE_DEEPLINK_URLS), payload)
 
         every {
-            mockTracker.resolveDeeplinksUrls(any())
+            mockTracker.resolveDeepLinkUrls(any())
         } just Runs
 
         verify {
-            mockTracker.resolveDeeplinksUrls(listOf("val1", "val2", "val3"))
+            mockTracker.resolveDeepLinkUrls(listOf("val1", "val2", "val3"))
         }
 
         confirmVerified(mockTracker)

@@ -6,9 +6,10 @@ import com.appsflyer.AppsFlyerLib
 import com.tealium.library.Tealium
 
 class AppsFlyerTracker(
-    val application: Application,
-    val devKey: String,
-    var configSettings: Map<String, Any>? = null
+    private val application: Application,
+    private val instanceName: String,
+    private val devKey: String,
+    private val configSettings: Map<String, Any>? = null
 ) : AppsFlyerTrackable {
 
     private val TAG = this::class.java.simpleName
@@ -76,7 +77,7 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().setDeviceTrackingDisabled(disable)
     }
 
-    override fun resolveDeeplinksUrls(links: List<String>) {
+    override fun resolveDeepLinkUrls(links: List<String>) {
         val urlLinks = links.toTypedArray()
         AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*urlLinks)
     }
@@ -101,30 +102,31 @@ class AppsFlyerTracker(
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>?) {
-                // TODO set up tealium getInstance to get correct tracker instance
-                Tealium.getInstance("instance")
-                    .trackEvent("conversion_data_received", conversionData)
+                val tealium: Tealium? = Tealium.getInstance(instanceName)
+                tealium?.trackEvent("conversion_data_received", conversionData)
             }
 
             override fun onConversionDataFail(errorMessage: String) {
                 var map: MutableMap<String, Any> = HashMap<String, Any>()
                 map.put("error_name", "conversion_data_request_failure")
                 map.put("error_message", errorMessage)
-                // TODO set up tealium getInstance to get correct tracker instance
-                Tealium.getInstance("instance").trackEvent("appsflyer_error", map)
+
+                val tealium: Tealium? = Tealium.getInstance(instanceName)
+                tealium?.trackEvent("appsflyer_error", map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
-                // TODO set up tealium getInstance to get correct tracker instance
-                Tealium.getInstance("instance").trackEvent("app_open_attribution", attributionData)
+                val tealium: Tealium? = Tealium.getInstance(instanceName)
+                tealium?.trackEvent("app_open_attribution", attributionData)
             }
 
             override fun onAttributionFailure(errorMessage: String) {
                 var map: MutableMap<String, Any> = HashMap<String, Any>()
                 map.put("error_name", "app_open_attribution_failure")
                 map.put("error_message", errorMessage)
-                // TODO set up tealium getInstance to get correct tracker instance
-                Tealium.getInstance("instance").trackEvent("appsflyer_error", map)
+
+                val tealium: Tealium? = Tealium.getInstance(instanceName)
+                tealium?.trackEvent("appsflyer_error", map)
             }
         }
     }

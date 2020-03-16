@@ -78,8 +78,8 @@ object Currency {
     const val CURRENCY_CODE = "currency_code"
 }
 
-object Deeplinking {
-    const val DEEPLINK_URLS = "deeplink_urls"
+object DeepLink {
+    const val URLS = "deeplink_urls"
 }
 
 object Privacy {

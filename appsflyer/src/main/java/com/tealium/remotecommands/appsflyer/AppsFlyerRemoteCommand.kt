@@ -14,10 +14,13 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
     private val TAG = this::class.java.simpleName
 
     lateinit var tracker: AppsFlyerTrackable
-    var application: Application? = null
+    private var application: Application? = null
+    lateinit var instanceName: String
+
 
     @JvmOverloads
     constructor(
+        instanceName: String,
         application: Application? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
@@ -26,8 +29,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
     ) : super(commandId, description) {
         application?.let { app ->
             appsFlyerDevKey?.let { devKey ->
-                tracker = AppsFlyerTracker(app, devKey, configSettings)
                 this.application = app
+                this.instanceName = instanceName
+                tracker = AppsFlyerTracker(app, instanceName, devKey, configSettings)
             }
         }
     }
@@ -113,14 +117,14 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     }
                 }
                 Commands.RESOLVE_DEEPLINK_URLS -> {
-                    val deeplinks: JSONArray? = payload.optJSONArray(Deeplinking.DEEPLINK_URLS)
-                    deeplinks?.let {
-                        val deeplinkList = toList(it)
-                        tracker.resolveDeeplinksUrls(deeplinkList)
+                    val deepLinkJsonArray: JSONArray? = payload.optJSONArray(DeepLink.URLS)
+                    deepLinkJsonArray?.let {
+                        val deepLinkList = toList(it)
+                        tracker.resolveDeepLinkUrls(deepLinkList)
                     } ?: run {
                         Log.e(
                             TAG,
-                            "${Deeplinking.DEEPLINK_URLS} is a required key"
+                            "${DeepLink.URLS} is a required key"
                         )
                     }
                 }
@@ -156,9 +160,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         application?.let { appContext ->
             devKey?.let { devKey ->
                 configSettings?.let {
-                    tracker = AppsFlyerTracker(appContext, devKey, it)
+                    tracker = AppsFlyerTracker(appContext, instanceName, devKey, it)
                 }
-                tracker = AppsFlyerTracker(appContext, devKey)
+                tracker = AppsFlyerTracker(appContext, instanceName, devKey)
             }
         } ?: run {
             Log.e(
