@@ -147,7 +147,7 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun testSetCustomerId() {
         val payload = JSONObject()
-        payload.put(User.CUSTOMER_USER_ID, "1234")
+        payload.put(User.USER_ID, "1234")
         payload.put(COMMAND_NAME_KEY, Commands.SET_CUSTOMER_ID)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID), payload)

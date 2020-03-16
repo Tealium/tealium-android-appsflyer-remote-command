@@ -63,7 +63,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         commands.forEach { command ->
             when (command) {
                 Commands.INITIALIZE -> {
-                    initializeAppsFlyer(payload)
+                    initialize(payload)
                 }
                 Commands.LAUNCH -> {
                     tracker.trackLaunch()
@@ -94,13 +94,13 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     }
                 }
                 Commands.SET_CUSTOMER_ID -> {
-                    val id: String? = payload.optString(User.CUSTOMER_USER_ID, null)
+                    val id: String? = payload.optString(User.USER_ID, null)
                     id?.let {
                         tracker.setCustomerId(it)
                     } ?: run {
                         Log.e(
                             TAG,
-                            "${User.CUSTOMER_USER_ID} is a required key"
+                            "${User.USER_ID} is a required key"
                         )
                     }
                 }
@@ -153,7 +153,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         return StandardEvents.eventNames[commandName]
     }
 
-    fun initializeAppsFlyer(payload: JSONObject) {
+    fun initialize(payload: JSONObject) {
         val devKey: String? = payload.optString(Initialize.AF_DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
@@ -190,10 +190,10 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
     fun setHost(payload: JSONObject) {
         val host: String? = payload.optString(Host.HOST)
-        val hostPrefix: String? = payload.optString(Host.HOST_PREFIX)
+        val hostPrefix: String = payload.optString(Host.HOST_PREFIX)
 
         host?.let { hostName ->
-            if (hostPrefix != "") {
+            if (hostPrefix.isNotEmpty()) {
                 tracker.setHost(hostName, hostPrefix)
             } else {
                 tracker.setHost(hostName)

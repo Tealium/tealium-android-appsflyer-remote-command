@@ -14,43 +14,43 @@
         android:textAlignment="center"/>
 
     <Button
-        android:id="@+id/set_host_button"
+        android:id="@+id/setHostButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_host"/>
 
     <Button
-        android:id="@+id/set_user_emails_button"
+        android:id="@+id/setUserEmailsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_user_emails" />
 
     <Button
-        android:id="@+id/set_customer_id_button"
+        android:id="@+id/setUserIdButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/set_customer_id" />
+        android:text="@string/set_user_id" />
 
     <Button
-        android:id="@+id/set_currency_code_button"
+        android:id="@+id/setCurrencyCodeButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_currency_code" />
 
     <Button
-        android:id="@+id/track_purchase_button"
+        android:id="@+id/logPurchaseButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/log_purchase"/>
 
     <Button
-        android:id="@+id/track_level_achieved_button"
+        android:id="@+id/trackLevelAchievedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/achieve_level" />
 
     <Button
-        android:id="@+id/track_location_button"
+        android:id="@+id/trackLocationButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/track_location" />

@@ -19,7 +19,7 @@ class StandardEventsTest {
     lateinit var mockTracker: AppsFlyerTrackable
 
     @InjectMockKs
-    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand()
+    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand("test")
 
     @Before
     fun setUp() {

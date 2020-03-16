@@ -9,7 +9,7 @@ class AppsFlyerTracker(
     private val application: Application,
     private val instanceName: String,
     private val devKey: String,
-    private val configSettings: Map<String, Any>? = null
+    configSettings: Map<String, Any>? = null
 ) : AppsFlyerTrackable {
 
     private val TAG = this::class.java.simpleName
@@ -33,6 +33,8 @@ class AppsFlyerTracker(
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
+                //val data: HashMap<String, Any>? = settings[Config.CUSTOM_DATA]
+
                 addCustomData(settings[Config.CUSTOM_DATA] as HashMap<String, Any>)
             }
 
@@ -107,7 +109,7 @@ class AppsFlyerTracker(
             }
 
             override fun onConversionDataFail(errorMessage: String) {
-                var map: MutableMap<String, Any> = HashMap<String, Any>()
+                val map = HashMap<String, Any>()
                 map.put("error_name", "conversion_data_request_failure")
                 map.put("error_message", errorMessage)
 
@@ -121,7 +123,7 @@ class AppsFlyerTracker(
             }
 
             override fun onAttributionFailure(errorMessage: String) {
-                var map: MutableMap<String, Any> = HashMap<String, Any>()
+                val map = HashMap<String, Any>()
                 map.put("error_name", "app_open_attribution_failure")
                 map.put("error_message", errorMessage)
 
