@@ -13,8 +13,9 @@ object Commands {
     const val SET_USER_EMAILS = "setuseremails"
     const val SET_CURRENCY_CODE = "setcurrencycode"
     const val SET_CUSTOMER_ID = "setcustomerid"
-    const val DISABLE_TRACKING = "disabletracking"
+    const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
+    const val STOP_TRACKING = "stoptracking"
 }
 
 object StandardEvents {
@@ -59,14 +60,14 @@ object Config {
     const val SETTINGS = "settings"
 }
 
-object User {
-    const val USER_ID = "user_id"
-    const val USER_EMAILS = "user_emails"
+object Customer {
+    const val USER_ID = "af_customer_user_id"
+    const val USER_EMAILS = "customer_user_emails"
 }
 
 object Location {
-    const val LATITUDE = "af_latitude"
-    const val LONGITUDE = "af_longitude"
+    const val LATITUDE = "af_lat"
+    const val LONGITUDE = "af_long"
 }
 
 object Host {
@@ -75,13 +76,14 @@ object Host {
 }
 
 object Currency {
-    const val CURRENCY_CODE = "currency_code"
+    const val CODE = "af_currency"
 }
 
 object DeepLink {
-    const val URLS = "deeplink_urls"
+    const val URLS = "af_deep_link"
 }
 
-object Privacy {
-    const val DISABLE_TRACKING = "disable_tracking"
+object Tracking {
+    const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
+    const val STOP_TRACKING = "stop_tracking"
 }

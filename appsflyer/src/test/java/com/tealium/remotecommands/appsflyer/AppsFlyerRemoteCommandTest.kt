@@ -103,7 +103,7 @@ class AppsFlyerRemoteCommandTest {
         userEmailProperties.put("test3@testing.com")
 
         val payload = JSONObject()
-        payload.put(User.USER_EMAILS, userEmailProperties)
+        payload.put(Customer.USER_EMAILS, userEmailProperties)
         payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
@@ -128,7 +128,7 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun testSetCurrencyCode() {
         val payload = JSONObject()
-        payload.put(Currency.CURRENCY_CODE, "USD")
+        payload.put(Currency.CODE, "USD")
         payload.put(COMMAND_NAME_KEY, Commands.SET_CURRENCY_CODE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CURRENCY_CODE), payload)
@@ -147,7 +147,7 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun testSetCustomerId() {
         val payload = JSONObject()
-        payload.put(User.USER_ID, "1234")
+        payload.put(Customer.USER_ID, "1234")
         payload.put(COMMAND_NAME_KEY, Commands.SET_CUSTOMER_ID)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID), payload)
@@ -166,17 +166,17 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun testDisableTracking() {
         val payload = JSONObject()
-        payload.put(Privacy.DISABLE_TRACKING, true)
-        payload.put(COMMAND_NAME_KEY, Commands.DISABLE_TRACKING)
+        payload.put(Tracking.DISABLE_DEVICE_TRACKING, true)
+        payload.put(COMMAND_NAME_KEY, Commands.DISABLE_DEVICE_TRACKING)
 
-        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_TRACKING), payload)
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_DEVICE_TRACKING), payload)
 
         every {
-            mockTracker.disableTracking(any())
+            mockTracker.disableDeviceTracking(any())
         } just Runs
 
         verify {
-            mockTracker.disableTracking(true)
+            mockTracker.disableDeviceTracking(true)
         }
 
         confirmVerified(mockTracker)
@@ -202,6 +202,25 @@ class AppsFlyerRemoteCommandTest {
 
         verify {
             mockTracker.resolveDeepLinkUrls(listOf("val1", "val2", "val3"))
+        }
+
+        confirmVerified(mockTracker)
+    }
+
+    @Test
+    fun testStopTracking() {
+        val payload = JSONObject()
+        payload.put(Tracking.STOP_TRACKING, true)
+        payload.put(COMMAND_NAME_KEY, Commands.STOP_TRACKING)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), payload)
+
+        every {
+            mockTracker.stopTracking(any())
+        } just Runs
+
+        verify {
+            mockTracker.stopTracking(true)
         }
 
         confirmVerified(mockTracker)

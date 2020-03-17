@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
+import android.content.Context
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.tealium.library.Tealium
@@ -33,9 +34,17 @@ class AppsFlyerTracker(
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
-                //val data: HashMap<String, Any>? = settings[Config.CUSTOM_DATA]
-
-                addCustomData(settings[Config.CUSTOM_DATA] as HashMap<String, Any>)
+                val iterator = (settings[Config.CUSTOM_DATA] as HashMap<*, *>).entries.iterator()
+                val dataMap = HashMap<String, Any>()
+                while (iterator.hasNext()) {
+                    val entry = iterator.next()
+                    (entry.key as? String)?.let { key ->
+                        entry.value?.let { value ->
+                            dataMap.put(key, value)
+                        }
+                    }
+                }
+                addCustomData(dataMap)
             }
 
             if (settings.containsKey(Config.DEBUG)) {
@@ -75,13 +84,17 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().setCustomerUserId(id)
     }
 
-    override fun disableTracking(disable: Boolean) {
+    override fun disableDeviceTracking(disable: Boolean) {
         AppsFlyerLib.getInstance().setDeviceTrackingDisabled(disable)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
         val urlLinks = links.toTypedArray()
         AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*urlLinks)
+    }
+
+    override fun stopTracking(isTrackingStopped: Boolean) {
+        AppsFlyerLib.getInstance().stopTracking(isTrackingStopped, application.applicationContext)
     }
 
     fun setMinsBetweenSessions(seconds: Int) {

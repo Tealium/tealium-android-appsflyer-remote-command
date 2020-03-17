@@ -75,44 +75,44 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     setHost(payload)
                 }
                 Commands.SET_USER_EMAILS -> {
-                    val emails: JSONArray? = payload.optJSONArray(User.USER_EMAILS)
+                    val emails: JSONArray? = payload.optJSONArray(Customer.USER_EMAILS)
                     emails?.let {
                         val emailList = toList(emails)
                         tracker.setUserEmails(emailList)
                     }
                 }
                 Commands.SET_CURRENCY_CODE -> {
-                    val currencyCode: String? = payload.optString(Currency.CURRENCY_CODE)
+                    val currencyCode: String? = payload.optString(Currency.CODE)
 
                     currencyCode?.let {
                         tracker.setCurrencyCode(it)
                     } ?: run {
                         Log.e(
                             TAG,
-                            "${Currency.CURRENCY_CODE} is required key"
+                            "${Currency.CODE} is required key"
                         )
                     }
                 }
                 Commands.SET_CUSTOMER_ID -> {
-                    val id: String? = payload.optString(User.USER_ID, null)
+                    val id: String? = payload.optString(Customer.USER_ID, null)
                     id?.let {
                         tracker.setCustomerId(it)
                     } ?: run {
                         Log.e(
                             TAG,
-                            "${User.USER_ID} is a required key"
+                            "${Customer.USER_ID} is a required key"
                         )
                     }
                 }
-                Commands.DISABLE_TRACKING -> {
+                Commands.DISABLE_DEVICE_TRACKING -> {
                     val disableTracking: Boolean? =
-                        payload.optBoolean(Privacy.DISABLE_TRACKING, false)
+                        payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
                     disableTracking?.let {
-                        tracker.disableTracking(it)
+                        tracker.disableDeviceTracking(it)
                     } ?: run {
                         Log.e(
                             TAG,
-                            "${Privacy.DISABLE_TRACKING} is a required key"
+                            "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
                         )
                     }
                 }
@@ -126,6 +126,12 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                             TAG,
                             "${DeepLink.URLS} is a required key"
                         )
+                    }
+                }
+                Commands.STOP_TRACKING -> {
+                    val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
+                    stopTracking?.let {
+                        tracker.stopTracking(it)
                     }
                 }
                 else -> {
