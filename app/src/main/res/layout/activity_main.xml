@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="24dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tealium AppsFlyer Remote Commmand!"
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/setHostButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_host"/>
+
+    <Button
+        android:id="@+id/setUserEmailsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_user_emails" />
+
+    <Button
+        android:id="@+id/setUserIdButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_user_id" />
+
+    <Button
+        android:id="@+id/setCurrencyCodeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_currency_code" />
+
+    <Button
+        android:id="@+id/logPurchaseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/log_purchase"/>
+
+    <Button
+        android:id="@+id/trackLevelAchievedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/achieve_level" />
+
+    <Button
+        android:id="@+id/trackLocationButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/track_location" />
+
+</LinearLayout>
