@@ -12,6 +12,7 @@ interface AppsFlyerTrackable {
     fun setUserEmails(emails: List<String>)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
-    fun disableTracking(disable: Boolean)
+    fun disableDeviceTracking(disable: Boolean)
     fun resolveDeepLinkUrls(links: List<String>)
+    fun stopTracking(isTrackingStopped: Boolean)
 }
