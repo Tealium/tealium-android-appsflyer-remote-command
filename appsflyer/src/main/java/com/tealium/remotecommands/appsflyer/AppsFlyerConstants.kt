@@ -57,7 +57,7 @@ object Config {
     const val MIN_TIME_BETWEEN_SESSIONS = "time_between_sessions"
     const val ANONYMIZE_USER = "anonymize_user"
     const val CUSTOM_DATA = "custom_data"
-    const val SETTINGS = "settings"
+    const val SETTINGS = "config_settings"
 }
 
 object Customer {
