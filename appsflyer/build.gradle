@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'maven-publish'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.1"
@@ -10,7 +12,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -43,6 +45,25 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     androidTestImplementation "io.mockk:mockk-android:$mockk_version"
+}
 
-
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId 'com.tealium.remotecommands'
+            artifactId 'appsflyer'
+            version '0.0.1'
+            artifact("$buildDir/outputs/aar/appsflyer-release.aar")
+        }
+    }
+    repositories {
+        maven {
+            url "s3://maven.tealiumiq.com/android/releases/"
+            credentials(AwsCredentials) {
+                // Dummy credentials provided in project's gradle.properties; these will be overridden by your global settings in ~/.gradle/gradle.properties
+                accessKey AWS_ACCESS_KEY
+                secretKey AWS_SECRET_KEY
+            }
+        }
+    }
 }
