@@ -5,6 +5,7 @@ import android.app.Application
 interface AppsFlyerTrackable {
 
     fun initialize(application: Application, devKey: String, configSettings: Map<String, Any>? = null)
+    fun trackLaunch()
     fun trackLocation(latitude: Double, longitude: Double)
     fun setHost(host: String, hostPrefix: String? = "")
     fun trackEvent(eventType: String, eventParameters: Map<String, Any>? = null)
