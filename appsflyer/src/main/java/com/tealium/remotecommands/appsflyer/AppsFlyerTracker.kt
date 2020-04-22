@@ -13,8 +13,6 @@ class AppsFlyerTracker(
     configSettings: Map<String, Any>? = null
 ) : AppsFlyerTrackable {
 
-    private val TAG = this::class.java.simpleName
-
     init {
         initialize(application, devKey, configSettings)
     }
