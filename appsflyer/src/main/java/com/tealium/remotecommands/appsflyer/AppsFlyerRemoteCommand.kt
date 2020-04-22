@@ -25,7 +25,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
         appsFlyerDevKey: String? = null,
-        configSettings: Map<String, String>? = null
+        configSettings: Map<String, Any>? = null
     ) : super(commandId, description) {
         application?.let { app ->
             appsFlyerDevKey?.let { devKey ->

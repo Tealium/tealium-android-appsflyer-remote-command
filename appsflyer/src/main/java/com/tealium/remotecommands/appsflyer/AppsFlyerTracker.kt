@@ -53,6 +53,10 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().startTracking(application)
     }
 
+    override fun trackLaunch() {
+        //AppsFlyerLib.getInstance().trackAppLaunch(application, devKey)
+    }
+
     override fun trackLocation(latitude: Double, longitude: Double) {
         AppsFlyerLib.getInstance().trackLocation(application, latitude, longitude)
     }
@@ -110,9 +114,14 @@ class AppsFlyerTracker(
 
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
-            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>?) {
+            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any?>) {
                 val tealium: Tealium? = Tealium.getInstance(instanceName)
-                tealium?.trackEvent("conversion_data_received", conversionData)
+
+                if(conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)){
+                    tealium?.trackEvent("conversion_data_received", conversionData)
+                }
+
             }
 
             override fun onConversionDataFail(errorMessage: String) {
