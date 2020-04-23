@@ -86,4 +86,5 @@ object DeepLink {
 object Tracking {
     const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
     const val STOP_TRACKING = "stop_tracking"
+    const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
 }

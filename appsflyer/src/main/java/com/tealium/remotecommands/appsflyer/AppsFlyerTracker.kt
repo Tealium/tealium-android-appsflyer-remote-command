@@ -13,8 +13,6 @@ class AppsFlyerTracker(
     configSettings: Map<String, Any>? = null
 ) : AppsFlyerTrackable {
 
-    private val TAG = this::class.java.simpleName
-
     init {
         initialize(application, devKey, configSettings)
     }
@@ -53,10 +51,6 @@ class AppsFlyerTracker(
         }
         AppsFlyerLib.getInstance().init(devKey, createConversionListener(), application)
         AppsFlyerLib.getInstance().startTracking(application)
-    }
-
-    override fun trackLaunch() {
-        AppsFlyerLib.getInstance().trackAppLaunch(application, devKey)
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
@@ -113,12 +107,15 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
-            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>?) {
+            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any?>) {
                 val tealium: Tealium? = Tealium.getInstance(instanceName)
-                tealium?.trackEvent("conversion_data_received", conversionData)
+
+                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)) {
+                    tealium?.trackEvent("conversion_data_received", conversionData)
+                }
             }
 
             override fun onConversionDataFail(errorMessage: String) {

@@ -25,7 +25,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
         appsFlyerDevKey: String? = null,
-        configSettings: Map<String, String>? = null
+        configSettings: Map<String, Any>? = null
     ) : super(commandId, description) {
         application?.let { app ->
             appsFlyerDevKey?.let { devKey ->
@@ -64,9 +64,6 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
             when (command) {
                 Commands.INITIALIZE -> {
                     initialize(payload)
-                }
-                Commands.LAUNCH -> {
-                    tracker.trackLaunch()
                 }
                 Commands.TRACK_LOCATION -> {
                     trackLocation(payload)
@@ -167,8 +164,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
             devKey?.let { devKey ->
                 configSettings?.let {
                     tracker = AppsFlyerTracker(appContext, instanceName, devKey, it)
+                } ?: run {
+                    tracker = AppsFlyerTracker(appContext, instanceName, devKey)
                 }
-                tracker = AppsFlyerTracker(appContext, instanceName, devKey)
             }
         } ?: run {
             Log.e(
