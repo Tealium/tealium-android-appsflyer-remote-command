@@ -5,6 +5,7 @@ import android.os.Build
 import android.webkit.WebView
 import com.tealium.library.Tealium
 import com.tealium.remotecommands.appsflyer.AppsFlyerRemoteCommand
+import com.tealium.remotecommands.appsflyer.Config
 
 object TealiumHelper {
 
@@ -22,7 +23,12 @@ object TealiumHelper {
         config.forceOverrideLogLevel = "dev"
         tealium = Tealium.createInstance(instanceName, config)
 
-        val appsFlyerRemoteCommand = AppsFlyerRemoteCommand(instanceName, application, appsFlyerDevKey = devKey)
+        val appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
+            instanceName,
+            application,
+            appsFlyerDevKey = devKey,
+            configSettings = mapOf(Config.DEBUG to (config.forceOverrideLogLevel == "dev"))
+        )
         tealium.addRemoteCommand(appsFlyerRemoteCommand)
     }
 

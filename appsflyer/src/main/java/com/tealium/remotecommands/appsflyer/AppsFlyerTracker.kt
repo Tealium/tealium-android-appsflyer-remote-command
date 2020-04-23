@@ -54,7 +54,7 @@ class AppsFlyerTracker(
     }
 
     override fun trackLaunch() {
-        //AppsFlyerLib.getInstance().trackAppLaunch(application, devKey)
+        AppsFlyerLib.getInstance().trackAppLaunch(application, devKey)
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
