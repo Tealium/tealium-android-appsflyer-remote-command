@@ -1,5 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Activity
 import android.app.Application
 import android.util.Log
 import com.tealium.internal.tagbridge.RemoteCommand
@@ -33,6 +34,26 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                 this.instanceName = instanceName
                 tracker = AppsFlyerTracker(app, instanceName, devKey, configSettings)
             }
+        }
+    }
+
+    /**
+     *  Constructor in case where Remote Command is not initialized in the application layer,
+     *  and instead initialized in an Activity
+     */
+    @JvmOverloads
+    constructor(
+        instanceName: String,
+        activity: Activity,
+        commandId: String = DEFAULT_COMMAND_ID,
+        description: String = DEFAULT_COMMAND_DESCRIPTION,
+        appsFlyerDevKey: String? = null,
+        configSettings: Map<String, Any>? = null
+    ) : super(commandId, description) {
+            appsFlyerDevKey?.let { devKey ->
+                this.application = activity.application
+                this.instanceName = instanceName
+                tracker = AppsFlyerTracker(activity.application, instanceName, devKey, configSettings)
         }
     }
 
