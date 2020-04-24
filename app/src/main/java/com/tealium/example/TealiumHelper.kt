@@ -26,8 +26,8 @@ object TealiumHelper {
         val appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             instanceName,
             application,
-            appsFlyerDevKey = devKey,
-            configSettings = mapOf(Config.DEBUG to (config.forceOverrideLogLevel == "dev")))
+            appsFlyerDevKey = devKey)//,
+            //configSettings = mapOf(Config.DEBUG to (config.forceOverrideLogLevel == "dev")))
         tealium.addRemoteCommand(appsFlyerRemoteCommand)
     }
 

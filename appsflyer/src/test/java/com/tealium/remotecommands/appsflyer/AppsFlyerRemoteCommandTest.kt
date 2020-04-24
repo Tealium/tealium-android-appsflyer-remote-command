@@ -1,7 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Application
 import io.mockk.*
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
 import org.json.JSONObject
@@ -17,15 +17,21 @@ class AppsFlyerRemoteCommandTest {
     val COMMAND_NAME_KEY = "command_name"
 
     @MockK
+    lateinit var mockApplication: Application
+
+    @MockK
     lateinit var mockTracker: AppsFlyerTrackable
 
-    @InjectMockKs
-    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand("test")
+    lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        appsFlyerRemoteCommand.tracker = mockTracker
+        appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
+            mockApplication,
+            "test",
+            "testKey",
+            tracker = mockTracker)
     }
 
     @Test
@@ -38,22 +44,6 @@ class AppsFlyerRemoteCommandTest {
         Assert.assertEquals("initialize", commands[0])
         Assert.assertEquals("log_purchase", commands[1])
         Assert.assertEquals("add_to_cart", commands[2])
-    }
-
-    @Test
-    fun testTrackLaunch() {
-        val payload = JSONObject()
-        payload.put(COMMAND_NAME_KEY, Commands.LAUNCH)
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LAUNCH), payload)
-
-        every { mockTracker.trackLaunch() } just Runs
-
-        verify {
-            mockTracker.trackLaunch()
-        }
-
-        confirmVerified(mockTracker)
     }
 
     @Test
