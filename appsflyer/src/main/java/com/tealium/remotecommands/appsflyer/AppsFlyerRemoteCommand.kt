@@ -37,26 +37,6 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         }
     }
 
-    /**
-     *  Constructor in case where Remote Command is not initialized in the application layer,
-     *  and instead initialized in an Activity
-     */
-    @JvmOverloads
-    constructor(
-        instanceName: String,
-        activity: Activity,
-        commandId: String = DEFAULT_COMMAND_ID,
-        description: String = DEFAULT_COMMAND_DESCRIPTION,
-        appsFlyerDevKey: String? = null,
-        configSettings: Map<String, Any>? = null
-    ) : super(commandId, description) {
-            appsFlyerDevKey?.let { devKey ->
-                this.application = activity.application
-                this.instanceName = instanceName
-                tracker = AppsFlyerTracker(activity.application, instanceName, devKey, configSettings)
-        }
-    }
-
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
         const val DEFAULT_COMMAND_DESCRIPTION = "Tealium-AppsFlyer Remote Command"
