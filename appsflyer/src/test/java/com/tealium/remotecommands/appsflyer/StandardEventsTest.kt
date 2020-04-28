@@ -1,9 +1,9 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Application
 import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.AFInAppEventType
 import io.mockk.*
-import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import org.json.JSONObject
 import org.junit.Assert
@@ -16,15 +16,23 @@ import org.robolectric.RobolectricTestRunner
 class StandardEventsTest {
 
     @MockK
+    lateinit var mockApplication: Application
+
+    @MockK
     lateinit var mockTracker: AppsFlyerTrackable
 
-    @InjectMockKs
-    var appsFlyerRemoteCommand: AppsFlyerRemoteCommand = AppsFlyerRemoteCommand("test")
+
+    lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
 
     @Before
     fun setUp() {
         MockKAnnotations.init(this, relaxUnitFun = true)
-        appsFlyerRemoteCommand.tracker = mockTracker
+        appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
+            mockApplication,
+            "test",
+            "testKey",
+            tracker = mockTracker
+        )
     }
 
     @Test
