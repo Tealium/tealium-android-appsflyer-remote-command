@@ -1,5 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Activity
 import android.app.Application
 import android.util.Log
 import com.tealium.internal.tagbridge.RemoteCommand
@@ -13,27 +14,28 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
     private val TAG = this::class.java.simpleName
 
-    lateinit var tracker: AppsFlyerTrackable
-    private var application: Application? = null
+    var tracker: AppsFlyerTrackable
+    private var application: Application
     lateinit var instanceName: String
 
 
     @JvmOverloads
     constructor(
+        application: Application,
         instanceName: String,
-        application: Application? = null,
+        appsFlyerDevKey: String,
+        configSettings: Map<String, Any>? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
-        appsFlyerDevKey: String? = null,
-        configSettings: Map<String, Any>? = null
+        tracker: AppsFlyerTrackable = AppsFlyerTracker(
+            application,
+            instanceName,
+            appsFlyerDevKey,
+            configSettings
+        )
     ) : super(commandId, description) {
-        application?.let { app ->
-            appsFlyerDevKey?.let { devKey ->
-                this.application = app
-                this.instanceName = instanceName
-                tracker = AppsFlyerTracker(app, instanceName, devKey, configSettings)
-            }
-        }
+        this.tracker = tracker
+        this.application = application
     }
 
     companion object {

@@ -49,8 +49,8 @@ class AppsFlyerTracker(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
-        AppsFlyerLib.getInstance().init(devKey, createConversionListener(), application)
-        AppsFlyerLib.getInstance().startTracking(application)
+        AppsFlyerLib.getInstance().init(devKey, createConversionListener(), application.applicationContext)
+        AppsFlyerLib.getInstance().startTracking(application.applicationContext)
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
