@@ -28,9 +28,8 @@ class AppsFlyerTracker(
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
-                val configSettings = settings[Config.CUSTOM_DATA] as JSONObject
-                val map = toMap(configSettings)
-                val iterator = map.entries.iterator()
+                val data = toMap(settings[Config.CUSTOM_DATA] as JSONObject)
+                val iterator = data.entries.iterator()
                 val dataMap = HashMap<String, Any>()
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
