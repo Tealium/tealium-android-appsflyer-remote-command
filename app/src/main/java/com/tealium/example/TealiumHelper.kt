@@ -5,13 +5,13 @@ import android.os.Build
 import android.webkit.WebView
 import com.tealium.library.Tealium
 import com.tealium.remotecommands.appsflyer.AppsFlyerRemoteCommand
-import com.tealium.remotecommands.appsflyer.Config
 
 object TealiumHelper {
 
     lateinit var tealium: Tealium
     val instanceName = "my_tealium_instance"
-    private val devKey = "<your_dev_key>"
+
+    var adid: String? = null
 
     fun initialize(application: Application) {
 
@@ -19,15 +19,14 @@ object TealiumHelper {
             WebView.setWebContentsDebuggingEnabled(true)
         }
 
-        val config: Tealium.Config = Tealium.Config.create(application, "tealiummobile", "appsflyer-android", "dev")
+        val config: Tealium.Config = Tealium.Config.create(application, "tealiummobile", "appsflyer-tag", "dev")
         config.forceOverrideLogLevel = "dev"
+
         tealium = Tealium.createInstance(instanceName, config)
 
         val appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             application,
-            instanceName,
-            devKey,
-            configSettings = mapOf(Config.DEBUG to (config.forceOverrideLogLevel == "dev"))
+            instanceName
         )
 
         tealium.addRemoteCommand(appsFlyerRemoteCommand)

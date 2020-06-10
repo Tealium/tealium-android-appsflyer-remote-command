@@ -1,11 +1,12 @@
 <resources>
     <string name="app_name">Example</string>
-    <string name="track_location">Track Location</string>
     <string name="set_host">Set Host</string>
     <string name="set_user_emails">Set User Emails</string>
-    <string name="set_currency_code">Set Currency Code</string>
     <string name="set_user_id">Set User ID</string>
-
+    <string name="set_currency_code">Set Currency Code</string>
     <string name="log_purchase">Log Purchase</string>
     <string name="achieve_level">Track Level Achieved</string>
+    <string name="track_location">Track Location</string>
+
+    <string name="standard_events">Check Standard Events</string>
 </resources>

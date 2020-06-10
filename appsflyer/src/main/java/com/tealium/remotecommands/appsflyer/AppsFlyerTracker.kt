@@ -2,23 +2,19 @@ package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.tealium.library.Tealium
+import org.json.JSONException
+import org.json.JSONObject
 
 class AppsFlyerTracker(
     private val application: Application,
-    private val instanceName: String,
-    private val devKey: String,
-    configSettings: Map<String, Any>? = null
+    private val instanceName: String
 ) : AppsFlyerTrackable {
 
-    init {
-        initialize(application, devKey, configSettings)
-    }
-
     override fun initialize(
-        application: Application,
         devKey: String,
         configSettings: Map<String, Any>?
     ) {
@@ -32,7 +28,9 @@ class AppsFlyerTracker(
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
-                val iterator = (settings[Config.CUSTOM_DATA] as HashMap<*, *>).entries.iterator()
+                val configSettings = settings[Config.CUSTOM_DATA] as JSONObject
+                val map = toMap(configSettings)
+                val iterator = map.entries.iterator()
                 val dataMap = HashMap<String, Any>()
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
@@ -49,7 +47,9 @@ class AppsFlyerTracker(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
-        AppsFlyerLib.getInstance().init(devKey, createConversionListener(), application.applicationContext)
+        val conversionListener = createConversionListener()
+        AppsFlyerLib.getInstance()
+            .init(devKey, conversionListener, application.applicationContext)
         AppsFlyerLib.getInstance().startTracking(application.applicationContext)
     }
 
@@ -107,13 +107,30 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
+    fun toMap(json: JSONObject): Map<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        try {
+            json.keys().forEach { key ->
+                (json[key] as? String)?.let { value ->
+                    map[key] = value
+                }
+
+            }
+        } catch (ex: JSONException) {
+            Log.e("AppsFlyerTracker", "Error in JSON Config")
+        }
+
+        return map.toMap()
+    }
+
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any?>) {
                 val tealium: Tealium? = Tealium.getInstance(instanceName)
 
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)) {
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
+                ) {
                     tealium?.trackEvent("conversion_data_received", conversionData)
                 }
             }
