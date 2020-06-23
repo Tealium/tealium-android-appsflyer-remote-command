@@ -21,7 +21,7 @@ class AppsFlyerTracker(
         application.registerActivityLifecycleCallbacks(object :
             Application.ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                this@AppsFlyerTracker.weakActivity = WeakReference(activity)
+                weakActivity = WeakReference(activity)
             }
 
             override fun onActivityStarted(activity: Activity) = Unit
