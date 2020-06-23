@@ -1,18 +1,37 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Activity
 import android.app.Application
-import android.content.Context
+import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.tealium.library.Tealium
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.ref.WeakReference
 
 class AppsFlyerTracker(
     private val application: Application,
     private val instanceName: String
 ) : AppsFlyerTrackable {
+    private var weakActivity: WeakReference<Activity>? = null
+
+    init {
+        application.registerActivityLifecycleCallbacks(object :
+            Application.ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                this@AppsFlyerTracker.weakActivity = WeakReference(activity)
+            }
+
+            override fun onActivityStarted(activity: Activity) = Unit
+            override fun onActivityResumed(activity: Activity) = Unit
+            override fun onActivityPaused(activity: Activity) = Unit
+            override fun onActivityStopped(activity: Activity) = Unit
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+            override fun onActivityDestroyed(activity: Activity) = Unit
+        })
+    }
 
     override fun initialize(
         devKey: String,
@@ -49,7 +68,7 @@ class AppsFlyerTracker(
         val conversionListener = createConversionListener()
         AppsFlyerLib.getInstance()
             .init(devKey, conversionListener, application.applicationContext)
-        AppsFlyerLib.getInstance().startTracking(application.applicationContext)
+        AppsFlyerLib.getInstance().startTracking(weakActivity?.get() ?: application.applicationContext)
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
