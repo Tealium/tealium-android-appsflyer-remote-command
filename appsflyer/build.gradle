@@ -56,7 +56,7 @@ publishing {
             artifact("$buildDir/outputs/aar/appsflyer-release.aar")
         }
     }
-    /*repositories {
+    repositories {
         maven {
             url "s3://maven.tealiumiq.com/android/releases/"
             credentials(AwsCredentials) {
@@ -64,5 +64,5 @@ publishing {
                 secretKey AWS_SECRET_KEY
             }
         }
-    }*/
+    }
 }
