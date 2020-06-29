@@ -25,7 +25,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'com.tealium:library:5.7.2'
-    releaseImplementation 'com.tealium.remotecommands:appsflyer:1.0.0'
+    releaseImplementation 'com.tealium.remotecommands:appsflyer:1.0.1'
     debugImplementation project (path: ':appsflyer')
 
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

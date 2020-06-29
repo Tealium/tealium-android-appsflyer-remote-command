@@ -121,7 +121,6 @@ class AppsFlyerTracker(
                 (json[key] as? String)?.let { value ->
                     map[key] = value
                 }
-
             }
         } catch (ex: JSONException) {
             Log.e("AppsFlyerTracker", "Error in JSON Config")
