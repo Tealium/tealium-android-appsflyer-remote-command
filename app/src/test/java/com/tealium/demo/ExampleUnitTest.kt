@@ -1,4 +1,4 @@
-package com.tealium.example
+package com.tealium.demo
 
 import org.junit.Test
 

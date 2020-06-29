@@ -1,24 +1,29 @@
 package com.tealium.remotecommands.appsflyer
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.os.Bundle
+import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.tealium.library.Tealium
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.ref.WeakReference
 
 class AppsFlyerTracker(
     private val application: Application,
-    private val instanceName: String,
-    private val devKey: String,
-    configSettings: Map<String, Any>? = null
+    private val instanceName: String
 ) : AppsFlyerTrackable {
 
+    private var weakActivity: WeakReference<Activity>? = null
+
     init {
-        initialize(application, devKey, configSettings)
+        getApplication()
     }
 
     override fun initialize(
-        application: Application,
         devKey: String,
         configSettings: Map<String, Any>?
     ) {
@@ -32,7 +37,8 @@ class AppsFlyerTracker(
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
-                val iterator = (settings[Config.CUSTOM_DATA] as HashMap<*, *>).entries.iterator()
+                val data = toMap(settings[Config.CUSTOM_DATA] as JSONObject)
+                val iterator = data.entries.iterator()
                 val dataMap = HashMap<String, Any>()
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
@@ -49,8 +55,9 @@ class AppsFlyerTracker(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
-        AppsFlyerLib.getInstance().init(devKey, createConversionListener(), application.applicationContext)
-        AppsFlyerLib.getInstance().startTracking(application.applicationContext)
+        AppsFlyerLib.getInstance()
+            .init(devKey, createConversionListener(), application.applicationContext)
+        AppsFlyerLib.getInstance().startTracking(weakActivity?.get()?: application.applicationContext)
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
@@ -107,13 +114,51 @@ class AppsFlyerTracker(
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
+    fun toMap(json: JSONObject): Map<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        try {
+            json.keys().forEach { key ->
+                (json[key] as? String)?.let { value ->
+                    map[key] = value
+                }
+
+            }
+        } catch (ex: JSONException) {
+            Log.e("AppsFlyerTracker", "Error in JSON Config")
+        }
+
+        return map.toMap()
+    }
+
+    private fun getApplication() {
+        application.registerActivityLifecycleCallbacks(object :
+        Application.ActivityLifecycleCallbacks {
+            override fun onActivityPaused(p0: Activity) = Unit
+
+            override fun onActivityStarted(p0: Activity) = Unit
+
+            override fun onActivityDestroyed(p0: Activity) = Unit
+
+            override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) = Unit
+
+            override fun onActivityStopped(p0: Activity) = Unit
+
+            override fun onActivityCreated(p0: Activity, p1: Bundle?) {
+                weakActivity = WeakReference(p0)
+            }
+
+            override fun onActivityResumed(p0: Activity) = Unit
+        })
+    }
+
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any?>) {
                 val tealium: Tealium? = Tealium.getInstance(instanceName)
 
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)) {
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
+                ) {
                     tealium?.trackEvent("conversion_data_received", conversionData)
                 }
             }

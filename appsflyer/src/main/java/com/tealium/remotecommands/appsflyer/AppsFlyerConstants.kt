@@ -30,7 +30,7 @@ object StandardEvents {
         "initiatecheckout" to AFInAppEventType.INITIATED_CHECKOUT,
         "purchase" to AFInAppEventType.PURCHASE,
         "cancelpurchase" to "cancel_purchase",
-        "subscription" to AFInAppEventType.SUBSCRIBE,
+        "subscribe" to AFInAppEventType.SUBSCRIBE,
         "starttrial" to AFInAppEventType.START_TRIAL,
         "rate" to AFInAppEventType.RATE,
         "spentcredits" to AFInAppEventType.SPENT_CREDIT,
@@ -48,21 +48,18 @@ object StandardEvents {
     )
 }
 
-object Initialize {
-    const val AF_DEV_KEY = "af_dev_key"
-}
-
 object Config {
     const val DEBUG = "debug"
     const val MIN_TIME_BETWEEN_SESSIONS = "time_between_sessions"
     const val ANONYMIZE_USER = "anonymize_user"
     const val CUSTOM_DATA = "custom_data"
-    const val SETTINGS = "config_settings"
+    const val SETTINGS = "settings"
+    const val DEV_KEY = "app_dev_key"
 }
 
 object Customer {
     const val USER_ID = "af_customer_user_id"
-    const val USER_EMAILS = "customer_user_emails"
+    const val EMAILS = "customer_emails"
 }
 
 object Location {
