@@ -1,6 +1,5 @@
 package com.tealium.remotecommands.appsflyer
 
-import android.app.Activity
 import android.app.Application
 import android.util.Log
 import com.tealium.internal.tagbridge.RemoteCommand
@@ -16,22 +15,17 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
     var tracker: AppsFlyerTrackable
     private var application: Application
-    lateinit var instanceName: String
 
 
     @JvmOverloads
     constructor(
         application: Application,
         instanceName: String,
-        appsFlyerDevKey: String,
-        configSettings: Map<String, Any>? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
         tracker: AppsFlyerTrackable = AppsFlyerTracker(
             application,
-            instanceName,
-            appsFlyerDevKey,
-            configSettings
+            instanceName
         )
     ) : super(commandId, description) {
         this.tracker = tracker
@@ -74,18 +68,18 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     setHost(payload)
                 }
                 Commands.SET_USER_EMAILS -> {
-                    val emails: JSONArray? = payload.optJSONArray(Customer.USER_EMAILS)
+                    val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
                     emails?.let {
                         val emailList = toList(emails)
                         tracker.setUserEmails(emailList)
                     }
                 }
                 Commands.SET_CURRENCY_CODE -> {
-                    val currencyCode: String? = payload.optString(Currency.CODE)
+                    val currencyCode: String = payload.optString(Currency.CODE)
 
-                    currencyCode?.let {
-                        tracker.setCurrencyCode(it)
-                    } ?: run {
+                    if (currencyCode.isNotEmpty()) {
+                        tracker.setCurrencyCode(currencyCode)
+                    } else {
                         Log.e(
                             TAG,
                             "${Currency.CODE} is required key"
@@ -93,10 +87,10 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     }
                 }
                 Commands.SET_CUSTOMER_ID -> {
-                    val id: String? = payload.optString(Customer.USER_ID, null)
-                    id?.let {
-                        tracker.setCustomerId(it)
-                    } ?: run {
+                    val id: String = payload.optString(Customer.USER_ID)
+                    if (id.isNotEmpty()) {
+                        tracker.setCustomerId(id)
+                    } else {
                         Log.e(
                             TAG,
                             "${Customer.USER_ID} is a required key"
@@ -158,27 +152,26 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         return StandardEvents.eventNames[commandName]
     }
 
-    fun initialize(payload: JSONObject) {
-        val devKey: String? = payload.optString(Initialize.AF_DEV_KEY)
+    private fun initialize(payload: JSONObject) {
+        val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
-        application?.let { appContext ->
-            devKey?.let { devKey ->
-                configSettings?.let {
-                    tracker = AppsFlyerTracker(appContext, instanceName, devKey, it)
-                } ?: run {
-                    tracker = AppsFlyerTracker(appContext, instanceName, devKey)
-                }
+
+        if (devKey.isNotEmpty()) {
+            configSettings?.let {
+                tracker.initialize(devKey, it)
+            } ?: run {
+                tracker.initialize(devKey)
             }
-        } ?: run {
+        } else {
             Log.e(
                 TAG,
-                "${Initialize.AF_DEV_KEY} is a required key"
+                "${Config.DEV_KEY} is a required key"
             )
         }
     }
 
-    fun trackLocation(payload: JSONObject) {
+    private fun trackLocation(payload: JSONObject) {
         val latitude: Double? = payload.optDouble(Location.LATITUDE)
         val longitude: Double? = payload.optDouble(Location.LONGITUDE)
 
@@ -194,17 +187,17 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         }
     }
 
-    fun setHost(payload: JSONObject) {
-        val host: String? = payload.optString(Host.HOST)
+    private fun setHost(payload: JSONObject) {
+        val host: String = payload.optString(Host.HOST)
         val hostPrefix: String = payload.optString(Host.HOST_PREFIX)
 
-        host?.let { hostName ->
+        if (host.isNotEmpty()) {
             if (hostPrefix.isNotEmpty()) {
-                tracker.setHost(hostName, hostPrefix)
+                tracker.setHost(host, hostPrefix)
             } else {
-                tracker.setHost(hostName)
+                tracker.setHost(host)
             }
-        } ?: run {
+        } else {
             Log.e(
                 TAG,
                 "${Host.HOST} are required keys"
@@ -212,14 +205,14 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         }
     }
 
-    fun splitCommands(payload: JSONObject): Array<String> {
+    private fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR).map {
             it.trim().toLowerCase(Locale.ROOT)
         }.toTypedArray()
     }
 
-    fun jsonToMap(jsonObject: JSONObject?): Map<String, Any> {
+    private fun jsonToMap(jsonObject: JSONObject?): Map<String, Any> {
         val map = HashMap<String, Any>()
 
         jsonObject?.let {
@@ -231,7 +224,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         return map
     }
 
-    fun toList(jsonArray: JSONArray): List<String> {
+    private fun toList(jsonArray: JSONArray): List<String> {
         val list = mutableListOf<String>()
         for (i in 0 until jsonArray.length()) {
             val item = jsonArray.getString(i)

@@ -12,7 +12,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -33,7 +33,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.core:core-ktx:1.0.2'
     implementation "com.tealium:library:$tealium_version"
-    implementation 'com.appsflyer:af-android-sdk:5.2.0'
+    implementation 'com.appsflyer:af-android-sdk:5.4.0'
     implementation 'com.android.installreferrer:installreferrer:1.1.2'
 
     testImplementation 'junit:junit:4.12'
@@ -52,7 +52,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId 'com.tealium.remotecommands'
             artifactId 'appsflyer'
-            version '1.0.0'
+            version '1.0.1'
             artifact("$buildDir/outputs/aar/appsflyer-release.aar")
         }
     }

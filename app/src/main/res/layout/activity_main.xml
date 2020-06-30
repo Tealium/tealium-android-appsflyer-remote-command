@@ -10,49 +10,55 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tealium AppsFlyer Remote Commmand!"
+        android:text="Tealium AppsFlyer Remote Commmand"
         android:textAlignment="center"/>
 
     <Button
-        android:id="@+id/setHostButton"
+        android:id="@+id/button_setHost"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_host"/>
 
     <Button
-        android:id="@+id/setUserEmailsButton"
+        android:id="@+id/button_setUserEmails"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_user_emails" />
 
     <Button
-        android:id="@+id/setUserIdButton"
+        android:id="@+id/button_setUserId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_user_id" />
 
     <Button
-        android:id="@+id/setCurrencyCodeButton"
+        android:id="@+id/button_setCurrencyCode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_currency_code" />
 
     <Button
-        android:id="@+id/logPurchaseButton"
+        android:id="@+id/button_logPurchase"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/log_purchase"/>
 
     <Button
-        android:id="@+id/trackLevelAchievedButton"
+        android:id="@+id/button_trackLevelAchieved"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/achieve_level" />
 
     <Button
-        android:id="@+id/trackLocationButton"
+        android:id="@+id/button_trackLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/track_location" />
+
+    <Button
+        android:id="@+id/button_checkStandardEvents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/standard_events" />
 
 </LinearLayout>
