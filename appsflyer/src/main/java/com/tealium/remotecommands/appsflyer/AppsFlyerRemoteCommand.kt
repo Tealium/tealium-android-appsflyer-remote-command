@@ -191,9 +191,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         val host: String = payload.optString(Host.HOST)
         val hostPrefix: String = payload.optString(Host.HOST_PREFIX)
 
-        if(host.isNotEmpty()) {
+        if (host.isNotEmpty()) {
             if (hostPrefix.isNotEmpty()) {
-                tracker.setHost(hostPrefix, hostPrefix)
+                tracker.setHost(host, hostPrefix)
             } else {
                 tracker.setHost(host)
             }
