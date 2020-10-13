@@ -59,7 +59,7 @@ object Config {
 
 object Customer {
     const val USER_ID = "af_customer_user_id"
-    const val EMAILS = "customer_emails"
+    const val EMAILS = "customer_email"
 }
 
 object Location {

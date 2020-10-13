@@ -2,7 +2,8 @@ package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
 import android.util.Log
-import com.tealium.internal.tagbridge.RemoteCommand
+import com.tealium.core.Tealium
+import com.tealium.remotecommands.RemoteCommand
 import org.json.JSONArray
 import org.json.JSONObject
 import java.lang.Exception
@@ -17,15 +18,16 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
     private var application: Application
 
 
-    @JvmOverloads
     constructor(
         application: Application,
-        instanceName: String,
+        tealium: Tealium,
+        af_dev_key: String? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
         tracker: AppsFlyerTrackable = AppsFlyerTracker(
             application,
-            instanceName
+            tealium,
+            af_dev_key
         )
     ) : super(commandId, description) {
         this.tracker = tracker
@@ -43,7 +45,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
      * @param response - response containing commands and payload to process
      */
     @Throws(Exception::class)
-    public override fun onInvoke(response: Response) {
+    override fun onInvoke(response: Response) {
         val payload = response.requestPayload
         val commands = splitCommands(payload)
         parseCommands(commands, payload)
@@ -57,6 +59,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
      */
     fun parseCommands(commands: Array<String>, payload: JSONObject) {
         commands.forEach { command ->
+            Log.v("Tealium-onInvoke", command)
             when (command) {
                 Commands.INITIALIZE -> {
                     initialize(payload)
@@ -68,7 +71,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     setHost(payload)
                 }
                 Commands.SET_USER_EMAILS -> {
-                    val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
+                    val emails: JSONArray? = payload.optJSONArray("customer_emails")
                     emails?.let {
                         val emailList = toList(emails)
                         tracker.setUserEmails(emailList)
@@ -153,21 +156,11 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
     }
 
     private fun initialize(payload: JSONObject) {
-        val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
 
-        if (devKey.isNotEmpty()) {
-            configSettings?.let {
-                tracker.initialize(devKey, it)
-            } ?: run {
-                tracker.initialize(devKey)
-            }
-        } else {
-            Log.e(
-                TAG,
-                "${Config.DEV_KEY} is a required key"
-            )
+        configSettings?.let {
+            tracker.initialize(it)
         }
     }
 
