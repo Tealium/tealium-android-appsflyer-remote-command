@@ -197,7 +197,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         }
     }
 
-    private fun splitCommands(payload: JSONObject): Array<String> {
+    internal fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR).map {
             it.trim().toLowerCase(Locale.ROOT)

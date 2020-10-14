@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
+import com.tealium.core.Tealium
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
@@ -22,6 +23,9 @@ class AppsFlyerRemoteCommandTest {
     @MockK
     lateinit var mockTracker: AppsFlyerTrackable
 
+    @MockK
+    lateinit var mockTealium: Tealium
+
     lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
 
     @Before
@@ -29,7 +33,7 @@ class AppsFlyerRemoteCommandTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             mockApplication,
-            "test",
+            mockTealium,
             "testKey",
             tracker = mockTracker)
     }
@@ -93,7 +97,7 @@ class AppsFlyerRemoteCommandTest {
         userEmailProperties.put("test3@testing.com")
 
         val payload = JSONObject()
-        payload.put("customer_email", userEmailProperties)
+        payload.put(Customer.EMAILS, userEmailProperties)
         payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
