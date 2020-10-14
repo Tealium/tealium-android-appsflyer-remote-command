@@ -59,7 +59,6 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
      */
     fun parseCommands(commands: Array<String>, payload: JSONObject) {
         commands.forEach { command ->
-            Log.v("Tealium-onInvoke", command)
             when (command) {
                 Commands.INITIALIZE -> {
                     initialize(payload)

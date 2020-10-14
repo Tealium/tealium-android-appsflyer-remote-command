@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'maven-publish'
 
-ext.tealium_appsflyer_version = '1.1.0'
+ext.tealium_appsflyer_version = '1.2.0'
 
 android {
     compileSdkVersion 29
@@ -57,8 +57,10 @@ afterEvaluate {
                 groupId 'com.tealium.remotecommands'
                 artifactId 'appsflyer'
                 version tealium_appsflyer_version
+
             }
         }
+
         repositories {
             maven {
                 url "s3://maven.tealiumiq.com/android/releases/"
