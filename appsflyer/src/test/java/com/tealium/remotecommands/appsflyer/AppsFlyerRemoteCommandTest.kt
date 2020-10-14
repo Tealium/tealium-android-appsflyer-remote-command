@@ -93,7 +93,7 @@ class AppsFlyerRemoteCommandTest {
         userEmailProperties.put("test3@testing.com")
 
         val payload = JSONObject()
-        payload.put(Customer.EMAILS, userEmailProperties)
+        payload.put("customer_email", userEmailProperties)
         payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)

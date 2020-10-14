@@ -70,7 +70,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     setHost(payload)
                 }
                 Commands.SET_USER_EMAILS -> {
-                    val emails: JSONArray? = payload.optJSONArray("customer_emails")
+                    val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
                     emails?.let {
                         val emailList = toList(emails)
                         tracker.setUserEmails(emailList)
