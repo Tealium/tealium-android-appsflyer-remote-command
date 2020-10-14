@@ -15,6 +15,7 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName tealium_appsflyer_version
+        buildConfigField 'String', 'TAG', "\"Tealium-AppsFlyer-$tealium_appsflyer_version\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'

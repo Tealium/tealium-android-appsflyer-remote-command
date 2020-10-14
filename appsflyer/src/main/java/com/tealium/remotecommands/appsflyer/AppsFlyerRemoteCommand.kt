@@ -155,12 +155,11 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
     }
 
     private fun initialize(payload: JSONObject) {
+        val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
 
-        configSettings?.let {
-            tracker.initialize(it)
-        }
+        tracker.initialize(devKey, configSettings)
     }
 
     private fun trackLocation(payload: JSONObject) {

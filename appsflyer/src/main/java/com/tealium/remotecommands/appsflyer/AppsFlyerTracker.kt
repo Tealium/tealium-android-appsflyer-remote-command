@@ -25,8 +25,8 @@ class AppsFlyerTracker(
     }
 
     override fun initialize(
-        configSettings: Map<String, Any>?,
-        devKey: String?
+        devKey: String?,
+        configSettings: Map<String, Any>?
     ) {
         configSettings?.let { settings ->
             if (settings.containsKey(Config.MIN_TIME_BETWEEN_SESSIONS)) {
@@ -62,6 +62,11 @@ class AppsFlyerTracker(
         } ?: run {
             af_devKey?.let {
                 initAndStartAppsFlyer(it)
+            } ?: run {
+                Log.e(
+                    BuildConfig.TAG,
+                    "${Config.DEV_KEY} is a required key"
+                )
             }
         }
     }
