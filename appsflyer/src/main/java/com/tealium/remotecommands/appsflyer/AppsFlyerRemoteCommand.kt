@@ -20,16 +20,16 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
     constructor(
         application: Application,
-        tealium: Tealium,
+        tealiumTracker: Tracker,
         af_dev_key: String? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
         tracker: AppsFlyerTrackable = AppsFlyerTracker(
             application,
-            tealium,
+            tealiumTracker,
             af_dev_key
         )
-    ) : super(commandId, description) {
+    ) : super(commandId, description, tealiumTracker) {
         this.tracker = tracker
         this.application = application
     }

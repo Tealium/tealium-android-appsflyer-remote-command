@@ -6,15 +6,15 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.tealium.core.Tealium
 import com.tealium.dispatcher.TealiumEvent
+import com.tealium.remotecommands.RemoteCommand
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 class AppsFlyerTracker(
     private val application: Application,
-    private val tealium: Tealium,
+    private val tracker: RemoteCommand.Tracker,
     private val af_devKey: String? = null
 ) : AppsFlyerTrackable {
 
@@ -178,8 +178,7 @@ class AppsFlyerTracker(
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
                     (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
                 ) {
-                    val dispatch = TealiumEvent("conversion_data_received", conversionData.toMap())
-                    tealium.track(dispatch)
+                    tracker.track("conversion_data_received", conversionData.toMap())
                 }
             }
 
@@ -188,13 +187,12 @@ class AppsFlyerTracker(
                 map["error_name"] = "conversion_data_request_failure"
                 map["error_message"] = errorMessage
 
-                val dispatch = TealiumEvent("appsflyer_error", map)
-                tealium.track(dispatch)
+                tracker.track("appsflyer_error", map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
                 val dispatch = TealiumEvent("app_open_attribution", attributionData)
-                tealium.track(dispatch)
+                tracker.track("app_open_attribution", attributionData as Map<String, Any>?)
             }
 
             override fun onAttributionFailure(errorMessage: String) {
@@ -202,8 +200,7 @@ class AppsFlyerTracker(
                 map["error_name"] = "app_open_attribution_failure"
                 map["error_message"] = errorMessage
 
-                val dispatch = TealiumEvent("appsflyer_error", map)
-                tealium.track(dispatch)
+                tracker.track("appsflyer_error", map)
             }
         }
     }
