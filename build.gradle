@@ -19,13 +19,12 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
         google()
         jcenter()
 
-//        maven {
-//            url "https://maven.tealiumiq.com/android/releases/"
-//        }
+        maven {
+            url "https://maven.tealiumiq.com/android/releases/"
+        }
     }
 
     gradle.projectsEvaluated {
