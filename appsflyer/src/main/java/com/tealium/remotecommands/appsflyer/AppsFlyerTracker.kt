@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference
 class AppsFlyerTracker(
     private val application: Application,
     private val tracker: RemoteCommand.Tracker,
-    private val af_devKey: String? = null
+    private val appsflyerDevKey: String? = null
 ) : AppsFlyerTrackable {
 
     private var weakActivity: WeakReference<Activity>? = null
@@ -60,7 +60,7 @@ class AppsFlyerTracker(
         devKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
-            af_devKey?.let {
+            appsflyerDevKey?.let {
                 initAndStartAppsFlyer(it)
             } ?: run {
                 Log.e(
