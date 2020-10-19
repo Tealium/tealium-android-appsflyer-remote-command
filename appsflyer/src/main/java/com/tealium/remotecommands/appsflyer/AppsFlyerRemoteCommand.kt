@@ -17,11 +17,10 @@ open class AppsFlyerRemoteCommand(
 ) : RemoteCommand(commandId, description) {
 
     private val TAG = this::class.java.simpleName
-    private var appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(
-        application,
-        appsflyerDevKey,
-        context
-    )
+
+    private val appsFlyerInstance: AppsFlyerCommand by lazy {
+        AppsFlyerInstance(application, appsflyerDevKey, context)
+    }
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
