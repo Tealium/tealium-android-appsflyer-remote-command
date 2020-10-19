@@ -7,16 +7,16 @@ import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
 import com.tealium.dispatcher.TealiumEvent
-import com.tealium.remotecommands.RemoteCommand
+import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class AppsFlyerTracker(
+class AppsFlyerInstance(
     private val application: Application,
-    private val tracker: RemoteCommand.Tracker,
-    private val appsflyerDevKey: String? = null
-) : AppsFlyerTrackable {
+    private val appsflyerDevKey: String? = null,
+    private val remoteCommandContext: RemoteCommandContext
+) : AppsFlyerCommand {
 
     private var weakActivity: WeakReference<Activity>? = null
 
@@ -178,7 +178,7 @@ class AppsFlyerTracker(
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
                     (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
                 ) {
-                    tracker.track("conversion_data_received", conversionData.toMap())
+                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
                 }
             }
 
@@ -187,12 +187,12 @@ class AppsFlyerTracker(
                 map["error_name"] = "conversion_data_request_failure"
                 map["error_message"] = errorMessage
 
-                tracker.track("appsflyer_error", map)
+                remoteCommandContext.track("appsflyer_error", map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
                 val dispatch = TealiumEvent("app_open_attribution", attributionData)
-                tracker.track("app_open_attribution", attributionData as Map<String, Any>?)
+                remoteCommandContext.track("app_open_attribution", attributionData as Map<String, Any>?)
             }
 
             override fun onAttributionFailure(errorMessage: String) {
@@ -200,7 +200,7 @@ class AppsFlyerTracker(
                 map["error_name"] = "app_open_attribution_failure"
                 map["error_message"] = errorMessage
 
-                tracker.track("appsflyer_error", map)
+                remoteCommandContext.track("appsflyer_error", map)
             }
         }
     }

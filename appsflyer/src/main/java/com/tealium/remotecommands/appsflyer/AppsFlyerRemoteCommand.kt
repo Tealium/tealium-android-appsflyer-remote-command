@@ -2,7 +2,6 @@ package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
 import android.util.Log
-import com.tealium.core.Tealium
 import com.tealium.remotecommands.RemoteCommand
 import org.json.JSONArray
 import org.json.JSONObject
@@ -10,29 +9,19 @@ import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
 
-open class AppsFlyerRemoteCommand : RemoteCommand {
+open class AppsFlyerRemoteCommand(
+    application: Application,
+    appsflyerDevKey: String? = null,
+    commandId: String = DEFAULT_COMMAND_ID,
+    description: String = DEFAULT_COMMAND_DESCRIPTION
+) : RemoteCommand(commandId, description) {
 
     private val TAG = this::class.java.simpleName
-
-    var tracker: AppsFlyerTrackable
-    private var application: Application
-
-
-    constructor(
-        application: Application,
-        tealiumTracker: Tracker,
-        af_dev_key: String? = null,
-        commandId: String = DEFAULT_COMMAND_ID,
-        description: String = DEFAULT_COMMAND_DESCRIPTION,
-        tracker: AppsFlyerTrackable = AppsFlyerTracker(
-            application,
-            tealiumTracker,
-            af_dev_key
-        )
-    ) : super(commandId, description, tealiumTracker) {
-        this.tracker = tracker
-        this.application = application
-    }
+    private var appsFlyerInstance: AppsFlyerCommand = AppsFlyerInstance(
+        application,
+        appsflyerDevKey,
+        context
+    )
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
@@ -73,14 +62,14 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
                     emails?.let {
                         val emailList = toList(emails)
-                        tracker.setUserEmails(emailList)
+                        appsFlyerInstance.setUserEmails(emailList)
                     }
                 }
                 Commands.SET_CURRENCY_CODE -> {
                     val currencyCode: String = payload.optString(Currency.CODE)
 
                     if (currencyCode.isNotEmpty()) {
-                        tracker.setCurrencyCode(currencyCode)
+                        appsFlyerInstance.setCurrencyCode(currencyCode)
                     } else {
                         Log.e(
                             TAG,
@@ -91,7 +80,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                 Commands.SET_CUSTOMER_ID -> {
                     val id: String = payload.optString(Customer.USER_ID)
                     if (id.isNotEmpty()) {
-                        tracker.setCustomerId(id)
+                        appsFlyerInstance.setCustomerId(id)
                     } else {
                         Log.e(
                             TAG,
@@ -103,7 +92,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     val disableTracking: Boolean? =
                         payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
                     disableTracking?.let {
-                        tracker.disableDeviceTracking(it)
+                        appsFlyerInstance.disableDeviceTracking(it)
                     } ?: run {
                         Log.e(
                             TAG,
@@ -115,7 +104,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                     val deepLinkJsonArray: JSONArray? = payload.optJSONArray(DeepLink.URLS)
                     deepLinkJsonArray?.let {
                         val deepLinkList = toList(it)
-                        tracker.resolveDeepLinkUrls(deepLinkList)
+                        appsFlyerInstance.resolveDeepLinkUrls(deepLinkList)
                     } ?: run {
                         Log.e(
                             TAG,
@@ -126,7 +115,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                 Commands.STOP_TRACKING -> {
                     val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
                     stopTracking?.let {
-                        tracker.stopTracking(it)
+                        appsFlyerInstance.stopTracking(it)
                     }
                 }
                 else -> {
@@ -135,9 +124,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
                             payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
                         if (eventParameters != null) {
                             val paramsMap = jsonToMap(eventParameters)
-                            tracker.trackEvent(eventType, paramsMap)
+                            appsFlyerInstance.trackEvent(eventType, paramsMap)
                         } else {
-                            tracker.trackEvent(eventType)
+                            appsFlyerInstance.trackEvent(eventType)
                         }
                     }
                 }
@@ -159,7 +148,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
 
-        tracker.initialize(devKey, configSettings)
+        appsFlyerInstance.initialize(devKey, configSettings)
     }
 
     private fun trackLocation(payload: JSONObject) {
@@ -168,7 +157,7 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
         latitude?.let {
             longitude?.let {
-                tracker.trackLocation(latitude, longitude)
+                appsFlyerInstance.trackLocation(latitude, longitude)
             }
         } ?: run {
             Log.e(
@@ -184,9 +173,9 @@ open class AppsFlyerRemoteCommand : RemoteCommand {
 
         if (host.isNotEmpty()) {
             if (hostPrefix.isNotEmpty()) {
-                tracker.setHost(host, hostPrefix)
+                appsFlyerInstance.setHost(host, hostPrefix)
             } else {
-                tracker.setHost(host)
+                appsFlyerInstance.setHost(host)
             }
         } else {
             Log.e(

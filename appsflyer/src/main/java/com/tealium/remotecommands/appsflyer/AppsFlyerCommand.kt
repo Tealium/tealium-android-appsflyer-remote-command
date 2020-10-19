@@ -1,6 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
-interface AppsFlyerTrackable {
+interface AppsFlyerCommand {
 
     fun initialize(devKey: String? = null, configSettings: Map<String, Any>? = null)
     fun trackLocation(latitude: Double, longitude: Double)

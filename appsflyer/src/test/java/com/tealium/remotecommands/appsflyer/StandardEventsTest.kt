@@ -20,7 +20,7 @@ class StandardEventsTest {
     lateinit var mockApplication: Application
 
     @MockK
-    lateinit var mockTracker: AppsFlyerTrackable
+    lateinit var mockTracker: AppsFlyerCommand
 
     @MockK
     lateinit var mockTealium: Tealium
