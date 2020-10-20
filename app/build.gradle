@@ -24,10 +24,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.tealium:kotlin-remotecommand-dispatcher:0.1.2"
-    implementation "com.tealium:kotlin-tagmanagement-dispatcher:0.1.2"
-    implementation "com.tealium:kotlin-lifecycle:0.1.2"
-    releaseImplementation 'com.tealium.remotecommands:appsflyer:1.0.1'
+    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.0.0"
+    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.0.0"
+    implementation "com.tealium:kotlin-lifecycle:1.0.0"
+    releaseImplementation "com.tealium.remotecommands:appsflyer:$tealium_appsflyer_version"
     debugImplementation project (path: ':appsflyer')
 
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
