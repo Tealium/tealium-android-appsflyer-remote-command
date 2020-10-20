@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.tealium.dispatcher.TealiumEvent
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject

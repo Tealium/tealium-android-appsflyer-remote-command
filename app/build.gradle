@@ -24,6 +24,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation "com.tealium:kotlin-remotecommand-dispatcher:0.1.2"
     implementation "com.tealium:kotlin-tagmanagement-dispatcher:0.1.2"
     implementation "com.tealium:kotlin-lifecycle:0.1.2"
     releaseImplementation 'com.tealium.remotecommands:appsflyer:1.0.1'
