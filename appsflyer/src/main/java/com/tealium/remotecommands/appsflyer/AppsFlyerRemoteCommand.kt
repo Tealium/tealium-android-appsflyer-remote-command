@@ -5,7 +5,6 @@ import android.util.Log
 import com.tealium.remotecommands.RemoteCommand
 import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.Exception
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -18,8 +17,13 @@ open class AppsFlyerRemoteCommand(
 
     private val TAG = this::class.java.simpleName
 
-    private val appsFlyerInstance: AppsFlyerCommand by lazy { AppsFlyerInstance(application, appsflyerDevKey, this.context) }
-
+    private val appsFlyerInstance: AppsFlyerCommand by lazy {
+        AppsFlyerInstance(
+            application,
+            appsflyerDevKey,
+            context
+        )
+    }
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
