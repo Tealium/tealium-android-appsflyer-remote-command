@@ -3,6 +3,7 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Application
 import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.AFInAppEventType
+import com.tealium.core.Tealium
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONObject
@@ -19,7 +20,10 @@ class StandardEventsTest {
     lateinit var mockApplication: Application
 
     @MockK
-    lateinit var mockTracker: AppsFlyerTrackable
+    lateinit var mockTracker: AppsFlyerCommand
+
+    @MockK
+    lateinit var mockTealium: Tealium
 
 
     lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
@@ -29,7 +33,7 @@ class StandardEventsTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             mockApplication,
-            "test",
+            mockTealium,
             "testKey",
             tracker = mockTracker
         )

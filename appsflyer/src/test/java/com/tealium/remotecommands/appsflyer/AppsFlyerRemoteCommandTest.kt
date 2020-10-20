@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
+import com.tealium.core.Tealium
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
@@ -20,7 +21,10 @@ class AppsFlyerRemoteCommandTest {
     lateinit var mockApplication: Application
 
     @MockK
-    lateinit var mockTracker: AppsFlyerTrackable
+    lateinit var mockTracker: AppsFlyerCommand
+
+    @MockK
+    lateinit var mockTealium: Tealium
 
     lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
 
@@ -29,7 +33,7 @@ class AppsFlyerRemoteCommandTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             mockApplication,
-            "test",
+            mockTealium,
             "testKey",
             tracker = mockTracker)
     }

@@ -23,13 +23,8 @@
         android:id="@+id/button_setUserEmails"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/set_user_emails" />
+        android:text="@string/register_user" />
 
-    <Button
-        android:id="@+id/button_setUserId"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/set_user_id" />
 
     <Button
         android:id="@+id/button_setCurrencyCode"
