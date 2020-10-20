@@ -1,7 +1,7 @@
 package com.tealium.demo
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.tealium.remotecommands.appsflyer.Host
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
@@ -16,14 +16,20 @@ class MainActivity : AppCompatActivity() {
         TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "Y5WQPfwiANqCdVbZSEvpkX"))
 
         button_setHost.setOnClickListener {
-            TealiumHelper.trackEvent("set_host", mapOf(Host.HOST to "abc123", Host.HOST_PREFIX to "test_prefix"))
+            TealiumHelper.trackEvent(
+                "set_host",
+                mapOf(Host.HOST to "abc123", Host.HOST_PREFIX to "test_prefix")
+            )
         }
 
         button_setUserEmails.setOnClickListener {
             val emails = JSONArray()
             emails.put("test@tester.com")
             emails.put("othertest@tester.com")
-            TealiumHelper.trackEvent("user_register", mapOf("customer_email" to emails, "customer_id" to "userId123"))
+            TealiumHelper.trackEvent(
+                "user_register",
+                mapOf("customer_email" to emails, "customer_id" to "userId123")
+            )
         }
 
         button_setCurrencyCode.setOnClickListener {

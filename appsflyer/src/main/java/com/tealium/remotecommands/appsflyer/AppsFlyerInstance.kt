@@ -6,17 +6,16 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.tealium.core.Tealium
-import com.tealium.dispatcher.TealiumEvent
+import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class AppsFlyerTracker(
+class AppsFlyerInstance(
     private val application: Application,
-    private val tealium: Tealium,
-    private val af_devKey: String? = null
-) : AppsFlyerTrackable {
+    private var appsflyerDevKey: String? = null,
+    private val remoteCommandContext: RemoteCommandContext
+) : AppsFlyerCommand {
 
     private var weakActivity: WeakReference<Activity>? = null
 
@@ -56,18 +55,17 @@ class AppsFlyerTracker(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
+        if (!devKey.isNullOrEmpty()) {
+            appsflyerDevKey = devKey
+        }
 
-        devKey?.let {
+        appsflyerDevKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
-            af_devKey?.let {
-                initAndStartAppsFlyer(it)
-            } ?: run {
-                Log.e(
-                    BuildConfig.TAG,
-                    "${Config.DEV_KEY} is a required key"
-                )
-            }
+            Log.e(
+                BuildConfig.TAG,
+                "${Config.DEV_KEY} is a required key"
+            )
         }
     }
 
@@ -145,7 +143,8 @@ class AppsFlyerTracker(
             .init(
                 devKey,
                 createConversionListener(),
-                application.applicationContext)
+                application.applicationContext
+            )
         AppsFlyerLib.getInstance()
             .startTracking(weakActivity?.get() ?: application.applicationContext)
     }
@@ -178,8 +177,7 @@ class AppsFlyerTracker(
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
                     (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
                 ) {
-                    val dispatch = TealiumEvent("conversion_data_received", conversionData.toMap())
-                    tealium.track(dispatch)
+                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
                 }
             }
 
@@ -188,13 +186,14 @@ class AppsFlyerTracker(
                 map["error_name"] = "conversion_data_request_failure"
                 map["error_message"] = errorMessage
 
-                val dispatch = TealiumEvent("appsflyer_error", map)
-                tealium.track(dispatch)
+                remoteCommandContext.track("appsflyer_error", map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
-                val dispatch = TealiumEvent("app_open_attribution", attributionData)
-                tealium.track(dispatch)
+                remoteCommandContext.track(
+                    "app_open_attribution",
+                    attributionData as Map<String, Any>?
+                )
             }
 
             override fun onAttributionFailure(errorMessage: String) {
@@ -202,8 +201,7 @@ class AppsFlyerTracker(
                 map["error_name"] = "app_open_attribution_failure"
                 map["error_message"] = errorMessage
 
-                val dispatch = TealiumEvent("appsflyer_error", map)
-                tealium.track(dispatch)
+                remoteCommandContext.track("appsflyer_error", map)
             }
         }
     }
