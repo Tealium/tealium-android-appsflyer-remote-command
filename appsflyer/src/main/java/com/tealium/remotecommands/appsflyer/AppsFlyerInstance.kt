@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference
 
 class AppsFlyerInstance(
     private val application: Application,
-    private val appsflyerDevKey: String? = null,
+    private var appsflyerDevKey: String? = null,
     private val remoteCommandContext: RemoteCommandContext
 ) : AppsFlyerCommand {
 
@@ -56,18 +56,17 @@ class AppsFlyerInstance(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
+        if (!devKey.isNullOrEmpty()) {
+            appsflyerDevKey = devKey
+        }
 
-        devKey?.let {
+        appsflyerDevKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
-            appsflyerDevKey?.let {
-                initAndStartAppsFlyer(it)
-            } ?: run {
-                Log.e(
-                    BuildConfig.TAG,
-                    "${Config.DEV_KEY} is a required key"
-                )
-            }
+            Log.e(
+                BuildConfig.TAG,
+                "${Config.DEV_KEY} is a required key"
+            )
         }
     }
 
@@ -145,7 +144,8 @@ class AppsFlyerInstance(
             .init(
                 devKey,
                 createConversionListener(),
-                application.applicationContext)
+                application.applicationContext
+            )
         AppsFlyerLib.getInstance()
             .startTracking(weakActivity?.get() ?: application.applicationContext)
     }
@@ -191,8 +191,10 @@ class AppsFlyerInstance(
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
-                val dispatch = TealiumEvent("app_open_attribution", attributionData)
-                remoteCommandContext.track("app_open_attribution", attributionData as Map<String, Any>?)
+                remoteCommandContext.track(
+                    "app_open_attribution",
+                    attributionData as Map<String, Any>?
+                )
             }
 
             override fun onAttributionFailure(errorMessage: String) {

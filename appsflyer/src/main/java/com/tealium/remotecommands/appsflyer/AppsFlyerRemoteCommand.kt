@@ -18,9 +18,8 @@ open class AppsFlyerRemoteCommand(
 
     private val TAG = this::class.java.simpleName
 
-    private val appsFlyerInstance: AppsFlyerCommand by lazy {
-        AppsFlyerInstance(application, appsflyerDevKey, context)
-    }
+    private val appsFlyerInstance: AppsFlyerCommand by lazy { AppsFlyerInstance(application, appsflyerDevKey, this.context) }
+
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
@@ -146,7 +145,6 @@ open class AppsFlyerRemoteCommand(
         val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
-
         appsFlyerInstance.initialize(devKey, configSettings)
     }
 

@@ -1,7 +1,6 @@
 package com.tealium.demo
 
 import android.app.Application
-import android.os.Build
 import android.webkit.WebView
 import com.tealium.core.*
 import com.tealium.dispatcher.TealiumEvent
@@ -30,12 +29,13 @@ object TealiumHelper {
             Environment.DEV,
             modules = mutableSetOf(Modules.Lifecycle),
             dispatchers = mutableSetOf(Dispatchers.RemoteCommands, Dispatchers.TagManagement)
-        )
+        ).apply {
+            useRemoteLibrarySettings = true
+        }
 
         tealium = Tealium.create(instanceName, config) {
             val appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
-                application,
-                ""
+                application
             )
 
             // Remote Command Tag - requires TiQ
