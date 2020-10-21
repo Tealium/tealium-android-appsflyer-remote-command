@@ -3,27 +3,23 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Application
 import android.util.Log
 import com.tealium.remotecommands.RemoteCommand
+import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
 import kotlin.collections.HashMap
+import kotlin.jvm.Throws
 
 open class AppsFlyerRemoteCommand(
-    application: Application,
-    appsflyerDevKey: String? = null,
+    private val application: Application,
+    private val appsFlyerDevKey: String? = null,
     commandId: String = DEFAULT_COMMAND_ID,
     description: String = DEFAULT_COMMAND_DESCRIPTION
 ) : RemoteCommand(commandId, description) {
 
     private val TAG = this::class.java.simpleName
 
-    private val appsFlyerInstance: AppsFlyerCommand by lazy {
-        AppsFlyerInstance(
-            application,
-            appsflyerDevKey,
-            context
-        )
-    }
+    lateinit var appsFlyerInstance: AppsFlyerCommand
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
@@ -68,14 +64,14 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
                 Commands.SET_CURRENCY_CODE -> {
-                    val currencyCode: String = payload.optString(Currency.CODE)
+                    val currencyCode: String = payload.optString(TransactionProperties.CURRENY)
 
                     if (currencyCode.isNotEmpty()) {
                         appsFlyerInstance.setCurrencyCode(currencyCode)
                     } else {
                         Log.e(
                             TAG,
-                            "${Currency.CODE} is required key"
+                            "${TransactionProperties.CURRENY} is required key"
                         )
                     }
                 }
@@ -191,6 +187,16 @@ open class AppsFlyerRemoteCommand(
         return command.split(Commands.SEPARATOR).map {
             it.trim().toLowerCase(Locale.ROOT)
         }.toTypedArray()
+    }
+
+    override fun setContext(context: RemoteCommandContext?) {
+        context?.let {
+            appsFlyerInstance = AppsFlyerInstance(
+                application,
+                appsFlyerDevKey,
+                it
+            )
+        }
     }
 
     private fun jsonToMap(jsonObject: JSONObject?): Map<String, Any> {

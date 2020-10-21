@@ -1,4 +1,4 @@
-package com.tealium.remotecommands.appsflyer
+@file:JvmName("AppsflyerConstants")
 
 import com.appsflyer.AFInAppEventType
 
@@ -72,8 +72,8 @@ object Host {
     const val HOST_PREFIX = "host_prefix"
 }
 
-object Currency {
-    const val CODE = "af_currency"
+object TransactionProperties {
+    const val CURRENY = "af_currency"
 }
 
 object DeepLink {
