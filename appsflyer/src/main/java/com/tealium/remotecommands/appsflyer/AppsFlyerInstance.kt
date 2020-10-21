@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
 
 class AppsFlyerInstance(
     private val application: Application,
-    private var appsflyerDevKey: String? = null,
+    private var appsFlyerDevKey: String? = null,
     private val remoteCommandContext: RemoteCommandContext
 ) : AppsFlyerCommand {
 
@@ -56,10 +56,10 @@ class AppsFlyerInstance(
             }
         }
         if (!devKey.isNullOrEmpty()) {
-            appsflyerDevKey = devKey
+            appsFlyerDevKey = devKey
         }
 
-        appsflyerDevKey?.let {
+        appsFlyerDevKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
             Log.e(

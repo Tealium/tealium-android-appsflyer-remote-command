@@ -2,7 +2,6 @@ package com.tealium.demo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.tealium.remotecommands.appsflyer.Host
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 

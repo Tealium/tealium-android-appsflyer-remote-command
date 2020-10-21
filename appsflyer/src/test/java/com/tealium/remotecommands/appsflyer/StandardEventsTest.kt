@@ -3,7 +3,6 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Application
 import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.AFInAppEventType
-import com.tealium.core.Tealium
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONObject
@@ -20,11 +19,7 @@ class StandardEventsTest {
     lateinit var mockApplication: Application
 
     @MockK
-    lateinit var mockTracker: AppsFlyerCommand
-
-    @MockK
-    lateinit var mockTealium: Tealium
-
+    lateinit var mockAppsFlyerInstance: AppsFlyerCommand
 
     lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
 
@@ -33,10 +28,10 @@ class StandardEventsTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
             mockApplication,
-            mockTealium,
-            "testKey",
-            tracker = mockTracker
+            "testKey"
         )
+
+        appsFlyerRemoteCommand.appsFlyerInstance = mockAppsFlyerInstance
     }
 
     @Test
@@ -63,11 +58,12 @@ class StandardEventsTest {
         appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
 
         every {
-            mockTracker.trackEvent(any(), any())
+            mockAppsFlyerInstance.trackEvent(any(), any())
         } just Runs
 
         verify {
-            mockTracker.trackEvent(AFInAppEventType.LEVEL_ACHIEVED,
+            mockAppsFlyerInstance.trackEvent(
+                AFInAppEventType.LEVEL_ACHIEVED,
                 mapOf(
                     AFInAppEventParameterName.LEVEL to 5,
                     AFInAppEventParameterName.SCORE to 500
@@ -75,7 +71,7 @@ class StandardEventsTest {
             )
         }
 
-        confirmVerified(mockTracker)
+        confirmVerified(mockAppsFlyerInstance)
     }
 
     @Test
@@ -85,14 +81,14 @@ class StandardEventsTest {
         appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
 
         every {
-            mockTracker.trackEvent(any(), any())
+            mockAppsFlyerInstance.trackEvent(any(), any())
         } just runs
 
         verify {
-            mockTracker.trackEvent(AFInAppEventType.LEVEL_ACHIEVED)
+            mockAppsFlyerInstance.trackEvent(AFInAppEventType.LEVEL_ACHIEVED)
         }
 
-        confirmVerified(mockTracker)
+        confirmVerified(mockAppsFlyerInstance)
     }
 
 }
