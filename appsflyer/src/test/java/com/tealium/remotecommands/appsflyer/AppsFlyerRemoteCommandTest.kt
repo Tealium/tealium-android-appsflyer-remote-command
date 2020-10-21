@@ -1,7 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
-import com.tealium.remotecommands.RemoteCommandContext
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
@@ -170,7 +169,7 @@ class AppsFlyerRemoteCommandTest {
             mockAppsFlyerInstance.disableDeviceTracking(true)
         }
 
-//        confirmVerified(mockCommandInstance)
+        confirmVerified(mockAppsFlyerInstance)
     }
 
     @Test
@@ -215,17 +214,5 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(mockAppsFlyerInstance)
-    }
-
-    private fun createMockRemoteCommandContext() : RemoteCommandContext {
-        return object : RemoteCommandContext {
-            override fun track(p0: String?, p1: MutableMap<String, *>?) {
-                // do nothing
-            }
-
-            override fun track(p0: String?, p1: String?, p2: MutableMap<String, *>?) {
-                // do nothing
-            }
-        }
     }
 }
