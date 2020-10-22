@@ -6,15 +6,16 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.tealium.library.Tealium
+import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class AppsFlyerTracker(
+class AppsFlyerInstance(
     private val application: Application,
-    private val instanceName: String
-) : AppsFlyerTrackable {
+    private var appsFlyerDevKey: String? = null,
+    private val remoteCommandContext: RemoteCommandContext
+) : AppsFlyerCommand {
 
     private var weakActivity: WeakReference<Activity>? = null
 
@@ -23,7 +24,7 @@ class AppsFlyerTracker(
     }
 
     override fun initialize(
-        devKey: String,
+        devKey: String?,
         configSettings: Map<String, Any>?
     ) {
         configSettings?.let { settings ->
@@ -42,7 +43,7 @@ class AppsFlyerTracker(
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
                     (entry.key as? String)?.let { key ->
-                        entry.value?.let { value ->
+                        entry.value.let { value ->
                             dataMap.put(key, value)
                         }
                     }
@@ -54,9 +55,18 @@ class AppsFlyerTracker(
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
             }
         }
-        AppsFlyerLib.getInstance()
-            .init(devKey, createConversionListener(), application.applicationContext)
-        AppsFlyerLib.getInstance().startTracking(weakActivity?.get()?: application.applicationContext)
+        if (!devKey.isNullOrEmpty()) {
+            appsFlyerDevKey = devKey
+        }
+
+        appsFlyerDevKey?.let {
+            initAndStartAppsFlyer(it)
+        } ?: run {
+            Log.e(
+                BuildConfig.TAG,
+                "${Config.DEV_KEY} is a required key"
+            )
+        }
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
@@ -128,9 +138,20 @@ class AppsFlyerTracker(
         return map.toMap()
     }
 
+    private fun initAndStartAppsFlyer(devKey: String) {
+        AppsFlyerLib.getInstance()
+            .init(
+                devKey,
+                createConversionListener(),
+                application.applicationContext
+            )
+        AppsFlyerLib.getInstance()
+            .startTracking(weakActivity?.get() ?: application.applicationContext)
+    }
+
     private fun getApplication() {
         application.registerActivityLifecycleCallbacks(object :
-        Application.ActivityLifecycleCallbacks {
+            Application.ActivityLifecycleCallbacks {
             override fun onActivityPaused(p0: Activity) = Unit
 
             override fun onActivityStarted(p0: Activity) = Unit
@@ -151,37 +172,36 @@ class AppsFlyerTracker(
 
     private fun createConversionListener(): AppsFlyerConversionListener {
         return object : AppsFlyerConversionListener {
-            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any?>) {
-                val tealium: Tealium? = Tealium.getInstance(instanceName)
+            override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>) {
 
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
                     (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
                 ) {
-                    tealium?.trackEvent("conversion_data_received", conversionData)
+                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
                 }
             }
 
             override fun onConversionDataFail(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map.put("error_name", "conversion_data_request_failure")
-                map.put("error_message", errorMessage)
+                map["error_name"] = "conversion_data_request_failure"
+                map["error_message"] = errorMessage
 
-                val tealium: Tealium? = Tealium.getInstance(instanceName)
-                tealium?.trackEvent("appsflyer_error", map)
+                remoteCommandContext.track("appsflyer_error", map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
-                val tealium: Tealium? = Tealium.getInstance(instanceName)
-                tealium?.trackEvent("app_open_attribution", attributionData)
+                remoteCommandContext.track(
+                    "app_open_attribution",
+                    attributionData as Map<String, Any>?
+                )
             }
 
             override fun onAttributionFailure(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map.put("error_name", "app_open_attribution_failure")
-                map.put("error_message", errorMessage)
+                map["error_name"] = "app_open_attribution_failure"
+                map["error_message"] = errorMessage
 
-                val tealium: Tealium? = Tealium.getInstance(instanceName)
-                tealium?.trackEvent("appsflyer_error", map)
+                remoteCommandContext.track("appsflyer_error", map)
             }
         }
     }

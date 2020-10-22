@@ -4,10 +4,10 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.1"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.tealium.demo"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -24,8 +24,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.tealium:library:5.7.2'
-    releaseImplementation 'com.tealium.remotecommands:appsflyer:1.0.1'
+    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.0.0"
+    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.0.0"
+    implementation "com.tealium:kotlin-lifecycle:1.0.0"
+    releaseImplementation "com.tealium.remotecommands:appsflyer:$tealium_appsflyer_version"
     debugImplementation project (path: ':appsflyer')
 
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
