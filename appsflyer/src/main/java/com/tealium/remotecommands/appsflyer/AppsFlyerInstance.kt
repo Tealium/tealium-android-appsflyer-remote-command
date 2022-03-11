@@ -70,11 +70,11 @@ class AppsFlyerInstance(
     }
 
     override fun trackLocation(latitude: Double, longitude: Double) {
-        AppsFlyerLib.getInstance().trackLocation(application, latitude, longitude)
+        AppsFlyerLib.getInstance().logLocation(application, latitude, longitude)
     }
 
     override fun trackEvent(eventType: String, eventParameters: Map<String, Any>?) {
-        AppsFlyerLib.getInstance().trackEvent(application, eventType, eventParameters)
+        AppsFlyerLib.getInstance().logEvent(application, eventType, eventParameters)
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
@@ -95,7 +95,7 @@ class AppsFlyerInstance(
     }
 
     override fun disableDeviceTracking(disable: Boolean) {
-        AppsFlyerLib.getInstance().setDeviceTrackingDisabled(disable)
+        AppsFlyerLib.getInstance().anonymizeUser(disable)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
@@ -104,7 +104,7 @@ class AppsFlyerInstance(
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
-        AppsFlyerLib.getInstance().stopTracking(isTrackingStopped, application.applicationContext)
+        AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
     }
 
     fun setMinsBetweenSessions(seconds: Int) {
@@ -112,7 +112,7 @@ class AppsFlyerInstance(
     }
 
     fun anonymizeUser(isDisabled: Boolean) {
-        AppsFlyerLib.getInstance().setDeviceTrackingDisabled(isDisabled)
+        AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
     }
 
     fun addCustomData(data: HashMap<String, Any>) {
@@ -146,7 +146,7 @@ class AppsFlyerInstance(
                 application.applicationContext
             )
         AppsFlyerLib.getInstance()
-            .startTracking(weakActivity?.get() ?: application.applicationContext)
+            .start(weakActivity?.get() ?: application.applicationContext)
     }
 
     private fun getApplication() {
