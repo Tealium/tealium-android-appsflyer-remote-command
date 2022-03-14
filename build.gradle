@@ -3,7 +3,7 @@
 buildscript {
     ext.kotlin_version = '1.4.10'
     ext.mockk_version = '1.9'
-    ext.tealium_appsflyer_version = '1.1.0'
+    ext.tealium_appsflyer_version = '1.2.0'
 
     repositories {
         google()
