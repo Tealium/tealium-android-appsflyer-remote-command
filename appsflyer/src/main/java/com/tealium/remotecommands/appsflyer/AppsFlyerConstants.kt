@@ -1,5 +1,7 @@
 @file:JvmName("AppsflyerConstants")
 
+package com.tealium.remotecommands.appsflyer
+
 import com.appsflyer.AFInAppEventType
 
 object Commands {
