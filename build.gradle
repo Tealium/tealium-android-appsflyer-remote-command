@@ -4,10 +4,10 @@ buildscript {
     ext.kotlin_version = '1.4.10'
     ext.mockk_version = '1.9'
     ext.tealium_appsflyer_version = '1.2.0'
+    ext.appsflyer_version = "[6.5,7]"
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -21,7 +21,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
 
         maven {
             url "https://maven.tealiumiq.com/android/releases/"
