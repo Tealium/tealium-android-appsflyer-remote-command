@@ -15,7 +15,7 @@ open class AppsFlyerRemoteCommand(
     private val appsFlyerDevKey: String? = null,
     commandId: String = DEFAULT_COMMAND_ID,
     description: String = DEFAULT_COMMAND_DESCRIPTION
-) : RemoteCommand(commandId, description) {
+) : RemoteCommand(commandId, description, BuildConfig.TEALIUM_APPSFLYER_VERSION) {
 
     private val TAG = this::class.java.simpleName
 
