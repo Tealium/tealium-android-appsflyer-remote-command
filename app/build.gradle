@@ -1,14 +1,13 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 33
+    buildToolsVersion "30.0.3"
     defaultConfig {
         applicationId "com.tealium.demo"
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -19,14 +18,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.0.0"
-    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.0.0"
-    implementation "com.tealium:kotlin-lifecycle:1.0.0"
+    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.1.1"
+    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.1.2"
+    implementation "com.tealium:kotlin-lifecycle:1.1.1"
     releaseImplementation "com.tealium.remotecommands:appsflyer:$tealium_appsflyer_version"
     debugImplementation project (path: ':appsflyer')
 

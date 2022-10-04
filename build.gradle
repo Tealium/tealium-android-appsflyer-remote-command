@@ -1,13 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.4.10'
+    ext.kotlin_version = '1.5.30'
     ext.mockk_version = '1.9'
-    ext.tealium_appsflyer_version = '1.2.0'
+    ext.tealium_appsflyer_version = '1.2.1'
+    ext.appsflyer_version = "[6.5,7)"
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
     dependencies {
@@ -21,7 +21,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
 
         maven {
             url "https://maven.tealiumiq.com/android/releases/"

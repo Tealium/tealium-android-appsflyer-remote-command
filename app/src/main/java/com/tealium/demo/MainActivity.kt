@@ -2,26 +2,32 @@ package com.tealium.demo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import com.tealium.demo.databinding.ActivityMainBinding
+import com.tealium.remotecommands.appsflyer.Host
 import org.json.JSONArray
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         TealiumHelper.trackView("main_screen")
-        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "Y5WQPfwiANqCdVbZSEvpkX"))
+        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "<your_key_here>"))
 
-        button_setHost.setOnClickListener {
+
+        binding.buttonSetHost.setOnClickListener {
             TealiumHelper.trackEvent(
                 "set_host",
                 mapOf(Host.HOST to "abc123", Host.HOST_PREFIX to "test_prefix")
             )
         }
 
-        button_setUserEmails.setOnClickListener {
+        binding.buttonSetUserEmails.setOnClickListener {
             val emails = JSONArray()
             emails.put("test@tester.com")
             emails.put("othertest@tester.com")
@@ -31,23 +37,23 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        button_setCurrencyCode.setOnClickListener {
+        binding.buttonSetCurrencyCode.setOnClickListener {
             TealiumHelper.trackEvent("set_currency", mapOf("currency_type" to "USD"))
         }
 
-        button_logPurchase.setOnClickListener {
+        binding.buttonLogPurchase.setOnClickListener {
             TealiumHelper.trackEvent("purchase")
         }
 
-        button_trackLevelAchieved.setOnClickListener {
+        binding.buttonTrackLevelAchieved.setOnClickListener {
             TealiumHelper.trackEvent("level_up", mapOf("current_level" to 3))
         }
 
-        button_trackLocation.setOnClickListener {
+        binding.buttonTrackLocation.setOnClickListener {
             TealiumHelper.trackEvent("track_location", mapOf("latitude" to 0.0, "longitude" to 0.0))
         }
 
-        button_checkStandardEvents.setOnClickListener {
+        binding.buttonCheckStandardEvents.setOnClickListener {
             TealiumHelper.trackEvent("payment", mapOf("payment" to true))
             TealiumHelper.trackEvent("cart_add", mapOf())
             TealiumHelper.trackEvent("wishlist_add", mapOf())
