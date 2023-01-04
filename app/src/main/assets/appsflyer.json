@@ -65,6 +65,7 @@
     "checkout": "initiatecheckout",
     "order":"purchase",
     "set_currency" : "setcurrencycode",
-    "set_host": "sethost"
+    "set_host": "sethost",
+    "custom_event": "custom_event"
   }
 }

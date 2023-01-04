@@ -46,6 +46,8 @@ open class AppsFlyerRemoteCommand(
      */
     fun parseCommands(commands: Array<String>, payload: JSONObject) {
         commands.forEach { command ->
+            if (command.isBlank()) return@forEach
+
             when (command) {
                 Commands.INITIALIZE -> {
                     initialize(payload)
@@ -117,15 +119,14 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
                 else -> {
-                    standardEvent(command)?.let { eventType ->
-                        val eventParameters: JSONObject? =
-                            payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
-                        if (eventParameters != null) {
-                            val paramsMap = jsonToMap(eventParameters)
-                            appsFlyerInstance.trackEvent(eventType, paramsMap)
-                        } else {
-                            appsFlyerInstance.trackEvent(eventType)
-                        }
+                    val eventType = standardEvent(command) ?: command
+                    val eventParameters: JSONObject? =
+                        payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
+                    if (eventParameters != null) {
+                        val paramsMap = jsonToMap(eventParameters)
+                        appsFlyerInstance.trackEvent(eventType, paramsMap)
+                    } else {
+                        appsFlyerInstance.trackEvent(eventType)
                     }
                 }
             }

@@ -215,4 +215,37 @@ class AppsFlyerRemoteCommandTest {
 
         confirmVerified(mockAppsFlyerInstance)
     }
+
+    @Test
+    fun testBlankCommandDoesNothing() {
+        val payload = JSONObject()
+        val relaxedMockInstance: AppsFlyerInstance = mockk(relaxed = true)
+        appsFlyerRemoteCommand.appsFlyerInstance = relaxedMockInstance
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(" "), payload)
+
+        verify {
+            relaxedMockInstance wasNot Called
+        }
+
+        confirmVerified(relaxedMockInstance)
+    }
+
+    @Test
+    fun testBlankCommandDoesntAffectOtherCommands() {
+        val payload = JSONObject()
+        val relaxedMockInstance: AppsFlyerInstance = mockk(relaxed = true)
+        appsFlyerRemoteCommand.appsFlyerInstance = relaxedMockInstance
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(" ", Commands.STOP_TRACKING), payload)
+
+        verify(exactly = 0) {
+            relaxedMockInstance.trackEvent(" ")
+        }
+        verify(exactly = 1) {
+            relaxedMockInstance.stopTracking(false)
+        }
+
+        confirmVerified(relaxedMockInstance)
+    }
 }
