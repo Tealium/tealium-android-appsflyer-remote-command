@@ -10,7 +10,6 @@ import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
-import java.util.stream.Collectors.toMap
 
 class AppsFlyerInstance(
     private val application: Application,
