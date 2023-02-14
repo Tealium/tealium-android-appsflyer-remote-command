@@ -91,4 +91,51 @@ class StandardEventsTest {
         confirmVerified(mockAppsFlyerInstance)
     }
 
+    @Test
+    fun testCustomEventWithOptionalData() {
+        val customEventName = "mycustomevent"
+        val payload = JSONObject()
+        val eventParams = JSONObject()
+        eventParams.put("some_param_1", 5)
+        eventParams.put("some_param_2", 500)
+
+        payload.put(StandardEvents.EVENT_PARAMETERS, eventParams)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(customEventName), payload)
+
+        every {
+            mockAppsFlyerInstance.trackEvent(any(), any())
+        } just Runs
+
+        verify {
+            mockAppsFlyerInstance.trackEvent(
+                customEventName,
+                mapOf(
+                    "some_param_1" to 5,
+                    "some_param_2" to 500
+                )
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testCustomEventWithoutOptionalData() {
+        val customEventName = "mycustomevent"
+        val payload = JSONObject()
+        payload.put("event", JSONObject())
+        appsFlyerRemoteCommand.parseCommands(arrayOf(customEventName), payload)
+
+        every {
+            mockAppsFlyerInstance.trackEvent(any(), any())
+        } just runs
+
+        verify {
+            mockAppsFlyerInstance.trackEvent(customEventName)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
 }

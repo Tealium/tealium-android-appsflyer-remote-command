@@ -68,5 +68,9 @@ class MainActivity : AppCompatActivity() {
             TealiumHelper.trackEvent("invite", mapOf())
             TealiumHelper.trackEvent("user_login", mapOf())
         }
+
+        binding.buttonCustomEvent.setOnClickListener {
+            TealiumHelper.trackEvent("custom_event", mapOf())
+        }
     }
 }

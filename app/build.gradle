@@ -22,13 +22,15 @@ android {
     buildFeatures {
         viewBinding true
     }
+    namespace 'com.tealium.demo'
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.1.1"
-    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.1.2"
+    implementation "com.tealium:kotlin-core:1.5.1"
+    implementation "com.tealium:kotlin-remotecommand-dispatcher:1.2.1"
+    implementation "com.tealium:kotlin-tagmanagement-dispatcher:1.2.0"
     implementation "com.tealium:kotlin-lifecycle:1.1.1"
     releaseImplementation "com.tealium.remotecommands:appsflyer:$tealium_appsflyer_version"
     debugImplementation project (path: ':appsflyer')

@@ -7,4 +7,5 @@
     <string name="achieve_level">Track Level Achieved</string>
     <string name="track_location">Track Location</string>
     <string name="standard_events">Check Standard Events</string>
+    <string name="custom_event">Custom Event</string>
 </resources>
