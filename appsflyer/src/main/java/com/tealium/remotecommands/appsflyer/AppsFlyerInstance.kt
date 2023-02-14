@@ -78,7 +78,9 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        AppsFlyerLib.getInstance().setHost(host, hostPrefix)
+        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
+            AppsFlyerLib.getInstance().setHost(host, prefix)
+        }
     }
 
     override fun setUserEmails(emails: List<String>) {
