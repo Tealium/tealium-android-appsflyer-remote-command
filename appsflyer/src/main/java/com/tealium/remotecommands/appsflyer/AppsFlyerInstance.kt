@@ -10,6 +10,7 @@ import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
+import java.util.stream.Collectors.toMap
 
 class AppsFlyerInstance(
     private val application: Application,
@@ -78,7 +79,9 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        AppsFlyerLib.getInstance().setHost(host, hostPrefix)
+        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
+            AppsFlyerLib.getInstance().setHost(host, prefix)
+        }
     }
 
     override fun setUserEmails(emails: List<String>) {
