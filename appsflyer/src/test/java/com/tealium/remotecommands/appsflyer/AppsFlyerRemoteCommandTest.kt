@@ -19,7 +19,7 @@ class AppsFlyerRemoteCommandTest {
     @MockK
     lateinit var mockApplication: Application
 
-    @MockK
+    @MockK(relaxed = true)
     lateinit var mockAppsFlyerInstance: AppsFlyerCommand
 
     lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
@@ -53,10 +53,6 @@ class AppsFlyerRemoteCommandTest {
         payload.put(Location.LONGITUDE, 11.0)
         payload.put(COMMAND_NAME_KEY, Commands.TRACK_LOCATION)
 
-        every {
-            mockAppsFlyerInstance.trackLocation(any(), any())
-        } just Runs
-
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.TRACK_LOCATION), payload)
 
         verify {
@@ -73,10 +69,6 @@ class AppsFlyerRemoteCommandTest {
         payload.put(Host.HOST_PREFIX, "")
         payload.put(COMMAND_NAME_KEY, Commands.SET_HOST)
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_HOST), payload)
-
-        every {
-            mockAppsFlyerInstance.setHost(any(), any())
-        } just Runs
 
         verify {
             mockAppsFlyerInstance.setHost("www.test123.com")
@@ -97,10 +89,6 @@ class AppsFlyerRemoteCommandTest {
         payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-
-        every {
-            mockAppsFlyerInstance.setUserEmails(any())
-        } just Runs
 
         verify {
             mockAppsFlyerInstance.setUserEmails(
@@ -123,10 +111,6 @@ class AppsFlyerRemoteCommandTest {
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CURRENCY_CODE), payload)
 
-        every {
-            mockAppsFlyerInstance.setCurrencyCode(any())
-        } just Runs
-
         verify {
             mockAppsFlyerInstance.setCurrencyCode("USD")
         }
@@ -142,10 +126,6 @@ class AppsFlyerRemoteCommandTest {
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID), payload)
 
-        every {
-            mockAppsFlyerInstance.setCustomerId(any())
-        } just Runs
-
         verify {
             mockAppsFlyerInstance.setCustomerId("1234")
         }
@@ -160,10 +140,6 @@ class AppsFlyerRemoteCommandTest {
         payload.put(COMMAND_NAME_KEY, Commands.DISABLE_DEVICE_TRACKING)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_DEVICE_TRACKING), payload)
-
-        every {
-            mockAppsFlyerInstance.disableDeviceTracking(any())
-        } just Runs
 
         verify {
             mockAppsFlyerInstance.disableDeviceTracking(true)
@@ -186,10 +162,6 @@ class AppsFlyerRemoteCommandTest {
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.RESOLVE_DEEPLINK_URLS), payload)
 
-        every {
-            mockAppsFlyerInstance.resolveDeepLinkUrls(any())
-        } just Runs
-
         verify {
             mockAppsFlyerInstance.resolveDeepLinkUrls(listOf("val1", "val2", "val3"))
         }
@@ -204,10 +176,6 @@ class AppsFlyerRemoteCommandTest {
         payload.put(COMMAND_NAME_KEY, Commands.STOP_TRACKING)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), payload)
-
-        every {
-            mockAppsFlyerInstance.stopTracking(any())
-        } just Runs
 
         verify {
             mockAppsFlyerInstance.stopTracking(true)
