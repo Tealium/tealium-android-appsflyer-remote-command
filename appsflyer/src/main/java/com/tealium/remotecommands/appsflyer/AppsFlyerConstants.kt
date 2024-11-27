@@ -22,6 +22,7 @@ object Commands {
 
 object StandardEvents {
     const val EVENT_PARAMETERS = "event_parameters"
+    const val EVENT_PARAMETERS_SHORT = "event"
     val eventNames = mapOf(
         "levelachieved" to AFInAppEventType.LEVEL_ACHIEVED,
         "addpaymentinfo" to AFInAppEventType.ADD_PAYMENT_INFO,

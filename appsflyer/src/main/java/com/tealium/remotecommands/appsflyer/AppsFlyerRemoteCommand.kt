@@ -52,12 +52,15 @@ open class AppsFlyerRemoteCommand(
                 Commands.INITIALIZE -> {
                     initialize(payload)
                 }
+
                 Commands.TRACK_LOCATION -> {
                     trackLocation(payload)
                 }
+
                 Commands.SET_HOST -> {
                     setHost(payload)
                 }
+
                 Commands.SET_USER_EMAILS -> {
                     val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
                     emails?.let {
@@ -65,18 +68,20 @@ open class AppsFlyerRemoteCommand(
                         appsFlyerInstance.setUserEmails(emailList)
                     }
                 }
+
                 Commands.SET_CURRENCY_CODE -> {
                     val currencyCode: String = payload.optString(TransactionProperties.CURRENCY)
 
                     if (currencyCode.isNotEmpty()) {
                         appsFlyerInstance.setCurrencyCode(currencyCode)
                     } else {
-                        Log.e(
+                        Log.w(
                             TAG,
                             "${TransactionProperties.CURRENCY} is required key"
                         )
                     }
                 }
+
                 Commands.SET_CUSTOMER_ID -> {
                     val id: String = payload.optString(Customer.USER_ID)
                     if (id.isNotEmpty()) {
@@ -88,46 +93,49 @@ open class AppsFlyerRemoteCommand(
                         )
                     }
                 }
+
                 Commands.DISABLE_DEVICE_TRACKING -> {
                     val disableTracking: Boolean? =
                         payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
                     disableTracking?.let {
                         appsFlyerInstance.disableDeviceTracking(it)
                     } ?: run {
-                        Log.e(
+                        Log.w(
                             TAG,
                             "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
                         )
                     }
                 }
+
                 Commands.RESOLVE_DEEPLINK_URLS -> {
                     val deepLinkJsonArray: JSONArray? = payload.optJSONArray(DeepLink.URLS)
                     deepLinkJsonArray?.let {
                         val deepLinkList = toList(it)
                         appsFlyerInstance.resolveDeepLinkUrls(deepLinkList)
                     } ?: run {
-                        Log.e(
+                        Log.w(
                             TAG,
                             "${DeepLink.URLS} is a required key"
                         )
                     }
                 }
+
                 Commands.STOP_TRACKING -> {
                     val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
                     stopTracking?.let {
                         appsFlyerInstance.stopTracking(it)
                     }
                 }
+
                 else -> {
                     val eventType = standardEvent(command) ?: command
-                    val eventParameters: JSONObject? =
+                    val eventParameters: JSONObject =
                         payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
-                    if (eventParameters != null) {
-                        val paramsMap = jsonToMap(eventParameters)
-                        appsFlyerInstance.trackEvent(eventType, paramsMap)
-                    } else {
-                        appsFlyerInstance.trackEvent(eventType)
-                    }
+                            ?: payload.optJSONObject(StandardEvents.EVENT_PARAMETERS_SHORT)
+                            ?: filterPayload(payload)
+
+                    val paramsMap = jsonToMap(eventParameters)
+                    appsFlyerInstance.trackEvent(eventType, paramsMap)
                 }
             }
         }
@@ -150,15 +158,13 @@ open class AppsFlyerRemoteCommand(
     }
 
     private fun trackLocation(payload: JSONObject) {
-        val latitude: Double? = payload.optDouble(Location.LATITUDE)
-        val longitude: Double? = payload.optDouble(Location.LONGITUDE)
+        val latitude: Double = payload.optDouble(Location.LATITUDE)
+        val longitude: Double = payload.optDouble(Location.LONGITUDE)
 
-        latitude?.let {
-            longitude?.let {
-                appsFlyerInstance.trackLocation(latitude, longitude)
-            }
-        } ?: run {
-            Log.e(
+        if (!latitude.isNaN() && !longitude.isNaN()) {
+            appsFlyerInstance.trackLocation(latitude, longitude)
+        } else {
+            Log.w(
                 TAG,
                 "${Location.LATITUDE} and ${Location.LONGITUDE} are required keys"
             )
@@ -176,7 +182,7 @@ open class AppsFlyerRemoteCommand(
                 appsFlyerInstance.setHost(host)
             }
         } else {
-            Log.e(
+            Log.w(
                 TAG,
                 "${Host.HOST} are required keys"
             )
@@ -219,5 +225,24 @@ open class AppsFlyerRemoteCommand(
             list.add(i, item)
         }
         return list
+    }
+
+    private fun filterPayload(jsonObject: JSONObject): JSONObject {
+        val toCopy = mutableListOf<String>()
+        val toRemove = listOf(
+            Config.DEBUG,
+            Config.DEV_KEY,
+            Config.SETTINGS,
+            Commands.COMMAND_KEY,
+            "method",
+            "app_id",
+        )
+        for (key in jsonObject.keys()) {
+            if (toRemove.contains(key)) continue
+
+            toCopy.add(key)
+        }
+
+        return JSONObject(jsonObject, toCopy.toTypedArray())
     }
 }
