@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
+import com.appsflyer.MediationNetwork
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
@@ -223,7 +224,7 @@ class AppsFlyerRemoteCommandTest {
         verify {
             mockAppsFlyerInstance.logAdRevenue(
                 "test_network",
-                "googleadmob",
+                MediationNetwork.GOOGLE_ADMOB,
                 10.50,
                 "USD",
                 mapOf(
@@ -234,6 +235,23 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testLogAdRevenueWithInvalidMediationNetwork() {
+        val payload = JSONObject()
+        payload.put(AdRevenue.MONETIZATION_NETWORK, "test_network")
+        payload.put(AdRevenue.MEDIATION_NETWORK, "invalid_network")
+        payload.put(AdRevenue.REVENUE, 10.50)
+        payload.put(AdRevenue.CURRENCY, "USD")
+        
+        payload.put(COMMAND_NAME_KEY, Commands.LOG_AD_REVENUE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        verify(exactly = 0) {
+            mockAppsFlyerInstance.logAdRevenue(any(), any(), any(), any(), any())
+        }
     }
 
     @Test

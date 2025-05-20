@@ -156,7 +156,7 @@ open class AppsFlyerRemoteCommand(
                 
                 Commands.LOG_AD_REVENUE -> {
                     val monetizationNetwork = payload.optString(AdRevenue.MONETIZATION_NETWORK)
-                    val mediationNetwork = payload.optString(AdRevenue.MEDIATION_NETWORK)
+                    val mediationNetworkString = payload.optString(AdRevenue.MEDIATION_NETWORK)
                     val revenue = payload.optDouble(AdRevenue.REVENUE)
                     val currency = payload.optString(AdRevenue.CURRENCY, "USD")
                     
@@ -165,8 +165,15 @@ open class AppsFlyerRemoteCommand(
                         return
                     }
                     
-                    if (mediationNetwork.isEmpty()) {
+                    if (mediationNetworkString.isEmpty()) {
                         Log.e(TAG, "${AdRevenue.MEDIATION_NETWORK} is a required key")
+                        return
+                    }
+                    
+                    // Convert string to MediationNetwork enum
+                    val mediationNetwork = MediationNetworkType.fromString(mediationNetworkString)
+                    if (mediationNetwork == null) {
+                        Log.e(TAG, "Invalid mediation network value: $mediationNetworkString. Valid values are: ironsource, applovinmax, googleadmob, fyber, appodeal, admost, etc.")
                         return
                     }
                     
@@ -186,7 +193,7 @@ open class AppsFlyerRemoteCommand(
                     
                     appsFlyerInstance.logAdRevenue(
                         monetizationNetwork,
-                        mediationNetwork,
+                        mediationNetwork.toMediationNetwork(),
                         revenue,
                         currency,
                         additionalParamsMap

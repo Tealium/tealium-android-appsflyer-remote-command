@@ -109,3 +109,46 @@ object AdRevenue {
     const val CURRENCY = "currency"
     const val ADDITIONAL_PARAMETERS = "ad_revenue_parameters"
 }
+
+enum class MediationNetworkType(val value: String) {
+    IRONSOURCE("ironsource"),
+    APPLOVIN_MAX("applovinmax"),
+    GOOGLE_ADMOB("googleadmob"),
+    FYBER("fyber"),
+    APPODEAL("appodeal"),
+    ADMOST("admost"),
+    TOPON("topon"),
+    TRADPLUS("tradplus"),
+    YANDEX("yandex"),
+    CHARTBOOST("chartboost"),
+    UNITY("unity"),
+    TOPON_PTE("toponpte"),
+    CUSTOM_MEDIATION("custommediation"),
+    DIRECT_MONETIZATION_NETWORK("directmonetizationnetwork");
+    
+    companion object {
+        fun fromString(value: String): MediationNetworkType? {
+            return entries.find { it.value == value.lowercase() }
+        }
+    }
+
+    fun toMediationNetwork(): MediationNetwork {
+        return when (this) {
+            IRONSOURCE -> MediationNetwork.IRONSOURCE
+            APPLOVIN_MAX -> MediationNetwork.APPLOVIN_MAX
+            GOOGLE_ADMOB -> MediationNetwork.GOOGLE_ADMOB
+            FYBER -> MediationNetwork.FYBER
+            APPODEAL -> MediationNetwork.APPODEAL
+            ADMOST -> MediationNetwork.ADMOST
+            TOPON -> MediationNetwork.TOPON
+            TRADPLUS -> MediationNetwork.TRADPLUS
+            YANDEX -> MediationNetwork.YANDEX
+            CHARTBOOST -> MediationNetwork.CHARTBOOST
+            UNITY -> MediationNetwork.UNITY
+            TOPON_PTE -> MediationNetwork.TOPON_PTE
+            CUSTOM_MEDIATION -> MediationNetwork.CUSTOM_MEDIATION
+            DIRECT_MONETIZATION_NETWORK -> MediationNetwork.DIRECT_MONETIZATION_NETWORK
+        }
+    }
+}
+

@@ -49,6 +49,7 @@
     "mediation_network": "mediation_network",
     "ad_revenue": "revenue",
     "ad_currency": "currency",
+    "ad_revenue_parameters": "ad_revenue_parameters",
     "gdpr_applies": "gdpr_applies",
     "gdpr_consent": "gdpr_consent",
     "dma_consent": "dma_consent",

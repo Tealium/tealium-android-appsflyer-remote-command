@@ -2,7 +2,7 @@ package com.tealium.demo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.tealium.demo.databinding.ActivityMainBinding
+import com.tealium.demo.databinding.ActivityMainBinding 
 import com.tealium.remotecommands.appsflyer.Host
 import org.json.JSONArray
 
@@ -96,7 +96,11 @@ class MainActivity : AppCompatActivity() {
                     "monetization_network" to "test_network",
                     "mediation_network" to "googleadmob",
                     "ad_revenue" to 10.50,
-                    "ad_currency" to "USD"
+                    "ad_currency" to "USD",
+                    "ad_revenue_parameters" to mapOf(
+                        "ad_size" to "banner",
+                        "placement" to "home_screen"
+                    )
                 )
             )
         }

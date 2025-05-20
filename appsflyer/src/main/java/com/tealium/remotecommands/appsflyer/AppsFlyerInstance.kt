@@ -143,24 +143,16 @@ class AppsFlyerInstance(
 
     override fun logAdRevenue(
         monetizationNetwork: String,
-        mediationNetwork: String,
+        mediationNetwork: MediationNetwork,
         revenue: Double,
         currency: String,
         additionalParameters: Map<String, Any>?
     ) {
         try {
-            // Create the mediation network enum value
-            val mediationNetworkEnum = getMediationNetwork(mediationNetwork)
-            
-            if (mediationNetworkEnum == null) {
-                Log.e(BuildConfig.TAG, "Invalid mediation network: $mediationNetwork")
-                return
-            }
-            
-            // Create AdRevenueData object
+            // Create AdRevenueData object directly with the provided MediationNetwork
             val adRevenueData = AFAdRevenueData(
                 monetizationNetwork,
-                mediationNetworkEnum,
+                mediationNetwork,
                 currency,
                 revenue
             )
@@ -268,26 +260,6 @@ class AppsFlyerInstance(
 
                 remoteCommandContext.track("appsflyer_error", map)
             }
-        }
-    }
-
-    private fun getMediationNetwork(mediationNetwork: String): MediationNetwork? {
-        return when (mediationNetwork.lowercase()) {
-            "ironsource" -> MediationNetwork.IRONSOURCE
-            "applovinmax" -> MediationNetwork.APPLOVIN_MAX
-            "googleadmob" -> MediationNetwork.GOOGLE_ADMOB
-            "fyber" -> MediationNetwork.FYBER
-            "appodeal" -> MediationNetwork.APPODEAL
-            "admost" -> MediationNetwork.ADMOST
-            "topon" -> MediationNetwork.TOPON
-            "tradplus" -> MediationNetwork.TRADPLUS
-            "yandex" -> MediationNetwork.YANDEX
-            "chartboost" -> MediationNetwork.CHARTBOOST
-            "unity" -> MediationNetwork.UNITY
-            "toponpte" -> MediationNetwork.TOPON_PTE
-            "custommediation" -> MediationNetwork.CUSTOM_MEDIATION
-            "directmonetizationnetwork" -> MediationNetwork.DIRECT_MONETIZATION_NETWORK
-            else -> return null
         }
     }
 }
