@@ -95,8 +95,8 @@ class MainActivity : AppCompatActivity() {
                 mapOf(
                     "monetization_network" to "test_network",
                     "mediation_network" to "googleadmob",
-                    "revenue" to 10.50,
-                    "currency" to "USD"
+                    "ad_revenue" to 10.50,
+                    "ad_currency" to "USD"
                 )
             )
         }
