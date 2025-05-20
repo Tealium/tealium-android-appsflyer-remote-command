@@ -7,6 +7,8 @@
       "debug": true,
       "disable_ad_tracking": false,
       "disable_apple_ad_tracking": false,
+      "disable_network_data": false,
+      "enable_appset_id": true,
       "time_between_sessions": 30,
       "anonymize_user": false,
       "collect_device_name": false
@@ -63,9 +65,11 @@
     "search": "search",
     "invite": "invite",
     "checkout": "initiatecheckout",
-    "order":"purchase",
-    "set_currency" : "setcurrencycode",
+    "order": "purchase",
+    "set_currency": "setcurrencycode",
     "set_host": "sethost",
-    "custom_event": "custom_event"
+    "custom_event": "custom_event",
+    "set_dma_consent": "setdmaconsent",
+    "enable_appset_id": "enableappsetid"
   }
 }

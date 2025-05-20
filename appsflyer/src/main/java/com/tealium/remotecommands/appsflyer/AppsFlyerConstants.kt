@@ -18,6 +18,9 @@ object Commands {
     const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
     const val STOP_TRACKING = "stoptracking"
+    const val LOG_AD_REVENUE = "logadrevenue"
+    const val ENABLE_APPSET_ID = "enableappsetid"
+    const val SET_DMA_CONSENT = "setdmaconsent"
 }
 
 object StandardEvents {
@@ -58,6 +61,8 @@ object Config {
     const val CUSTOM_DATA = "custom_data"
     const val SETTINGS = "settings"
     const val DEV_KEY = "app_dev_key"
+    const val DISABLE_NETWORK_DATA = "disable_network_data"
+    const val ENABLE_APPSET_ID = "enable_appset_id"
 }
 
 object Customer {
@@ -87,4 +92,18 @@ object Tracking {
     const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
     const val STOP_TRACKING = "stop_tracking"
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
+}
+
+object AdRevenue {
+    const val NETWORK = "monetization_network"
+    const val REVENUE = "revenue"
+    const val CURRENCY = "currency"
+    const val AD_TYPE = "ad_type"
+    const val AD_UNIT = "ad_unit"
+}
+
+object DMAConsent {
+    const val GDPR_APPLIES = "gdpr_applies"
+    const val GDPR_CONSENT = "gdpr_consent"
+    const val DMA_CONSENT = "dma_consent"
 }

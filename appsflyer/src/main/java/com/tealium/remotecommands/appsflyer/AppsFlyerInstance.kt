@@ -78,8 +78,11 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
+        if (host.isNotEmpty()) {
+            val prefix = if (hostPrefix.isNullOrEmpty()) "" else hostPrefix
             AppsFlyerLib.getInstance().setHost(host, prefix)
+        } else {
+            Log.w(BuildConfig.TAG, "setHost: host parameter cannot be empty")
         }
     }
 
@@ -107,6 +110,26 @@ class AppsFlyerInstance(
 
     override fun stopTracking(isTrackingStopped: Boolean) {
         AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
+    }
+
+    override fun setDisableNetworkData(disable: Boolean) {
+        AppsFlyerLib.getInstance().setDisableNetworkData(disable)
+    }
+
+    override fun logAdRevenue(monetizationNetwork: String, eventParameters: Map<String, Any>) {
+        AppsFlyerLib.getInstance().logAdRevenue(
+            application,
+            monetizationNetwork,
+            eventParameters
+        )
+    }
+
+    override fun enableAppSetIdCollection(enable: Boolean) {
+        AppsFlyerLib.getInstance().enableAppSetIdCollection(enable)
+    }
+
+    override fun setDMAConsentData(consentData: Map<String, Any>) {
+        AppsFlyerLib.getInstance().setDMAConsentData(consentData)
     }
 
     fun setMinsBetweenSessions(seconds: Int) {

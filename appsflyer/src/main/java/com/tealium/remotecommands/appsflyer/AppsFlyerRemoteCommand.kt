@@ -127,6 +127,45 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
+                Commands.LOG_AD_REVENUE -> {
+                    val network = payload.optString(AdRevenue.NETWORK)
+                    if (network.isNotEmpty()) {
+                        val parameters = mutableMapOf<String, Any>()
+                        payload.optString(AdRevenue.REVENUE)?.let { parameters[AdRevenue.REVENUE] = it }
+                        payload.optString(AdRevenue.CURRENCY)?.let { parameters[AdRevenue.CURRENCY] = it }
+                        payload.optString(AdRevenue.AD_TYPE)?.let { parameters[AdRevenue.AD_TYPE] = it }
+                        payload.optString(AdRevenue.AD_UNIT)?.let { parameters[AdRevenue.AD_UNIT] = it }
+                        
+                        appsFlyerInstance.logAdRevenue(network, parameters)
+                    } else {
+                        Log.e(TAG, "${AdRevenue.NETWORK} is required for logging ad revenue")
+                    }
+                }
+
+                Commands.ENABLE_APPSET_ID -> {
+                    val enable = payload.optBoolean(Config.ENABLE_APPSET_ID, true)
+                    appsFlyerInstance.enableAppSetIdCollection(enable)
+                }
+
+                Commands.SET_DMA_CONSENT -> {
+                    val consentData = mutableMapOf<String, Any>()
+                    payload.optBoolean(DMAConsent.GDPR_APPLIES)?.let { 
+                        consentData[DMAConsent.GDPR_APPLIES] = it 
+                    }
+                    payload.optBoolean(DMAConsent.GDPR_CONSENT)?.let { 
+                        consentData[DMAConsent.GDPR_CONSENT] = it 
+                    }
+                    payload.optBoolean(DMAConsent.DMA_CONSENT)?.let { 
+                        consentData[DMAConsent.DMA_CONSENT] = it 
+                    }
+                    
+                    if (consentData.isNotEmpty()) {
+                        appsFlyerInstance.setDMAConsentData(consentData)
+                    } else {
+                        Log.w(TAG, "No DMA consent data provided")
+                    }
+                }
+
                 else -> {
                     val eventType = standardEvent(command) ?: command
                     val eventParameters: JSONObject =
@@ -154,6 +193,15 @@ open class AppsFlyerRemoteCommand(
         val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
+        
+        configSettings?.let { settings ->
+            if (settings.containsKey(Config.DISABLE_NETWORK_DATA)) {
+                (settings[Config.DISABLE_NETWORK_DATA] as? Boolean)?.let { disable ->
+                    appsFlyerInstance.setDisableNetworkData(disable)
+                }
+            }
+        }
+        
         appsFlyerInstance.initialize(devKey, configSettings)
     }
 
