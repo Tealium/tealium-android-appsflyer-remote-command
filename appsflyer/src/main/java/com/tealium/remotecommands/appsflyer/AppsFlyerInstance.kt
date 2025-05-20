@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
+import com.appsflyer.AppsFlyerConsent
+import com.appsflyer.AFAdRevenueData
+import com.appsflyer.MediationNetwork
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -116,39 +119,76 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setDisableNetworkData(disable)
     }
 
-    override fun logAdRevenue(monetizationNetwork: String, eventParameters: Map<String, Any>) {
-        AppsFlyerLib.getInstance().logAdRevenue(
-            application,
-            monetizationNetwork,
-            eventParameters
+    override fun setDMAConsentData(consentData: Map<String, Any>) {
+        val gdprApplies = consentData[DMAConsent.GDPR_APPLIES] as? Boolean ?: false
+        val gdprConsent = if (gdprApplies) consentData[DMAConsent.GDPR_CONSENT] as? Boolean else null
+        val dmaConsent = if (gdprApplies) consentData[DMAConsent.DMA_CONSENT] as? Boolean else null
+        val adStorageConsent = if (gdprApplies) consentData[DMAConsent.AD_STORAGE_CONSENT] as? Boolean else null
+        
+        val consent = AppsFlyerConsent(
+            isUserSubjectToGDPR = gdprApplies,
+            hasConsentForDataUsage = gdprConsent,
+            hasConsentForAdsPersonalization = dmaConsent,
+            hasConsentForAdStorage = adStorageConsent
         )
+        
+        AppsFlyerLib.getInstance().setConsentData(consent)
     }
 
     override fun enableAppSetIdCollection(enable: Boolean) {
-        AppsFlyerLib.getInstance().enableAppSetIdCollection(enable)
+        if (!enable) {
+            AppsFlyerLib.getInstance().disableAppSetId()
+        }
     }
 
-    override fun setDMAConsentData(consentData: Map<String, Any>) {
-        AppsFlyerLib.getInstance().setDMAConsentData(consentData)
+    override fun logAdRevenue(
+        monetizationNetwork: String,
+        mediationNetwork: String,
+        revenue: Double,
+        currency: String,
+        additionalParameters: Map<String, Any>?
+    ) {
+        try {
+            // Create the mediation network enum value
+            val mediationNetworkEnum = getMediationNetwork(mediationNetwork)
+            
+            if (mediationNetworkEnum == null) {
+                Log.e(BuildConfig.TAG, "Invalid mediation network: $mediationNetwork")
+                return
+            }
+            
+            // Create AdRevenueData object
+            val adRevenueData = AFAdRevenueData(
+                monetizationNetwork,
+                mediationNetworkEnum,
+                currency,
+                revenue
+            )
+            
+            // Log the ad revenue with additional parameters if provided
+            AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters)
+        } catch (e: Exception) {
+            Log.e(BuildConfig.TAG, "Error logging ad revenue: ${e.message}")
+        }
     }
 
-    fun setMinsBetweenSessions(seconds: Int) {
+    private fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    fun anonymizeUser(isDisabled: Boolean) {
+    private fun anonymizeUser(isDisabled: Boolean) {
         AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
     }
 
-    fun addCustomData(data: HashMap<String, Any>) {
+    private fun addCustomData(data: HashMap<String, Any>) {
         AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
-    fun enableDebugLog(shouldEnable: Boolean) {
+    private fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-    fun toMap(json: JSONObject): Map<String, Any> {
+    private fun toMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         try {
             json.keys().forEach { key ->
@@ -228,6 +268,26 @@ class AppsFlyerInstance(
 
                 remoteCommandContext.track("appsflyer_error", map)
             }
+        }
+    }
+
+    private fun getMediationNetwork(mediationNetwork: String): MediationNetwork? {
+        return when (mediationNetwork.lowercase()) {
+            "ironsource" -> MediationNetwork.IRONSOURCE
+            "applovinmax" -> MediationNetwork.APPLOVIN_MAX
+            "googleadmob" -> MediationNetwork.GOOGLE_ADMOB
+            "fyber" -> MediationNetwork.FYBER
+            "appodeal" -> MediationNetwork.APPODEAL
+            "admost" -> MediationNetwork.ADMOST
+            "topon" -> MediationNetwork.TOPON
+            "tradplus" -> MediationNetwork.TRADPLUS
+            "yandex" -> MediationNetwork.YANDEX
+            "chartboost" -> MediationNetwork.CHARTBOOST
+            "unity" -> MediationNetwork.UNITY
+            "toponpte" -> MediationNetwork.TOPON_PTE
+            "custommediation" -> MediationNetwork.CUSTOM_MEDIATION
+            "directmonetizationnetwork" -> MediationNetwork.DIRECT_MONETIZATION_NETWORK
+            else -> return null
         }
     }
 }

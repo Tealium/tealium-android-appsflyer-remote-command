@@ -1,7 +1,7 @@
 {
   "config": {
-    "app_id": "test",
-    "app_dev_key": "test",
+    "app_id": "com.tealium.demo",
+    "app_dev_key": "YOUR_APPSFLYER_DEV_KEY",
     "settings": {
       "custom_data": {"custom_key": "custom_value"},
       "debug": true,
@@ -44,7 +44,15 @@
     "order_tax_amount": "event.order_tax",
     "order_id": "event.af_order_id",
     "order_total": "event.af_revenue",
-    "currency_type": "af_currency"
+    "currency_type": "af_currency",
+    "monetization_network": "monetization_network",
+    "mediation_network": "mediation_network",
+    "ad_revenue": "revenue",
+    "ad_currency": "currency",
+    "gdpr_applies": "gdpr_applies",
+    "gdpr_consent": "gdpr_consent",
+    "dma_consent": "dma_consent",
+    "ad_storage_consent": "ad_storage_consent"
   },
   "commands": {
     "launch": "initialize",
@@ -70,6 +78,7 @@
     "set_host": "sethost",
     "custom_event": "custom_event",
     "set_dma_consent": "setdmaconsent",
-    "enable_appset_id": "enableappsetid"
+    "enable_appset_id": "enableappsetid",
+    "log_ad_revenue": "logadrevenue"
   }
 }

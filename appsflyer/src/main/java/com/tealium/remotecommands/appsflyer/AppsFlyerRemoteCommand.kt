@@ -95,16 +95,10 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.DISABLE_DEVICE_TRACKING -> {
-                    val disableTracking: Boolean? =
+                    val disableTracking: Boolean =
                         payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
-                    disableTracking?.let {
-                        appsFlyerInstance.disableDeviceTracking(it)
-                    } ?: run {
-                        Log.w(
-                            TAG,
-                            "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
-                        )
-                    }
+
+                    appsFlyerInstance.disableDeviceTracking(disableTracking)
                 }
 
                 Commands.RESOLVE_DEEPLINK_URLS -> {
@@ -121,24 +115,9 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.STOP_TRACKING -> {
-                    val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
-                    stopTracking?.let {
+                    val stopTracking: Boolean = payload.optBoolean(Tracking.STOP_TRACKING)
+                    stopTracking.let {
                         appsFlyerInstance.stopTracking(it)
-                    }
-                }
-
-                Commands.LOG_AD_REVENUE -> {
-                    val network = payload.optString(AdRevenue.NETWORK)
-                    if (network.isNotEmpty()) {
-                        val parameters = mutableMapOf<String, Any>()
-                        payload.optString(AdRevenue.REVENUE)?.let { parameters[AdRevenue.REVENUE] = it }
-                        payload.optString(AdRevenue.CURRENCY)?.let { parameters[AdRevenue.CURRENCY] = it }
-                        payload.optString(AdRevenue.AD_TYPE)?.let { parameters[AdRevenue.AD_TYPE] = it }
-                        payload.optString(AdRevenue.AD_UNIT)?.let { parameters[AdRevenue.AD_UNIT] = it }
-                        
-                        appsFlyerInstance.logAdRevenue(network, parameters)
-                    } else {
-                        Log.e(TAG, "${AdRevenue.NETWORK} is required for logging ad revenue")
                     }
                 }
 
@@ -148,22 +127,70 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.SET_DMA_CONSENT -> {
-                    val consentData = mutableMapOf<String, Any>()
-                    payload.optBoolean(DMAConsent.GDPR_APPLIES)?.let { 
-                        consentData[DMAConsent.GDPR_APPLIES] = it 
-                    }
-                    payload.optBoolean(DMAConsent.GDPR_CONSENT)?.let { 
-                        consentData[DMAConsent.GDPR_CONSENT] = it 
-                    }
-                    payload.optBoolean(DMAConsent.DMA_CONSENT)?.let { 
-                        consentData[DMAConsent.DMA_CONSENT] = it 
+                    // Check if the required GDPR_APPLIES parameter exists
+                    if (!payload.has(DMAConsent.GDPR_APPLIES)) {
+                        Log.e(TAG, "${DMAConsent.GDPR_APPLIES} is a required key")
+                        return@forEach
                     }
                     
-                    if (consentData.isNotEmpty()) {
-                        appsFlyerInstance.setDMAConsentData(consentData)
-                    } else {
-                        Log.w(TAG, "No DMA consent data provided")
+                    val gdprApplies = payload.optBoolean(DMAConsent.GDPR_APPLIES)
+                    val consentData = mutableMapOf<String, Any>(DMAConsent.GDPR_APPLIES to gdprApplies)
+                    
+                    // If GDPR applies, collect the other consent parameters if available
+                    if (gdprApplies) {
+                        if (payload.has(DMAConsent.GDPR_CONSENT)) {
+                            consentData[DMAConsent.GDPR_CONSENT] = payload.optBoolean(DMAConsent.GDPR_CONSENT)
+                        }
+                        
+                        if (payload.has(DMAConsent.DMA_CONSENT)) {
+                            consentData[DMAConsent.DMA_CONSENT] = payload.optBoolean(DMAConsent.DMA_CONSENT)
+                        }
+                        
+                        if (payload.has(DMAConsent.AD_STORAGE_CONSENT)) {
+                            consentData[DMAConsent.AD_STORAGE_CONSENT] = payload.optBoolean(DMAConsent.AD_STORAGE_CONSENT)
+                        }
                     }
+                    
+                    appsFlyerInstance.setDMAConsentData(consentData)
+                }
+                
+                Commands.LOG_AD_REVENUE -> {
+                    val monetizationNetwork = payload.optString(AdRevenue.MONETIZATION_NETWORK)
+                    val mediationNetwork = payload.optString(AdRevenue.MEDIATION_NETWORK)
+                    val revenue = payload.optDouble(AdRevenue.REVENUE)
+                    val currency = payload.optString(AdRevenue.CURRENCY, "USD")
+                    
+                    if (monetizationNetwork.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.MONETIZATION_NETWORK} is a required key")
+                        return
+                    }
+                    
+                    if (mediationNetwork.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.MEDIATION_NETWORK} is a required key")
+                        return
+                    }
+                    
+                    if (revenue.isNaN() || revenue <= 0) {
+                        Log.e(TAG, "${AdRevenue.REVENUE} is a required key and must be positive")
+                        return
+                    }
+
+                    if (currency.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.CURRENCY} is a required key")
+                        return
+                    }
+                    
+                    // Get additional parameters if available
+                    val additionalParams = payload.optJSONObject(AdRevenue.ADDITIONAL_PARAMETERS)
+                    val additionalParamsMap = jsonToMap(additionalParams)
+                    
+                    appsFlyerInstance.logAdRevenue(
+                        monetizationNetwork,
+                        mediationNetwork,
+                        revenue,
+                        currency,
+                        additionalParamsMap
+                    )
                 }
 
                 else -> {
@@ -192,16 +219,14 @@ open class AppsFlyerRemoteCommand(
     private fun initialize(payload: JSONObject) {
         val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any>? = jsonToMap(config)
-        
-        configSettings?.let { settings ->
-            if (settings.containsKey(Config.DISABLE_NETWORK_DATA)) {
-                (settings[Config.DISABLE_NETWORK_DATA] as? Boolean)?.let { disable ->
-                    appsFlyerInstance.setDisableNetworkData(disable)
-                }
+        val configSettings: Map<String, Any> = jsonToMap(config)
+
+        if (configSettings.containsKey(Config.DISABLE_NETWORK_DATA)) {
+            (configSettings[Config.DISABLE_NETWORK_DATA] as? Boolean)?.let { disable ->
+                appsFlyerInstance.setDisableNetworkData(disable)
             }
         }
-        
+
         appsFlyerInstance.initialize(devKey, configSettings)
     }
 
@@ -240,7 +265,7 @@ open class AppsFlyerRemoteCommand(
     internal fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR).map {
-            it.trim().toLowerCase(Locale.ROOT)
+            it.trim().lowercase(Locale.ROOT)
         }.toTypedArray()
     }
 

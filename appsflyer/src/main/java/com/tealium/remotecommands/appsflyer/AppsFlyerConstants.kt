@@ -3,6 +3,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
+import com.appsflyer.MediationNetwork
 
 object Commands {
     const val COMMAND_KEY = "command_name"
@@ -94,16 +95,17 @@ object Tracking {
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
 }
 
-object AdRevenue {
-    const val NETWORK = "monetization_network"
-    const val REVENUE = "revenue"
-    const val CURRENCY = "currency"
-    const val AD_TYPE = "ad_type"
-    const val AD_UNIT = "ad_unit"
-}
-
 object DMAConsent {
     const val GDPR_APPLIES = "gdpr_applies"
     const val GDPR_CONSENT = "gdpr_consent"
     const val DMA_CONSENT = "dma_consent"
+    const val AD_STORAGE_CONSENT = "ad_storage_consent"
+}
+
+object AdRevenue {
+    const val MONETIZATION_NETWORK = "monetization_network"
+    const val MEDIATION_NETWORK = "mediation_network"
+    const val REVENUE = "revenue"
+    const val CURRENCY = "currency"
+    const val ADDITIONAL_PARAMETERS = "ad_revenue_parameters"
 }

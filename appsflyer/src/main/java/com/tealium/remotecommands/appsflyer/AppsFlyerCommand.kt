@@ -12,7 +12,7 @@ interface AppsFlyerCommand {
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
     fun setDisableNetworkData(disable: Boolean)
-    fun logAdRevenue(monetizationNetwork: String, eventParameters: Map<String, Any>)
     fun enableAppSetIdCollection(enable: Boolean)
     fun setDMAConsentData(consentData: Map<String, Any>)
+    fun logAdRevenue(monetizationNetwork: String, mediationNetwork: String, revenue: Double, currency: String, additionalParameters: Map<String, Any>? = null)
 }

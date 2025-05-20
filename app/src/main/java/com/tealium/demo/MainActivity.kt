@@ -8,7 +8,7 @@ import org.json.JSONArray
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,13 +17,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         TealiumHelper.trackView("main_screen")
-        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "<your_key_here>"))
+        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "YOUR_APPSFLYER_DEV_KEY"))
 
 
         binding.buttonSetHost.setOnClickListener {
             TealiumHelper.trackEvent(
                 "set_host",
-                mapOf(Host.HOST to "abc123", Host.HOST_PREFIX to "test_prefix")
+                mapOf(Host.HOST to "YOUR_APPSFLYER_DEV_KEY", Host.HOST_PREFIX to "uokf4p")
             )
         }
 
@@ -71,6 +71,55 @@ class MainActivity : AppCompatActivity() {
 
         binding.buttonCustomEvent.setOnClickListener {
             TealiumHelper.trackEvent("custom_event", mapOf())
+        }
+
+        binding.buttonSetDmaConsent.setOnClickListener {
+            // Example for GDPR user with consent
+            TealiumHelper.trackEvent(
+                "set_dma_consent", 
+                mapOf(
+                    "gdpr_applies" to true,
+                    "gdpr_consent" to true,
+                    "dma_consent" to true,
+                    "ad_storage_consent" to false
+                )
+            )
+            
+            // For testing non-GDPR scenario, uncomment this:
+            // TealiumHelper.trackEvent("set_dma_consent", mapOf("gdpr_applies" to false))
+        }
+
+        binding.buttonLogAdRevenue.setOnClickListener {
+            TealiumHelper.trackEvent(
+                "log_ad_revenue",
+                mapOf(
+                    "monetization_network" to "test_network",
+                    "mediation_network" to "googleadmob",
+                    "revenue" to 10.50,
+                    "currency" to "USD"
+                )
+            )
+        }
+
+        binding.buttonDisableTracking.setOnClickListener {
+            TealiumHelper.trackEvent(
+                "disabledevicetracking",
+                mapOf("disable_device_tracking" to true)
+            )
+        }
+
+        binding.buttonEnableAppsetId.setOnClickListener {
+            TealiumHelper.trackEvent(
+                "enable_appset_id",
+                mapOf("enable_appset_id" to true)
+            )
+        }
+
+        binding.buttonStopTracking.setOnClickListener {
+            TealiumHelper.trackEvent(
+                "stoptracking",
+                mapOf("stop_tracking" to true)
+            )
         }
     }
 }
