@@ -138,16 +138,16 @@ open class AppsFlyerRemoteCommand(
                     
                     // If GDPR applies, collect the other consent parameters if available
                     if (gdprApplies) {
-                        if (payload.has(DMAConsent.GDPR_CONSENT)) {
-                            consentData[DMAConsent.GDPR_CONSENT] = payload.optBoolean(DMAConsent.GDPR_CONSENT)
+                        if (payload.has(DMAConsent.CONSENT_FOR_DATA_USAGE)) {
+                            consentData[DMAConsent.CONSENT_FOR_DATA_USAGE] = payload.optBoolean(DMAConsent.CONSENT_FOR_DATA_USAGE)
                         }
                         
-                        if (payload.has(DMAConsent.DMA_CONSENT)) {
-                            consentData[DMAConsent.DMA_CONSENT] = payload.optBoolean(DMAConsent.DMA_CONSENT)
+                        if (payload.has(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION)) {
+                            consentData[DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION] = payload.optBoolean(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION)
                         }
                         
-                        if (payload.has(DMAConsent.AD_STORAGE_CONSENT)) {
-                            consentData[DMAConsent.AD_STORAGE_CONSENT] = payload.optBoolean(DMAConsent.AD_STORAGE_CONSENT)
+                        if (payload.has(DMAConsent.CONSENT_FOR_AD_STORAGE)) {
+                            consentData[DMAConsent.CONSENT_FOR_AD_STORAGE] = payload.optBoolean(DMAConsent.CONSENT_FOR_AD_STORAGE)
                         }
                     }
                     

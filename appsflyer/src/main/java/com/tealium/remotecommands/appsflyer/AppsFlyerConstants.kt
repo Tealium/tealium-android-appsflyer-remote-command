@@ -97,9 +97,9 @@ object Tracking {
 
 object DMAConsent {
     const val GDPR_APPLIES = "gdpr_applies"
-    const val GDPR_CONSENT = "gdpr_consent"
-    const val DMA_CONSENT = "dma_consent"
-    const val AD_STORAGE_CONSENT = "ad_storage_consent"
+    const val CONSENT_FOR_DATA_USAGE = "consent_for_data_usage"
+    const val CONSENT_FOR_ADS_PERSONALIZATION = "consent_for_ads_personalization"
+    const val CONSENT_FOR_AD_STORAGE = "consent_for_ad_storage"
 }
 
 object AdRevenue {

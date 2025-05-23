@@ -121,14 +121,14 @@ class AppsFlyerInstance(
 
     override fun setDMAConsentData(consentData: Map<String, Any>) {
         val gdprApplies = consentData[DMAConsent.GDPR_APPLIES] as? Boolean ?: false
-        val gdprConsent = if (gdprApplies) consentData[DMAConsent.GDPR_CONSENT] as? Boolean else null
-        val dmaConsent = if (gdprApplies) consentData[DMAConsent.DMA_CONSENT] as? Boolean else null
-        val adStorageConsent = if (gdprApplies) consentData[DMAConsent.AD_STORAGE_CONSENT] as? Boolean else null
+        val dataUsageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_DATA_USAGE] as? Boolean else null
+        val adsPersonalizationConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION] as? Boolean else null
+        val adStorageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_AD_STORAGE] as? Boolean else null
         
         val consent = AppsFlyerConsent(
             isUserSubjectToGDPR = gdprApplies,
-            hasConsentForDataUsage = gdprConsent,
-            hasConsentForAdsPersonalization = dmaConsent,
+            hasConsentForDataUsage = dataUsageConsent,
+            hasConsentForAdsPersonalization = adsPersonalizationConsent,
             hasConsentForAdStorage = adStorageConsent
         )
         

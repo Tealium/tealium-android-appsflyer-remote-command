@@ -79,9 +79,9 @@ class MainActivity : AppCompatActivity() {
                 "set_dma_consent", 
                 mapOf(
                     "gdpr_applies" to true,
-                    "gdpr_consent" to true,
-                    "dma_consent" to true,
-                    "ad_storage_consent" to false
+                    "consent_for_data_usage" to true,
+                    "consent_for_ads_personalization" to true,
+                    "consent_for_ad_storage" to false
                 )
             )
             
