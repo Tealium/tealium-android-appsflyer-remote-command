@@ -4,11 +4,11 @@ apply plugin: 'maven-publish'
 
 android {
     namespace = "com.tealium.remotecommands.appsflyer"
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         buildConfigField 'String', 'TAG', "\"Tealium-AppsFlyer-$tealium_appsflyer_version\""
         buildConfigField 'String', "TEALIUM_APPSFLYER_VERSION", "\"$tealium_appsflyer_version\""
 
@@ -28,12 +28,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17
+        jvmTarget = JavaVersion.VERSION_11
     }
 
     buildFeatures {

@@ -273,16 +273,18 @@ class AppsFlyerRemoteCommandTest {
     fun testSetDMAConsentData() {
         val payload = JSONObject()
         payload.put(DMAConsent.GDPR_APPLIES, true)
-        payload.put(DMAConsent.GDPR_CONSENT, true)
-        payload.put(DMAConsent.DMA_CONSENT, false)
+        payload.put(DMAConsent.CONSENT_FOR_DATA_USAGE, true)
+        payload.put(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION, false)
+        payload.put(DMAConsent.CONSENT_FOR_AD_STORAGE, true)
         payload.put(COMMAND_NAME_KEY, Commands.SET_DMA_CONSENT)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_DMA_CONSENT), payload)
 
         val expectedConsentData = mapOf(
             DMAConsent.GDPR_APPLIES to true,
-            DMAConsent.GDPR_CONSENT to true,
-            DMAConsent.DMA_CONSENT to false
+            DMAConsent.CONSENT_FOR_DATA_USAGE to true,
+            DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION to false,
+            DMAConsent.CONSENT_FOR_AD_STORAGE to true
         )
 
         verify {
