@@ -95,16 +95,10 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.DISABLE_DEVICE_TRACKING -> {
-                    val disableTracking: Boolean? =
+                    val disableTracking: Boolean =
                         payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
-                    disableTracking?.let {
-                        appsFlyerInstance.disableDeviceTracking(it)
-                    } ?: run {
-                        Log.w(
-                            TAG,
-                            "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
-                        )
-                    }
+
+                    appsFlyerInstance.disableDeviceTracking(disableTracking)
                 }
 
                 Commands.RESOLVE_DEEPLINK_URLS -> {
@@ -121,10 +115,89 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.STOP_TRACKING -> {
-                    val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
-                    stopTracking?.let {
+                    val stopTracking: Boolean = payload.optBoolean(Tracking.STOP_TRACKING)
+                    stopTracking.let {
                         appsFlyerInstance.stopTracking(it)
                     }
+                }
+
+                Commands.ENABLE_APPSET_ID -> {
+                    val enable = payload.optBoolean(Config.ENABLE_APPSET_ID, true)
+                    appsFlyerInstance.enableAppSetIdCollection(enable)
+                }
+
+                Commands.SET_DMA_CONSENT -> {
+                    // Check if the required GDPR_APPLIES parameter exists
+                    if (!payload.has(DMAConsent.GDPR_APPLIES)) {
+                        Log.e(TAG, "${DMAConsent.GDPR_APPLIES} is a required key")
+                        return@forEach
+                    }
+                    
+                    val gdprApplies = payload.optBoolean(DMAConsent.GDPR_APPLIES)
+                    val consentData = mutableMapOf<String, Any>(DMAConsent.GDPR_APPLIES to gdprApplies)
+                    
+                    // If GDPR applies, collect the other consent parameters if available
+                    if (gdprApplies) {
+                        if (payload.has(DMAConsent.CONSENT_FOR_DATA_USAGE)) {
+                            consentData[DMAConsent.CONSENT_FOR_DATA_USAGE] = payload.optBoolean(DMAConsent.CONSENT_FOR_DATA_USAGE)
+                        }
+                        
+                        if (payload.has(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION)) {
+                            consentData[DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION] = payload.optBoolean(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION)
+                        }
+                        
+                        if (payload.has(DMAConsent.CONSENT_FOR_AD_STORAGE)) {
+                            consentData[DMAConsent.CONSENT_FOR_AD_STORAGE] = payload.optBoolean(DMAConsent.CONSENT_FOR_AD_STORAGE)
+                        }
+                    }
+                    
+                    appsFlyerInstance.setDMAConsentData(consentData)
+                }
+                
+                Commands.LOG_AD_REVENUE -> {
+                    val monetizationNetwork = payload.optString(AdRevenue.MONETIZATION_NETWORK)
+                    val mediationNetworkString = payload.optString(AdRevenue.MEDIATION_NETWORK)
+                    val revenue = payload.optDouble(AdRevenue.REVENUE)
+                    val currency = payload.optString(AdRevenue.CURRENCY, "USD")
+                    
+                    if (monetizationNetwork.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.MONETIZATION_NETWORK} is a required key")
+                        return
+                    }
+                    
+                    if (mediationNetworkString.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.MEDIATION_NETWORK} is a required key")
+                        return
+                    }
+                    
+                    // Convert string to MediationNetwork enum
+                    val mediationNetwork = MediationNetworkType.fromString(mediationNetworkString)
+                    if (mediationNetwork == null) {
+                        Log.e(TAG, "Invalid mediation network value: $mediationNetworkString. Valid values are: ironsource, applovinmax, googleadmob, fyber, appodeal, admost, etc.")
+                        return
+                    }
+                    
+                    if (revenue.isNaN() || revenue <= 0) {
+                        Log.e(TAG, "${AdRevenue.REVENUE} is a required key and must be positive")
+                        return
+                    }
+
+                    if (currency.isEmpty()) {
+                        Log.e(TAG, "${AdRevenue.CURRENCY} is a required key")
+                        return
+                    }
+                    
+                    // Get additional parameters if available
+                    val additionalParams = payload.optJSONObject(AdRevenue.ADDITIONAL_PARAMETERS)
+                    val additionalParamsMap = jsonToMap(additionalParams)
+                    
+                    appsFlyerInstance.logAdRevenue(
+                        monetizationNetwork,
+                        mediationNetwork.toMediationNetwork(),
+                        revenue,
+                        currency,
+                        additionalParamsMap
+                    )
                 }
 
                 else -> {
@@ -153,7 +226,14 @@ open class AppsFlyerRemoteCommand(
     private fun initialize(payload: JSONObject) {
         val devKey: String = payload.optString(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any>? = jsonToMap(config)
+        val configSettings: Map<String, Any> = jsonToMap(config)
+
+        if (configSettings.containsKey(Config.DISABLE_NETWORK_DATA)) {
+            (configSettings[Config.DISABLE_NETWORK_DATA] as? Boolean)?.let { disable ->
+                appsFlyerInstance.setDisableNetworkData(disable)
+            }
+        }
+
         appsFlyerInstance.initialize(devKey, configSettings)
     }
 
@@ -192,7 +272,7 @@ open class AppsFlyerRemoteCommand(
     internal fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR).map {
-            it.trim().toLowerCase(Locale.ROOT)
+            it.trim().lowercase(Locale.ROOT)
         }.toTypedArray()
     }
 

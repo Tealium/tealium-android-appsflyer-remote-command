@@ -62,4 +62,34 @@
         android:layout_height="wrap_content"
         android:text="@string/custom_event" />
 
+    <Button
+        android:id="@+id/button_setDmaConsent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Set DMA Consent" />
+
+    <Button
+        android:id="@+id/button_logAdRevenue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Log Ad Revenue" />
+
+    <Button
+        android:id="@+id/button_disableTracking"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Disable Device Tracking" />
+
+    <Button
+        android:id="@+id/button_enableAppsetId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enable AppSet ID" />
+
+    <Button
+        android:id="@+id/button_stopTracking"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop Tracking" />
+
 </LinearLayout>

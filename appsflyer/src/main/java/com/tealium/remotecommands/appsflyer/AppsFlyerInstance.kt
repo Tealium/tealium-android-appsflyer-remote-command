@@ -6,6 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
+import com.appsflyer.AppsFlyerConsent
+import com.appsflyer.AFAdRevenueData
+import com.appsflyer.MediationNetwork
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -78,8 +81,11 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
+        if (host.isNotEmpty()) {
+            val prefix = if (hostPrefix.isNullOrEmpty()) "" else hostPrefix
             AppsFlyerLib.getInstance().setHost(host, prefix)
+        } else {
+            Log.w(BuildConfig.TAG, "setHost: host parameter cannot be empty")
         }
     }
 
@@ -109,23 +115,72 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
     }
 
-    fun setMinsBetweenSessions(seconds: Int) {
+    override fun setDisableNetworkData(disable: Boolean) {
+        AppsFlyerLib.getInstance().setDisableNetworkData(disable)
+    }
+
+    override fun setDMAConsentData(consentData: Map<String, Any>) {
+        val gdprApplies = consentData[DMAConsent.GDPR_APPLIES] as? Boolean ?: false
+        val dataUsageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_DATA_USAGE] as? Boolean else null
+        val adsPersonalizationConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION] as? Boolean else null
+        val adStorageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_AD_STORAGE] as? Boolean else null
+        
+        val consent = AppsFlyerConsent(
+            isUserSubjectToGDPR = gdprApplies,
+            hasConsentForDataUsage = dataUsageConsent,
+            hasConsentForAdsPersonalization = adsPersonalizationConsent,
+            hasConsentForAdStorage = adStorageConsent
+        )
+        
+        AppsFlyerLib.getInstance().setConsentData(consent)
+    }
+
+    override fun enableAppSetIdCollection(enable: Boolean) {
+        if (!enable) {
+            AppsFlyerLib.getInstance().disableAppSetId()
+        }
+    }
+
+    override fun logAdRevenue(
+        monetizationNetwork: String,
+        mediationNetwork: MediationNetwork,
+        revenue: Double,
+        currency: String,
+        additionalParameters: Map<String, Any>?
+    ) {
+        try {
+            // Create AdRevenueData object directly with the provided MediationNetwork
+            val adRevenueData = AFAdRevenueData(
+                monetizationNetwork,
+                mediationNetwork,
+                currency,
+                revenue
+            )
+            
+            // Log the ad revenue with additional parameters if provided
+            AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters)
+        } catch (e: Exception) {
+            Log.e(BuildConfig.TAG, "Error logging ad revenue: ${e.message}")
+        }
+    }
+
+    private fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    fun anonymizeUser(isDisabled: Boolean) {
+    private fun anonymizeUser(isDisabled: Boolean) {
         AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
     }
 
-    fun addCustomData(data: HashMap<String, Any>) {
+    private fun addCustomData(data: HashMap<String, Any>) {
         AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
-    fun enableDebugLog(shouldEnable: Boolean) {
+    private fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-    fun toMap(json: JSONObject): Map<String, Any> {
+    private fun toMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         try {
             json.keys().forEach { key ->

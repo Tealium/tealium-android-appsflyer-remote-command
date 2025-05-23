@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
+import com.appsflyer.MediationNetwork
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import org.json.JSONArray
@@ -179,6 +180,134 @@ class AppsFlyerRemoteCommandTest {
 
         verify {
             mockAppsFlyerInstance.stopTracking(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetDisableNetworkData() {
+        val settings = JSONObject()
+        settings.put(Config.DISABLE_NETWORK_DATA, true)
+        
+        val payload = JSONObject()
+        payload.put(Config.SETTINGS, settings)
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.setDisableNetworkData(true)
+            mockAppsFlyerInstance.initialize(any(), any())
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testLogAdRevenue() {
+        val payload = JSONObject()
+        payload.put(AdRevenue.MONETIZATION_NETWORK, "test_network")
+        payload.put(AdRevenue.MEDIATION_NETWORK, "googleadmob")
+        payload.put(AdRevenue.REVENUE, 10.50)
+        payload.put(AdRevenue.CURRENCY, "USD")
+        
+        val additionalParams = JSONObject()
+        additionalParams.put("country", "US")
+        additionalParams.put("ad_unit", "banner_1")
+        payload.put(AdRevenue.ADDITIONAL_PARAMETERS, additionalParams)
+        
+        payload.put(COMMAND_NAME_KEY, Commands.LOG_AD_REVENUE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        verify {
+            mockAppsFlyerInstance.logAdRevenue(
+                "test_network",
+                MediationNetwork.GOOGLE_ADMOB,
+                10.50,
+                "USD",
+                mapOf(
+                    "country" to "US",
+                    "ad_unit" to "banner_1"
+                )
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testLogAdRevenueWithInvalidMediationNetwork() {
+        val payload = JSONObject()
+        payload.put(AdRevenue.MONETIZATION_NETWORK, "test_network")
+        payload.put(AdRevenue.MEDIATION_NETWORK, "invalid_network")
+        payload.put(AdRevenue.REVENUE, 10.50)
+        payload.put(AdRevenue.CURRENCY, "USD")
+        
+        payload.put(COMMAND_NAME_KEY, Commands.LOG_AD_REVENUE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        verify(exactly = 0) {
+            mockAppsFlyerInstance.logAdRevenue(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun testEnableAppSetIdCollection() {
+        val payload = JSONObject()
+        payload.put(Config.ENABLE_APPSET_ID, true)
+        payload.put(COMMAND_NAME_KEY, Commands.ENABLE_APPSET_ID)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ENABLE_APPSET_ID), payload)
+
+        verify {
+            mockAppsFlyerInstance.enableAppSetIdCollection(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetDMAConsentData() {
+        val payload = JSONObject()
+        payload.put(DMAConsent.GDPR_APPLIES, true)
+        payload.put(DMAConsent.CONSENT_FOR_DATA_USAGE, true)
+        payload.put(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION, false)
+        payload.put(DMAConsent.CONSENT_FOR_AD_STORAGE, true)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_DMA_CONSENT)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_DMA_CONSENT), payload)
+
+        val expectedConsentData = mapOf(
+            DMAConsent.GDPR_APPLIES to true,
+            DMAConsent.CONSENT_FOR_DATA_USAGE to true,
+            DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION to false,
+            DMAConsent.CONSENT_FOR_AD_STORAGE to true
+        )
+
+        verify {
+            mockAppsFlyerInstance.setDMAConsentData(expectedConsentData)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetDMAConsentDataForNonGDPRUser() {
+        val payload = JSONObject()
+        payload.put(DMAConsent.GDPR_APPLIES, false)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_DMA_CONSENT)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_DMA_CONSENT), payload)
+
+        val expectedConsentData = mapOf(
+            DMAConsent.GDPR_APPLIES to false
+        )
+
+        verify {
+            mockAppsFlyerInstance.setDMAConsentData(expectedConsentData)
         }
 
         confirmVerified(mockAppsFlyerInstance)

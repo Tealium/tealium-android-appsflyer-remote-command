@@ -3,6 +3,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
+import com.appsflyer.MediationNetwork
 
 object Commands {
     const val COMMAND_KEY = "command_name"
@@ -18,6 +19,9 @@ object Commands {
     const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
     const val STOP_TRACKING = "stoptracking"
+    const val LOG_AD_REVENUE = "logadrevenue"
+    const val ENABLE_APPSET_ID = "enableappsetid"
+    const val SET_DMA_CONSENT = "setdmaconsent"
 }
 
 object StandardEvents {
@@ -58,6 +62,8 @@ object Config {
     const val CUSTOM_DATA = "custom_data"
     const val SETTINGS = "settings"
     const val DEV_KEY = "app_dev_key"
+    const val DISABLE_NETWORK_DATA = "disable_network_data"
+    const val ENABLE_APPSET_ID = "enable_appset_id"
 }
 
 object Customer {
@@ -88,3 +94,61 @@ object Tracking {
     const val STOP_TRACKING = "stop_tracking"
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
 }
+
+object DMAConsent {
+    const val GDPR_APPLIES = "gdpr_applies"
+    const val CONSENT_FOR_DATA_USAGE = "consent_for_data_usage"
+    const val CONSENT_FOR_ADS_PERSONALIZATION = "consent_for_ads_personalization"
+    const val CONSENT_FOR_AD_STORAGE = "consent_for_ad_storage"
+}
+
+object AdRevenue {
+    const val MONETIZATION_NETWORK = "monetization_network"
+    const val MEDIATION_NETWORK = "mediation_network"
+    const val REVENUE = "revenue"
+    const val CURRENCY = "currency"
+    const val ADDITIONAL_PARAMETERS = "ad_revenue_parameters"
+}
+
+enum class MediationNetworkType(val value: String) {
+    IRONSOURCE("ironsource"),
+    APPLOVIN_MAX("applovinmax"),
+    GOOGLE_ADMOB("googleadmob"),
+    FYBER("fyber"),
+    APPODEAL("appodeal"),
+    ADMOST("admost"),
+    TOPON("topon"),
+    TRADPLUS("tradplus"),
+    YANDEX("yandex"),
+    CHARTBOOST("chartboost"),
+    UNITY("unity"),
+    TOPON_PTE("toponpte"),
+    CUSTOM_MEDIATION("custommediation"),
+    DIRECT_MONETIZATION_NETWORK("directmonetizationnetwork");
+    
+    companion object {
+        fun fromString(value: String): MediationNetworkType? {
+            return entries.find { it.value == value.lowercase() }
+        }
+    }
+
+    fun toMediationNetwork(): MediationNetwork {
+        return when (this) {
+            IRONSOURCE -> MediationNetwork.IRONSOURCE
+            APPLOVIN_MAX -> MediationNetwork.APPLOVIN_MAX
+            GOOGLE_ADMOB -> MediationNetwork.GOOGLE_ADMOB
+            FYBER -> MediationNetwork.FYBER
+            APPODEAL -> MediationNetwork.APPODEAL
+            ADMOST -> MediationNetwork.ADMOST
+            TOPON -> MediationNetwork.TOPON
+            TRADPLUS -> MediationNetwork.TRADPLUS
+            YANDEX -> MediationNetwork.YANDEX
+            CHARTBOOST -> MediationNetwork.CHARTBOOST
+            UNITY -> MediationNetwork.UNITY
+            TOPON_PTE -> MediationNetwork.TOPON_PTE
+            CUSTOM_MEDIATION -> MediationNetwork.CUSTOM_MEDIATION
+            DIRECT_MONETIZATION_NETWORK -> MediationNetwork.DIRECT_MONETIZATION_NETWORK
+        }
+    }
+}
+

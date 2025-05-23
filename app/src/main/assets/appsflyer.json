@@ -1,24 +1,34 @@
 {
   "config": {
-    "app_id": "test",
-    "app_dev_key": "test",
+    "app_id": "YOUR_APP_ID",
+    "app_dev_key": "YOUR_APPSFLYER_DEV_KEY",
     "settings": {
       "custom_data": {"custom_key": "custom_value"},
       "debug": true,
       "disable_ad_tracking": false,
       "disable_apple_ad_tracking": false,
+      "disable_network_data": false,
+      "enable_appset_id": true,
       "time_between_sessions": 30,
       "anonymize_user": false,
       "collect_device_name": false
     }
   },
   "mappings": {
-    "latitude": "event.af_lat",
-    "longitude": "event.af_long",
+    "latitude": "af_lat",
+    "longitude": "af_long",
     "customer_email": "customer_emails",
     "hash_type": "email_hash_type",
     "currency_code": "af_currency",
     "customer_id": "af_customer_user_id",
+    "ad_monetization_network": "monetization_network",
+    "ad_mediation_network": "mediation_network",
+    "ad_revenue": "revenue",
+    "ad_additional_parameters": "additional_parameters",
+    "gdpr_applies": "gdpr_applies",
+    "consent_for_data_usage": "consent_for_data_usage",
+    "consent_for_ads_personalization": "consent_for_ads_personalization",
+    "consent_for_ad_storage": "consent_for_ad_storage",
     "signup_method": "event.signup_method",
     "achievement_id": "event.achievement_id",
     "checkout_option": "event.checkout_option",
@@ -41,8 +51,7 @@
     "order_shipping_amount": "event.order_shipping",
     "order_tax_amount": "event.order_tax",
     "order_id": "event.af_order_id",
-    "order_total": "event.af_revenue",
-    "currency_type": "af_currency"
+    "order_total": "event.af_revenue"
   },
   "commands": {
     "launch": "initialize",
@@ -63,9 +72,12 @@
     "search": "search",
     "invite": "invite",
     "checkout": "initiatecheckout",
-    "order":"purchase",
-    "set_currency" : "setcurrencycode",
+    "order": "purchase",
+    "set_currency": "setcurrencycode",
     "set_host": "sethost",
-    "custom_event": "custom_event"
+    "custom_event": "custom_event",
+    "set_dma_consent": "setdmaconsent",
+    "enable_appset_id": "enableappsetid",
+    "log_ad_revenue": "logadrevenue"
   }
-}
+  }
