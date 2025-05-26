@@ -94,11 +94,11 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
-                Commands.DISABLE_DEVICE_TRACKING -> {
-                    val disableTracking: Boolean =
-                        payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
+                Commands.ANONYMIZE_USER -> {
+                    val anonymizeUser: Boolean =
+                        payload.optBoolean(Tracking.ANONYMIZE_USER, false)
 
-                    appsFlyerInstance.disableDeviceTracking(disableTracking)
+                    appsFlyerInstance.anonymizeUser(anonymizeUser)
                 }
 
                 Commands.RESOLVE_DEEPLINK_URLS -> {
@@ -124,6 +124,11 @@ open class AppsFlyerRemoteCommand(
                 Commands.ENABLE_APPSET_ID -> {
                     val enable = payload.optBoolean(Config.ENABLE_APPSET_ID, true)
                     appsFlyerInstance.enableAppSetIdCollection(enable)
+                }
+
+                Commands.SET_DISABLE_NETWORK_DATA -> {
+                    val disable = payload.optBoolean(Config.DISABLE_NETWORK_DATA, false)
+                    appsFlyerInstance.setDisableNetworkData(disable)
                 }
 
                 Commands.SET_DMA_CONSENT -> {
@@ -225,9 +230,43 @@ open class AppsFlyerRemoteCommand(
 
     private fun initialize(payload: JSONObject) {
         val devKey: String = payload.optString(Config.DEV_KEY)
-        val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any> = jsonToMap(config)
+        
+        // Collect all configuration parameters from payload (flat structure)
+        val configSettings = mutableMapOf<String, Any>()
+        
+        // Add all config parameters if they exist in payload
+        if (payload.has(Config.DEBUG)) {
+            configSettings[Config.DEBUG] = payload.optBoolean(Config.DEBUG)
+        }
+        if (payload.has(Config.DISABLE_NETWORK_DATA)) {
+            configSettings[Config.DISABLE_NETWORK_DATA] = payload.optBoolean(Config.DISABLE_NETWORK_DATA)
+        }
+        if (payload.has(Config.ANONYMIZE_USER)) {
+            configSettings[Config.ANONYMIZE_USER] = payload.optBoolean(Config.ANONYMIZE_USER)
+        }
+        if (payload.has(Config.MIN_TIME_BETWEEN_SESSIONS)) {
+            configSettings[Config.MIN_TIME_BETWEEN_SESSIONS] = payload.optInt(Config.MIN_TIME_BETWEEN_SESSIONS)
+        }
+        if (payload.has(Config.ENABLE_APPSET_ID)) {
+            configSettings[Config.ENABLE_APPSET_ID] = payload.optBoolean(Config.ENABLE_APPSET_ID)
+        }
+        if (payload.has(Config.COLLECT_DEVICE_NAME)) {
+            configSettings[Config.COLLECT_DEVICE_NAME] = payload.optBoolean(Config.COLLECT_DEVICE_NAME)
+        }
+        if (payload.has(Config.DISABLE_AD_TRACKING)) {
+            configSettings[Config.DISABLE_AD_TRACKING] = payload.optBoolean(Config.DISABLE_AD_TRACKING)
+        }
+        if (payload.has(Config.DISABLE_APPLE_AD_TRACKING)) {
+            configSettings[Config.DISABLE_APPLE_AD_TRACKING] = payload.optBoolean(Config.DISABLE_APPLE_AD_TRACKING)
+        }
+        if (payload.has(Config.CUSTOM_DATA)) {
+            val customData = payload.optJSONObject(Config.CUSTOM_DATA)
+            if (customData != null) {
+                configSettings[Config.CUSTOM_DATA] = customData
+            }
+        }
 
+        // Handle disable_network_data before initialization
         if (configSettings.containsKey(Config.DISABLE_NETWORK_DATA)) {
             (configSettings[Config.DISABLE_NETWORK_DATA] as? Boolean)?.let { disable ->
                 appsFlyerInstance.setDisableNetworkData(disable)
@@ -312,7 +351,14 @@ open class AppsFlyerRemoteCommand(
         val toRemove = listOf(
             Config.DEBUG,
             Config.DEV_KEY,
-            Config.SETTINGS,
+            Config.ANONYMIZE_USER,
+            Config.DISABLE_NETWORK_DATA,
+            Config.ENABLE_APPSET_ID,
+            Config.MIN_TIME_BETWEEN_SESSIONS,
+            Config.COLLECT_DEVICE_NAME,
+            Config.DISABLE_AD_TRACKING,
+            Config.DISABLE_APPLE_AD_TRACKING,
+            Config.CUSTOM_DATA,
             Commands.COMMAND_KEY,
             "method",
             "app_id",

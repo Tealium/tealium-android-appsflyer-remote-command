@@ -10,7 +10,7 @@ interface AppsFlyerCommand {
     fun setUserEmails(emails: List<String>)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
-    fun disableDeviceTracking(disable: Boolean)
+    fun anonymizeUser(anonymize: Boolean)
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
     fun setDisableNetworkData(disable: Boolean)

@@ -135,15 +135,15 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun testDisableTracking() {
+    fun testAnonymizeUser() {
         val payload = JSONObject()
-        payload.put(Tracking.DISABLE_DEVICE_TRACKING, true)
-        payload.put(COMMAND_NAME_KEY, Commands.DISABLE_DEVICE_TRACKING)
+        payload.put(Tracking.ANONYMIZE_USER, true)
+        payload.put(COMMAND_NAME_KEY, Commands.ANONYMIZE_USER)
 
-        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_DEVICE_TRACKING), payload)
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)
 
         verify {
-            mockAppsFlyerInstance.disableDeviceTracking(true)
+            mockAppsFlyerInstance.anonymizeUser(true)
         }
 
         confirmVerified(mockAppsFlyerInstance)
@@ -187,11 +187,23 @@ class AppsFlyerRemoteCommandTest {
 
     @Test
     fun testSetDisableNetworkData() {
-        val settings = JSONObject()
-        settings.put(Config.DISABLE_NETWORK_DATA, true)
-        
         val payload = JSONObject()
-        payload.put(Config.SETTINGS, settings)
+        payload.put(Config.DISABLE_NETWORK_DATA, true)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_DISABLE_NETWORK_DATA)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_DISABLE_NETWORK_DATA), payload)
+
+        verify {
+            mockAppsFlyerInstance.setDisableNetworkData(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetDisableNetworkDataInInitialize() {
+        val payload = JSONObject()
+        payload.put(Config.DISABLE_NETWORK_DATA, true)
         payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
@@ -344,5 +356,38 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(relaxedMockInstance)
+    }
+
+    @Test
+    fun testInitialize() {
+        val payload = JSONObject()
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.DEBUG, true)
+        payload.put(Config.ANONYMIZE_USER, false)
+        payload.put(Config.MIN_TIME_BETWEEN_SESSIONS, 30)
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.initialize("test_dev_key", any())
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testInitializeWithoutDevKey() {
+        val payload = JSONObject()
+        payload.put(Config.DEBUG, true)
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.initialize("", any())
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
     }
 }

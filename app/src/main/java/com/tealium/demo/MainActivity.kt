@@ -107,8 +107,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.buttonDisableTracking.setOnClickListener {
             TealiumHelper.trackEvent(
-                "disabledevicetracking",
-                mapOf("disable_device_tracking" to true)
+                "anonymize_user",
+                mapOf("anonymize_user" to true)
             )
         }
 

@@ -10,18 +10,18 @@ object Commands {
     const val SEPARATOR = ","
 
     const val INITIALIZE = "initialize"
-    const val LAUNCH = "launch"
     const val TRACK_LOCATION = "tracklocation"
     const val SET_HOST = "sethost"
     const val SET_USER_EMAILS = "setuseremails"
     const val SET_CURRENCY_CODE = "setcurrencycode"
     const val SET_CUSTOMER_ID = "setcustomerid"
-    const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
+    const val ANONYMIZE_USER = "anonymizeuser"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
     const val STOP_TRACKING = "stoptracking"
     const val LOG_AD_REVENUE = "logadrevenue"
     const val ENABLE_APPSET_ID = "enableappsetid"
     const val SET_DMA_CONSENT = "setdmaconsent"
+    const val SET_DISABLE_NETWORK_DATA = "setdisablenetworkdata"
 }
 
 object StandardEvents {
@@ -36,14 +36,13 @@ object StandardEvents {
         "tutorialcompletion" to AFInAppEventType.TUTORIAL_COMPLETION,
         "initiatecheckout" to AFInAppEventType.INITIATED_CHECKOUT,
         "purchase" to AFInAppEventType.PURCHASE,
-        "cancelpurchase" to "cancel_purchase",
         "subscribe" to AFInAppEventType.SUBSCRIBE,
         "starttrial" to AFInAppEventType.START_TRIAL,
         "rate" to AFInAppEventType.RATE,
         "spentcredits" to AFInAppEventType.SPENT_CREDIT,
         "achievementunlocked" to AFInAppEventType.ACHIEVEMENT_UNLOCKED,
         "contentview" to AFInAppEventType.CONTENT_VIEW,
-        "listview" to "af_list_view",
+        "listview" to AFInAppEventType.LIST_VIEW,
         "adclick" to AFInAppEventType.AD_CLICK,
         "adview" to AFInAppEventType.AD_VIEW,
         "share" to AFInAppEventType.SHARE,
@@ -51,7 +50,13 @@ object StandardEvents {
         "login" to AFInAppEventType.LOGIN,
         "reengage" to AFInAppEventType.RE_ENGAGE,
         "openfrompushnotification" to AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION,
-        "update" to AFInAppEventType.UPDATE
+        "update" to AFInAppEventType.UPDATE,
+        "search" to AFInAppEventType.SEARCH,
+        "travelbooking" to AFInAppEventType.TRAVEL_BOOKING,
+        "customersegment" to AFInAppEventType.CUSTOMER_SEGMENT,
+        "locationchanged" to AFInAppEventType.LOCATION_CHANGED,
+        "locationcoordinates" to AFInAppEventType.LOCATION_COORDINATES,
+        "orderid" to AFInAppEventType.ORDER_ID
     )
 }
 
@@ -60,10 +65,12 @@ object Config {
     const val MIN_TIME_BETWEEN_SESSIONS = "time_between_sessions"
     const val ANONYMIZE_USER = "anonymize_user"
     const val CUSTOM_DATA = "custom_data"
-    const val SETTINGS = "settings"
     const val DEV_KEY = "app_dev_key"
     const val DISABLE_NETWORK_DATA = "disable_network_data"
     const val ENABLE_APPSET_ID = "enable_appset_id"
+    const val COLLECT_DEVICE_NAME = "collect_device_name"
+    const val DISABLE_AD_TRACKING = "disable_ad_tracking"
+    const val DISABLE_APPLE_AD_TRACKING = "disable_apple_ad_tracking"
 }
 
 object Customer {
@@ -90,7 +97,7 @@ object DeepLink {
 }
 
 object Tracking {
-    const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
+    const val ANONYMIZE_USER = "anonymize_user"
     const val STOP_TRACKING = "stop_tracking"
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
 }

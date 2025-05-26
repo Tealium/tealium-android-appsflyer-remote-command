@@ -36,7 +36,7 @@ class AppsFlyerInstance(
             }
 
             if (settings.containsKey(Config.ANONYMIZE_USER)) {
-                anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
+                this.anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
@@ -56,6 +56,20 @@ class AppsFlyerInstance(
 
             if (settings.containsKey(Config.DEBUG)) {
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
+            }
+
+            if (settings.containsKey(Config.COLLECT_DEVICE_NAME)) {
+                setCollectDeviceName(settings[Config.COLLECT_DEVICE_NAME] as Boolean)
+            }
+
+            // Note: disable_ad_tracking and disable_apple_ad_tracking are iOS-specific
+            // and don't have direct Android equivalents in AppsFlyerLib
+            if (settings.containsKey(Config.DISABLE_AD_TRACKING)) {
+                Log.d(BuildConfig.TAG, "disable_ad_tracking is iOS-specific, ignoring on Android")
+            }
+
+            if (settings.containsKey(Config.DISABLE_APPLE_AD_TRACKING)) {
+                Log.d(BuildConfig.TAG, "disable_apple_ad_tracking is iOS-specific, ignoring on Android")
             }
         }
         if (!devKey.isNullOrEmpty()) {
@@ -102,8 +116,8 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setCustomerUserId(id)
     }
 
-    override fun disableDeviceTracking(disable: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(disable)
+    override fun anonymizeUser(anonymize: Boolean) {
+        AppsFlyerLib.getInstance().anonymizeUser(anonymize)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
@@ -168,16 +182,16 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    private fun anonymizeUser(isDisabled: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
-    }
-
     private fun addCustomData(data: HashMap<String, Any>) {
         AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
     private fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
+    }
+
+    private fun setCollectDeviceName(shouldCollect: Boolean) {
+        AppsFlyerLib.getInstance().setCollectAndroidID(shouldCollect)
     }
 
     private fun toMap(json: JSONObject): Map<String, Any> {
