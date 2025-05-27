@@ -24,6 +24,22 @@ object Commands {
     const val ENABLE_APPSET_ID = "enableappsetid"
     const val SET_DMA_CONSENT = "setdmaconsent"
     const val SET_DISABLE_NETWORK_DATA = "setdisablenetworkdata"
+    const val SET_PHONE_NUMBER = "setphonenumber"
+    const val SET_OUT_OF_STORE = "setoutofstore"
+    const val ADD_PUSH_NOTIFICATION_DEEP_LINK_PATH = "addpushnotificationdeeplinkpath"
+    const val SEND_PUSH_NOTIFICATION_DATA = "sendpushnotificationdata"
+    const val VALIDATE_AND_LOG_PURCHASE = "validateandlogpurchase"
+    const val LOG_SESSION = "logsession"
+    const val WAIT_FOR_CUSTOMER_USER_ID = "waitforcustomeruserid"
+    const val SET_CUSTOMER_ID_AND_LOG_SESSION = "setcustomeridandlogsession"
+    const val SET_MIN_TIME_BETWEEN_SESSIONS = "setmintimebetweensessions"
+    const val SET_APP_ID = "setappid"
+    const val SET_DISABLE_ADVERTISING_IDENTIFIERS = "setdisableadvertisingidentifiers"
+    const val ENABLE_TCF_DATA_COLLECTION = "enabletcfdatacollection"
+    const val SET_SHARING_FILTER_FOR_PARTNERS = "setsharingfilterforpartners"
+    const val UPDATE_SERVER_UNINSTALL_TOKEN = "updateserveruninstalltoken"
+    const val SET_IS_UPDATE = "setisupdate"
+    const val SET_ADDITIONAL_DATA = "setadditionaldata"
 }
 
 object StandardEvents {
@@ -182,5 +198,62 @@ enum class EmailHashType(val value: String) {
             SHA256 -> EmailsCryptType.SHA256
         }
     }
+}
+
+object PushNotification {
+    const val DEEP_LINK_PATH = "push_deep_link_path"
+}
+
+object OutOfStore {
+    const val SOURCE_NAME = "out_of_store_source"
+}
+
+object PhoneNumber {
+    const val PHONE_NUMBER = "phone_number"
+}
+
+object InAppPurchase {
+    const val PURCHASE_TYPE = "purchase_type"
+    const val PURCHASE_TOKEN = "purchase_token"
+    const val PRODUCT_ID = "product_id"
+    const val PRICE = "price"
+    const val CURRENCY = "currency"
+    const val ADDITIONAL_PARAMETERS = "additional_parameters"
+}
+
+enum class PurchaseType(val value: String) {
+    ONE_TIME_PURCHASE("one_time_purchase"),
+    SUBSCRIPTION("subscription");
+    
+    companion object {
+        fun fromString(value: String?): PurchaseType? {
+            return when (value?.lowercase()) {
+                "one_time_purchase", "onetime", "one_time" -> ONE_TIME_PURCHASE
+                "subscription", "sub" -> SUBSCRIPTION
+                else -> null
+            }
+        }
+    }
+}
+
+object CustomerUserID {
+    const val WAIT_FOR_CUSTOMER_USER_ID = "wait_for_customer_user_id"
+}
+
+object AppConfig {
+    const val APP_ID = "app_id"
+    const val MIN_TIME_BETWEEN_SESSIONS = "min_time_between_sessions"
+}
+
+object Privacy {
+    const val DISABLE_ADVERTISING_IDENTIFIERS = "disable_advertising_identifiers"
+    const val ENABLE_TCF_DATA_COLLECTION = "enable_tcf_data_collection"
+    const val SHARING_FILTER_PARTNERS = "sharing_filter_partners"
+}
+
+object Analytics {
+    const val UNINSTALL_TOKEN = "uninstall_token"
+    const val IS_UPDATE = "is_update"
+    const val ADDITIONAL_DATA = "additional_data"
 }
 

@@ -439,4 +439,319 @@ class AppsFlyerRemoteCommandTest {
 
         confirmVerified(mockAppsFlyerInstance)
     }
+
+    @Test
+    fun testUpdateServerUninstallToken() {
+        val payload = JSONObject()
+        payload.put(Analytics.UNINSTALL_TOKEN, "test_uninstall_token_123")
+        payload.put(COMMAND_NAME_KEY, Commands.UPDATE_SERVER_UNINSTALL_TOKEN)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.UPDATE_SERVER_UNINSTALL_TOKEN), payload)
+
+        verify {
+            mockAppsFlyerInstance.updateServerUninstallToken("test_uninstall_token_123")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetIsUpdate() {
+        val payload = JSONObject()
+        payload.put(Analytics.IS_UPDATE, true)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_IS_UPDATE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_IS_UPDATE), payload)
+
+        verify {
+            mockAppsFlyerInstance.setIsUpdate(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetAdditionalData() {
+        val additionalDataObj = JSONObject()
+        additionalDataObj.put("custom_param_1", "value1")
+        additionalDataObj.put("custom_param_2", "value2")
+        additionalDataObj.put("app_version", "1.2.3")
+
+        val payload = JSONObject()
+        payload.put(Analytics.ADDITIONAL_DATA, additionalDataObj)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_ADDITIONAL_DATA)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_ADDITIONAL_DATA), payload)
+
+        val expectedAdditionalData = mapOf(
+            "custom_param_1" to "value1",
+            "custom_param_2" to "value2",
+            "app_version" to "1.2.3"
+        )
+
+        verify {
+            mockAppsFlyerInstance.setAdditionalData(expectedAdditionalData)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetPhoneNumber() {
+        val payload = JSONObject()
+        payload.put(PhoneNumber.PHONE_NUMBER, "+1234567890")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_PHONE_NUMBER)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), payload)
+
+        verify {
+            mockAppsFlyerInstance.setPhoneNumber("+1234567890")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetOutOfStore() {
+        val payload = JSONObject()
+        payload.put(OutOfStore.SOURCE_NAME, "samsung_galaxy_store")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_OUT_OF_STORE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_OUT_OF_STORE), payload)
+
+        verify {
+            mockAppsFlyerInstance.setOutOfStore("samsung_galaxy_store")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testAddPushNotificationDeepLinkPath() {
+        val deepLinkPathArray = JSONArray()
+        deepLinkPathArray.put("notification")
+        deepLinkPathArray.put("campaigns")
+        deepLinkPathArray.put("promotions")
+
+        val payload = JSONObject()
+        payload.put(PushNotification.DEEP_LINK_PATH, deepLinkPathArray)
+        payload.put(COMMAND_NAME_KEY, Commands.ADD_PUSH_NOTIFICATION_DEEP_LINK_PATH)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ADD_PUSH_NOTIFICATION_DEEP_LINK_PATH), payload)
+
+        verify {
+            mockAppsFlyerInstance.addPushNotificationDeepLinkPath(
+                listOf("notification", "campaigns", "promotions")
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSendPushNotificationData() {
+        val payload = JSONObject()
+        payload.put(COMMAND_NAME_KEY, Commands.SEND_PUSH_NOTIFICATION_DATA)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SEND_PUSH_NOTIFICATION_DATA), payload)
+
+        verify {
+            mockAppsFlyerInstance.sendPushNotificationData()
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testValidateAndLogInAppPurchase() {
+        val payload = JSONObject()
+        payload.put(InAppPurchase.PURCHASE_TYPE, "one_time_purchase")
+        payload.put(InAppPurchase.PURCHASE_TOKEN, "test_token_123")
+        payload.put(InAppPurchase.PRODUCT_ID, "premium_package")
+        payload.put(InAppPurchase.PRICE, "9.99")
+        payload.put(InAppPurchase.CURRENCY, "USD")
+        
+        val additionalParams = JSONObject()
+        additionalParams.put("product_name", "Premium Package")
+        additionalParams.put("category", "premium")
+        payload.put(InAppPurchase.ADDITIONAL_PARAMETERS, additionalParams)
+        
+        payload.put(COMMAND_NAME_KEY, Commands.VALIDATE_AND_LOG_PURCHASE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.VALIDATE_AND_LOG_PURCHASE), payload)
+
+        verify {
+            mockAppsFlyerInstance.validateAndLogInAppPurchase(
+                PurchaseType.ONE_TIME_PURCHASE,
+                "test_token_123",
+                "premium_package",
+                "9.99",
+                "USD",
+                mapOf(
+                    "product_name" to "Premium Package",
+                    "category" to "premium"
+                )
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testValidateAndLogInAppPurchaseWithInvalidType() {
+        val payload = JSONObject()
+        payload.put(InAppPurchase.PURCHASE_TYPE, "invalid_type")
+        payload.put(InAppPurchase.PURCHASE_TOKEN, "test_token_123")
+        payload.put(InAppPurchase.PRODUCT_ID, "premium_package")
+        payload.put(InAppPurchase.PRICE, "9.99")
+        payload.put(InAppPurchase.CURRENCY, "USD")
+        payload.put(COMMAND_NAME_KEY, Commands.VALIDATE_AND_LOG_PURCHASE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.VALIDATE_AND_LOG_PURCHASE), payload)
+
+        verify(exactly = 0) {
+            mockAppsFlyerInstance.validateAndLogInAppPurchase(any(), any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun testLogSession() {
+        val payload = JSONObject()
+        payload.put(COMMAND_NAME_KEY, Commands.LOG_SESSION)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_SESSION), payload)
+
+        verify {
+            mockAppsFlyerInstance.logSession()
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testWaitForCustomerUserId() {
+        val payload = JSONObject()
+        payload.put(CustomerUserID.WAIT_FOR_CUSTOMER_USER_ID, true)
+        payload.put(COMMAND_NAME_KEY, Commands.WAIT_FOR_CUSTOMER_USER_ID)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.WAIT_FOR_CUSTOMER_USER_ID), payload)
+
+        verify {
+            mockAppsFlyerInstance.waitForCustomerUserId(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetCustomerIdAndLogSession() {
+        val payload = JSONObject()
+        payload.put(Customer.USER_ID, "test_user_456")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_CUSTOMER_ID_AND_LOG_SESSION)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID_AND_LOG_SESSION), payload)
+
+        verify {
+            mockAppsFlyerInstance.setCustomerIdAndLogSession("test_user_456")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetMinTimeBetweenSessions() {
+        val payload = JSONObject()
+        payload.put(AppConfig.MIN_TIME_BETWEEN_SESSIONS, 15)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_MIN_TIME_BETWEEN_SESSIONS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_MIN_TIME_BETWEEN_SESSIONS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setMinTimeBetweenSessions(15)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetAppId() {
+        val payload = JSONObject()
+        payload.put(AppConfig.APP_ID, "com.example.testapp")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_APP_ID)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_APP_ID), payload)
+
+        verify {
+            mockAppsFlyerInstance.setAppId("com.example.testapp")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetDisableAdvertisingIdentifiers() {
+        val payload = JSONObject()
+        payload.put(Privacy.DISABLE_ADVERTISING_IDENTIFIERS, true)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_DISABLE_ADVERTISING_IDENTIFIERS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_DISABLE_ADVERTISING_IDENTIFIERS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setDisableAdvertisingIdentifiers(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testEnableTCFDataCollection() {
+        val payload = JSONObject()
+        payload.put(Privacy.ENABLE_TCF_DATA_COLLECTION, true)
+        payload.put(COMMAND_NAME_KEY, Commands.ENABLE_TCF_DATA_COLLECTION)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ENABLE_TCF_DATA_COLLECTION), payload)
+
+        verify {
+            mockAppsFlyerInstance.enableTCFDataCollection(true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetSharingFilterForPartners() {
+        val partnersArray = JSONArray()
+        partnersArray.put("facebook_int")
+        partnersArray.put("googleadwords_int")
+        partnersArray.put("snapchat_int")
+
+        val payload = JSONObject()
+        payload.put(Privacy.SHARING_FILTER_PARTNERS, partnersArray)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setSharingFilterForPartners(
+                listOf("facebook_int", "googleadwords_int", "snapchat_int")
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetSharingFilterForPartnersWithSingleString() {
+        val payload = JSONObject()
+        payload.put(Privacy.SHARING_FILTER_PARTNERS, "facebook_int")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setSharingFilterForPartners(listOf("facebook_int"))
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
 }

@@ -9,6 +9,8 @@ import com.appsflyer.AppsFlyerLib
 import com.appsflyer.AppsFlyerConsent
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.MediationNetwork
+import com.appsflyer.AFPurchaseDetails
+import com.appsflyer.AFPurchaseType
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -183,6 +185,115 @@ class AppsFlyerInstance(
         } catch (e: Exception) {
             Log.e(BuildConfig.TAG, "Error logging ad revenue: ${e.message}")
         }
+    }
+
+    override fun setPhoneNumber(phoneNumber: String) {
+        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber)
+    }
+
+    override fun setOutOfStore(sourceName: String) {
+        AppsFlyerLib.getInstance().setOutOfStore(sourceName)
+    }
+
+    override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
+        val pathArray = deepLinkPath.toTypedArray()
+        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
+    }
+
+    override fun sendPushNotificationData() {
+        weakActivity?.get()?.let { activity ->
+            AppsFlyerLib.getInstance().sendPushNotificationData(activity)
+        } ?: run {
+            Log.w(BuildConfig.TAG, "Cannot send push notification data: no active activity")
+        }
+    }
+
+    override fun validateAndLogInAppPurchase(
+        purchaseType: PurchaseType,
+        purchaseToken: String,
+        productId: String,
+        price: String,
+        currency: String,
+        additionalParameters: Map<String, Any>?
+    ) {
+        try {
+            val afPurchaseType = when (purchaseType) {
+                PurchaseType.ONE_TIME_PURCHASE -> AFPurchaseType.ONE_TIME_PURCHASE
+                PurchaseType.SUBSCRIPTION -> AFPurchaseType.SUBSCRIPTION
+            }
+            
+            val purchaseDetails = AFPurchaseDetails(
+                afPurchaseType,
+                purchaseToken,
+                productId,
+                price,
+                currency
+            )
+            
+            // Convert Map<String, Any> to Map<String, String> for additional parameters
+            val stringParams = additionalParameters?.mapValues { it.value.toString() }
+            
+            AppsFlyerLib.getInstance().validateAndLogInAppPurchase(
+                purchaseDetails,
+                stringParams,
+                null // No validation callback in this implementation
+            )
+        } catch (e: Exception) {
+            Log.e(BuildConfig.TAG, "Error validating and logging purchase: ${e.message}")
+        }
+    }
+
+    override fun logSession() {
+        weakActivity?.get()?.let { activity ->
+            AppsFlyerLib.getInstance().logSession(activity)
+        } ?: run {
+            AppsFlyerLib.getInstance().logSession(application.applicationContext)
+        }
+    }
+
+    override fun waitForCustomerUserId(wait: Boolean) {
+        AppsFlyerLib.getInstance().waitForCustomerUserId(wait)
+    }
+
+    override fun setCustomerIdAndLogSession(customerId: String) {
+        weakActivity?.get()?.let { activity ->
+            AppsFlyerLib.getInstance().setCustomerIdAndLogSession(customerId, activity)
+        } ?: run {
+            AppsFlyerLib.getInstance().setCustomerIdAndLogSession(customerId, application.applicationContext)
+        }
+    }
+
+    override fun setMinTimeBetweenSessions(seconds: Int) {
+        AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
+    }
+
+    override fun setAppId(appId: String) {
+        AppsFlyerLib.getInstance().setAppId(appId)
+    }
+
+    override fun setDisableAdvertisingIdentifiers(disable: Boolean) {
+        AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(disable)
+    }
+
+    override fun enableTCFDataCollection(enable: Boolean) {
+        AppsFlyerLib.getInstance().enableTCFDataCollection(enable)
+    }
+
+    override fun setSharingFilterForPartners(partners: List<String>) {
+        val partnersArray = partners.toTypedArray()
+        AppsFlyerLib.getInstance().setSharingFilterForPartners(*partnersArray)
+    }
+
+    override fun updateServerUninstallToken(token: String) {
+        AppsFlyerLib.getInstance().updateServerUninstallToken(application.applicationContext, token)
+    }
+
+    override fun setIsUpdate(isUpdate: Boolean) {
+        AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
+    }
+
+    override fun setAdditionalData(additionalData: Map<String, Any>) {
+        AppsFlyerLib.getInstance().setAdditionalData(additionalData)
     }
 
     private fun setMinsBetweenSessions(seconds: Int) {

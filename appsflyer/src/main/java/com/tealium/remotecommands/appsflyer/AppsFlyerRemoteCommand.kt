@@ -213,6 +213,167 @@ open class AppsFlyerRemoteCommand(
                     )
                 }
 
+                Commands.SET_PHONE_NUMBER -> {
+                    val phoneNumber = payload.optString(PhoneNumber.PHONE_NUMBER)
+                    if (phoneNumber.isNotEmpty()) {
+                        appsFlyerInstance.setPhoneNumber(phoneNumber)
+                    } else {
+                        Log.w(TAG, "${PhoneNumber.PHONE_NUMBER} is a required key")
+                    }
+                }
+
+                Commands.SET_OUT_OF_STORE -> {
+                    val sourceName = payload.optString(OutOfStore.SOURCE_NAME)
+                    if (sourceName.isNotEmpty()) {
+                        appsFlyerInstance.setOutOfStore(sourceName)
+                    } else {
+                        Log.w(TAG, "${OutOfStore.SOURCE_NAME} is a required key")
+                    }
+                }
+
+                Commands.ADD_PUSH_NOTIFICATION_DEEP_LINK_PATH -> {
+                    val deepLinkPathArray = payload.optJSONArray(PushNotification.DEEP_LINK_PATH)
+                    deepLinkPathArray?.let {
+                        val pathList = toList(it)
+                        appsFlyerInstance.addPushNotificationDeepLinkPath(pathList)
+                    } ?: run {
+                        Log.w(TAG, "${PushNotification.DEEP_LINK_PATH} is a required key")
+                    }
+                }
+
+                Commands.SEND_PUSH_NOTIFICATION_DATA -> {
+                    appsFlyerInstance.sendPushNotificationData()
+                }
+
+                Commands.VALIDATE_AND_LOG_PURCHASE -> {
+                    val purchaseTypeString = payload.optString(InAppPurchase.PURCHASE_TYPE)
+                    val purchaseToken = payload.optString(InAppPurchase.PURCHASE_TOKEN)
+                    val productId = payload.optString(InAppPurchase.PRODUCT_ID)
+                    val price = payload.optString(InAppPurchase.PRICE)
+                    val currency = payload.optString(InAppPurchase.CURRENCY)
+                    
+                    val purchaseType = PurchaseType.fromString(purchaseTypeString)
+                    
+                    if (purchaseType == null) {
+                        Log.e(TAG, "Invalid or missing ${InAppPurchase.PURCHASE_TYPE}. Valid values are: one_time_purchase, subscription")
+                        return@forEach
+                    }
+                    
+                    if (purchaseToken.isEmpty()) {
+                        Log.e(TAG, "${InAppPurchase.PURCHASE_TOKEN} is a required key")
+                        return@forEach
+                    }
+                    
+                    if (productId.isEmpty()) {
+                        Log.e(TAG, "${InAppPurchase.PRODUCT_ID} is a required key")
+                        return@forEach
+                    }
+                    
+                    if (price.isEmpty()) {
+                        Log.e(TAG, "${InAppPurchase.PRICE} is a required key")
+                        return@forEach
+                    }
+                    
+                    if (currency.isEmpty()) {
+                        Log.e(TAG, "${InAppPurchase.CURRENCY} is a required key")
+                        return@forEach
+                    }
+                    
+                    val additionalParams = payload.optJSONObject(InAppPurchase.ADDITIONAL_PARAMETERS)
+                    val additionalParamsMap = jsonToMap(additionalParams)
+                    
+                    appsFlyerInstance.validateAndLogInAppPurchase(
+                        purchaseType,
+                        purchaseToken,
+                        productId,
+                        price,
+                        currency,
+                        additionalParamsMap
+                    )
+                }
+
+                Commands.LOG_SESSION -> {
+                    appsFlyerInstance.logSession()
+                }
+
+                Commands.WAIT_FOR_CUSTOMER_USER_ID -> {
+                    val wait = payload.optBoolean(CustomerUserID.WAIT_FOR_CUSTOMER_USER_ID, false)
+                    appsFlyerInstance.waitForCustomerUserId(wait)
+                }
+
+                Commands.SET_CUSTOMER_ID_AND_LOG_SESSION -> {
+                    val customerId = payload.optString(Customer.USER_ID)
+                    if (customerId.isNotEmpty()) {
+                        appsFlyerInstance.setCustomerIdAndLogSession(customerId)
+                    } else {
+                        Log.e(TAG, "${Customer.USER_ID} is a required key for setCustomerIdAndLogSession")
+                    }
+                }
+
+                Commands.SET_MIN_TIME_BETWEEN_SESSIONS -> {
+                    val seconds = payload.optInt(AppConfig.MIN_TIME_BETWEEN_SESSIONS, 5)
+                    appsFlyerInstance.setMinTimeBetweenSessions(seconds)
+                }
+
+                Commands.SET_APP_ID -> {
+                    val appId = payload.optString(AppConfig.APP_ID)
+                    if (appId.isNotEmpty()) {
+                        appsFlyerInstance.setAppId(appId)
+                    } else {
+                        Log.w(TAG, "${AppConfig.APP_ID} is a required key")
+                    }
+                }
+
+                Commands.SET_DISABLE_ADVERTISING_IDENTIFIERS -> {
+                    val disable = payload.optBoolean(Privacy.DISABLE_ADVERTISING_IDENTIFIERS, false)
+                    appsFlyerInstance.setDisableAdvertisingIdentifiers(disable)
+                }
+
+                Commands.ENABLE_TCF_DATA_COLLECTION -> {
+                    val enable = payload.optBoolean(Privacy.ENABLE_TCF_DATA_COLLECTION, false)
+                    appsFlyerInstance.enableTCFDataCollection(enable)
+                }
+
+                Commands.SET_SHARING_FILTER_FOR_PARTNERS -> {
+                    val partnersArray = payload.optJSONArray(Privacy.SHARING_FILTER_PARTNERS)
+                    partnersArray?.let {
+                        val partnersList = toList(it)
+                        appsFlyerInstance.setSharingFilterForPartners(partnersList)
+                    } ?: run {
+                        // If no array provided, check for single string or "all"
+                        val singlePartner = payload.optString(Privacy.SHARING_FILTER_PARTNERS)
+                        if (singlePartner.isNotEmpty()) {
+                            appsFlyerInstance.setSharingFilterForPartners(listOf(singlePartner))
+                        } else {
+                            Log.w(TAG, "${Privacy.SHARING_FILTER_PARTNERS} parameter is required")
+                        }
+                    }
+                }
+
+                Commands.UPDATE_SERVER_UNINSTALL_TOKEN -> {
+                    val token = payload.optString(Analytics.UNINSTALL_TOKEN)
+                    if (token.isNotEmpty()) {
+                        appsFlyerInstance.updateServerUninstallToken(token)
+                    } else {
+                        Log.w(TAG, "${Analytics.UNINSTALL_TOKEN} is a required key")
+                    }
+                }
+
+                Commands.SET_IS_UPDATE -> {
+                    val isUpdate = payload.optBoolean(Analytics.IS_UPDATE, false)
+                    appsFlyerInstance.setIsUpdate(isUpdate)
+                }
+
+                Commands.SET_ADDITIONAL_DATA -> {
+                    val additionalDataObj = payload.optJSONObject(Analytics.ADDITIONAL_DATA)
+                    additionalDataObj?.let {
+                        val additionalDataMap = jsonToMap(it)
+                        appsFlyerInstance.setAdditionalData(additionalDataMap)
+                    } ?: run {
+                        Log.w(TAG, "${Analytics.ADDITIONAL_DATA} parameter is required")
+                    }
+                }
+
                 else -> {
                     val eventType = standardEvent(command) ?: command
                     val eventParameters: JSONObject =
