@@ -3,7 +3,9 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
+import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.MediationNetwork
+import com.appsflyer.AppsFlyerProperties.EmailsCryptType
 
 object Commands {
     const val COMMAND_KEY = "command_name"
@@ -76,6 +78,7 @@ object Config {
 object Customer {
     const val USER_ID = "af_customer_user_id"
     const val EMAILS = "customer_emails"
+    const val EMAIL_HASH_TYPE = "email_hash_type"
 }
 
 object Location {
@@ -155,6 +158,28 @@ enum class MediationNetworkType(val value: String) {
             TOPON_PTE -> MediationNetwork.TOPON_PTE
             CUSTOM_MEDIATION -> MediationNetwork.CUSTOM_MEDIATION
             DIRECT_MONETIZATION_NETWORK -> MediationNetwork.DIRECT_MONETIZATION_NETWORK
+        }
+    }
+}
+
+enum class EmailHashType(val value: String) {
+    NONE("none"),
+    SHA256("sha256");
+    
+    companion object {
+        fun fromString(value: String?): EmailHashType? {
+            return when (value?.lowercase()) {
+                "none" -> NONE
+                "sha256" -> SHA256
+                else -> null
+            }
+        }
+    }
+    
+    fun toAppsFlyerCryptType(): EmailsCryptType {
+        return when (this) {
+            NONE -> EmailsCryptType.NONE
+            SHA256 -> EmailsCryptType.SHA256
         }
     }
 }

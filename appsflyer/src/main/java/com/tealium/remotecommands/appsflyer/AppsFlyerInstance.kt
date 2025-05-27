@@ -103,9 +103,16 @@ class AppsFlyerInstance(
         }
     }
 
-    override fun setUserEmails(emails: List<String>) {
+    override fun setUserEmails(emails: List<String>, hashType: EmailHashType?) {
         val userEmails = emails.toTypedArray()
-        AppsFlyerLib.getInstance().setUserEmails(*userEmails)
+        
+        if (hashType != null) {
+            // Use the method with encryption when hash type is specified
+            AppsFlyerLib.getInstance().setUserEmails(hashType.toAppsFlyerCryptType(), *userEmails)
+        } else {
+            // Use the simple method without encryption when no hash type is specified
+            AppsFlyerLib.getInstance().setUserEmails(*userEmails)
+        }
     }
 
     override fun setCurrencyCode(currency: String) {

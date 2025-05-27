@@ -63,9 +63,17 @@ open class AppsFlyerRemoteCommand(
 
                 Commands.SET_USER_EMAILS -> {
                     val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
+                    val hashTypeString: String? = payload.optString(Customer.EMAIL_HASH_TYPE).takeIf { it.isNotEmpty() }
+                    val hashType: EmailHashType? = EmailHashType.fromString(hashTypeString)
+                    
+                    // Log warning if invalid hash type was provided
+                    if (hashTypeString != null && hashType == null) {
+                        Log.w(TAG, "Invalid email hash type: $hashTypeString. Valid values are: none, sha256")
+                    }
+                    
                     emails?.let {
                         val emailList = toList(emails)
-                        appsFlyerInstance.setUserEmails(emailList)
+                        appsFlyerInstance.setUserEmails(emailList, hashType)
                     }
                 }
 

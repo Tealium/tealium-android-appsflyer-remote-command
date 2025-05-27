@@ -97,7 +97,56 @@ class AppsFlyerRemoteCommandTest {
                     "test@testing.com",
                     "test2@testing.com",
                     "test3@testing.com"
-                )
+                ),
+                null
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetUserEmailsWithHashType() {
+        val userEmailProperties = JSONArray()
+        userEmailProperties.put("test@testing.com")
+        userEmailProperties.put("test2@testing.com")
+
+        val payload = JSONObject()
+        payload.put(Customer.EMAILS, userEmailProperties)
+        payload.put(Customer.EMAIL_HASH_TYPE, "sha256")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setUserEmails(
+                listOf(
+                    "test@testing.com",
+                    "test2@testing.com"
+                ),
+                EmailHashType.SHA256
+            )
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetUserEmailsWithInvalidHashType() {
+        val userEmailProperties = JSONArray()
+        userEmailProperties.put("test@testing.com")
+
+        val payload = JSONObject()
+        payload.put(Customer.EMAILS, userEmailProperties)
+        payload.put(Customer.EMAIL_HASH_TYPE, "invalid_hash")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setUserEmails(
+                listOf("test@testing.com"),
+                null 
             )
         }
 

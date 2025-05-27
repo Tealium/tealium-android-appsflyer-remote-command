@@ -7,7 +7,7 @@ interface AppsFlyerCommand {
     fun trackLocation(latitude: Double, longitude: Double)
     fun setHost(host: String, hostPrefix: String? = "")
     fun trackEvent(eventType: String, eventParameters: Map<String, Any>? = null)
-    fun setUserEmails(emails: List<String>)
+    fun setUserEmails(emails: List<String>, hashType: EmailHashType? = null)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
     fun anonymizeUser(anonymize: Boolean)
