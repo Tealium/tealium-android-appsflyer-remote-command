@@ -1,14 +1,36 @@
 package com.tealium.remotecommands.appsflyer
 
+import com.appsflyer.MediationNetwork
+
 interface AppsFlyerCommand {
     fun initialize(devKey: String? = null, configSettings: Map<String, Any>? = null)
     fun trackLocation(latitude: Double, longitude: Double)
     fun setHost(host: String, hostPrefix: String? = "")
     fun trackEvent(eventType: String, eventParameters: Map<String, Any>? = null)
-    fun setUserEmails(emails: List<String>)
+    fun setUserEmails(emails: List<String>, hashType: EmailHashType? = null)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
-    fun disableDeviceTracking(disable: Boolean)
+    fun anonymizeUser(anonymize: Boolean)
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
+    fun setDisableNetworkData(disable: Boolean)
+    fun enableAppSetIdCollection(enable: Boolean)
+    fun setDMAConsentData(consentData: Map<String, Any>)
+    fun logAdRevenue(monetizationNetwork: String, mediationNetwork: MediationNetwork, revenue: Double, currency: String, additionalParameters: Map<String, Any>? = null)
+    fun setPhoneNumber(phoneNumber: String)
+    fun setOutOfStore(sourceName: String)
+    fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>)
+    fun sendPushNotificationData()
+    fun validateAndLogInAppPurchase(purchaseType: PurchaseType, purchaseToken: String, productId: String, price: String, currency: String, additionalParameters: Map<String, Any>? = null)
+    fun logSession()
+    fun waitForCustomerUserId(wait: Boolean)
+    fun setCustomerIdAndLogSession(customerId: String)
+    fun setMinTimeBetweenSessions(seconds: Int)
+    fun setAppId(appId: String)
+    fun setDisableAdvertisingIdentifiers(disable: Boolean)
+    fun enableTCFDataCollection(enable: Boolean)
+    fun setSharingFilterForPartners(partners: List<String>)
+    fun updateServerUninstallToken(token: String)
+    fun setIsUpdate(isUpdate: Boolean)
+    fun setAdditionalData(additionalData: Map<String, Any>)
 }
