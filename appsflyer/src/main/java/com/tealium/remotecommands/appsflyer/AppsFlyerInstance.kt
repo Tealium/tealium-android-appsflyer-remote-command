@@ -158,10 +158,8 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setConsentData(consent)
     }
 
-    override fun enableAppSetIdCollection(enable: Boolean) {
-        if (!enable) {
-            AppsFlyerLib.getInstance().disableAppSetId()
-        }
+    override fun disableAppSetId(enable: Boolean) {
+        AppsFlyerLib.getInstance().disableAppSetId()
     }
 
     override fun logAdRevenue(

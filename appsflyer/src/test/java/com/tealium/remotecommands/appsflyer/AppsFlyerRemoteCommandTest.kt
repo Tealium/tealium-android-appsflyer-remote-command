@@ -316,15 +316,14 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun testEnableAppSetIdCollection() {
-        val payload = JSONObject()
-        payload.put(Config.ENABLE_APPSET_ID, true)
-        payload.put(COMMAND_NAME_KEY, Commands.ENABLE_APPSET_ID)
+    fun testDisableAppSetId() {
+        val payload = JSONObject() 
+        payload.put(COMMAND_NAME_KEY, Commands.DISABLE_APPSET_ID)
 
-        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ENABLE_APPSET_ID), payload)
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_APPSET_ID), payload)
 
         verify {
-            mockAppsFlyerInstance.enableAppSetIdCollection(true)
+            mockAppsFlyerInstance.disableAppSetId()
         }
 
         confirmVerified(mockAppsFlyerInstance)

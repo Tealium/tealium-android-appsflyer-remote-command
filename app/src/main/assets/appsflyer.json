@@ -7,7 +7,7 @@
     "disable_ad_tracking": false,
     "disable_apple_ad_tracking": false,
     "disable_network_data": false,
-    "enable_appset_id": true,
+    "disable_appset_id": false,
     "time_between_sessions": 30,
     "anonymize_user": false,
     "collect_device_name": false
@@ -155,7 +155,7 @@
     "set_host": "sethost",
     "custom_event": "custom_event",
     "set_dma_consent": "setdmaconsent",
-    "enable_appset_id": "enableappsetid",
+    "disable_appset_id": "disableappsetid",
     "log_ad_revenue": "logadrevenue",
     "travel_booking": "travelbooking",
     "location_changed": "locationchanged",

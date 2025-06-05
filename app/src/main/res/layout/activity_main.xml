@@ -93,10 +93,10 @@
         android:text="@string/disable_device_tracking" />
 
     <Button
-        android:id="@+id/button_enableAppsetId"
+        android:id="@+id/button_disableAppsetId"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/enable_appset_id" />
+        android:text="@string/disable_appset_id" />
 
     <Button
         android:id="@+id/button_stopTracking"

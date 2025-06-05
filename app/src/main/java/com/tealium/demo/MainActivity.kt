@@ -112,10 +112,10 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        binding.buttonEnableAppsetId.setOnClickListener {
+        binding.buttonDisableAppsetId.setOnClickListener {
             TealiumHelper.trackEvent(
-                "enable_appset_id",
-                mapOf("enable_appset_id" to true)
+                "disable_appset_id",
+                mapOf("disable_appset_id" to true)
             )
         }
 

@@ -129,9 +129,9 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
-                Commands.ENABLE_APPSET_ID -> {
-                    val enable = payload.optBoolean(Config.ENABLE_APPSET_ID, true)
-                    appsFlyerInstance.enableAppSetIdCollection(enable)
+                Commands.DISABLE_APPSET_ID -> {
+                    val disable = payload.optBoolean(Config.DISABLE_APPSET_ID, false)
+                    appsFlyerInstance.disableAppSetIdCollection(disable)
                 }
 
                 Commands.SET_DISABLE_NETWORK_DATA -> {
@@ -416,8 +416,8 @@ open class AppsFlyerRemoteCommand(
         if (payload.has(Config.MIN_TIME_BETWEEN_SESSIONS)) {
             configSettings[Config.MIN_TIME_BETWEEN_SESSIONS] = payload.optInt(Config.MIN_TIME_BETWEEN_SESSIONS)
         }
-        if (payload.has(Config.ENABLE_APPSET_ID)) {
-            configSettings[Config.ENABLE_APPSET_ID] = payload.optBoolean(Config.ENABLE_APPSET_ID)
+        if (payload.has(Config.DISABLE_APPSET_ID)) {
+            configSettings[Config.DISABLE_APPSET_ID] = payload.optBoolean(Config.DISABLE_APPSET_ID)
         }
         if (payload.has(Config.COLLECT_DEVICE_NAME)) {
             configSettings[Config.COLLECT_DEVICE_NAME] = payload.optBoolean(Config.COLLECT_DEVICE_NAME)
@@ -522,7 +522,7 @@ open class AppsFlyerRemoteCommand(
             Config.DEV_KEY,
             Config.ANONYMIZE_USER,
             Config.DISABLE_NETWORK_DATA,
-            Config.ENABLE_APPSET_ID,
+            Config.DISABLE_APPSET_ID,
             Config.MIN_TIME_BETWEEN_SESSIONS,
             Config.COLLECT_DEVICE_NAME,
             Config.DISABLE_AD_TRACKING,

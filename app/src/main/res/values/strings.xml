@@ -11,7 +11,7 @@
     <string name="set_dma_consent">Set DMA Consent</string>
     <string name="log_ad_revenue">Log Ad Revenue</string>
     <string name="disable_device_tracking">Disable Device Tracking</string>
-    <string name="enable_appset_id">Enable AppSet ID</string>
+    <string name="disable_appset_id">Disable AppSet ID</string>
     <string name="stop_tracking">Stop Tracking</string>
     <string name="validate_purchase">Validate In-App Purchase</string>
     <string name="set_phone_number">Set Phone Number</string>

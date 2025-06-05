@@ -14,7 +14,7 @@ interface AppsFlyerCommand {
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
     fun setDisableNetworkData(disable: Boolean)
-    fun enableAppSetIdCollection(enable: Boolean)
+    fun disableAppSetId()
     fun setDMAConsentData(consentData: Map<String, Any>)
     fun logAdRevenue(monetizationNetwork: String, mediationNetwork: MediationNetwork, revenue: Double, currency: String, additionalParameters: Map<String, Any>? = null)
     fun setPhoneNumber(phoneNumber: String)
