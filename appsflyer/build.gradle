@@ -21,11 +21,8 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-        debug {
-            debuggable true
-            minifyEnabled false
-        }
     }
+    namespace 'com.tealium.remotecommands.appsflyer'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -99,4 +96,3 @@ dependencies {
 
     androidTestImplementation "io.mockk:mockk-android:$mockk_version"
 }
-

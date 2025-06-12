@@ -1,2 +1,1 @@
 include ':app', ':appsflyer'
-rootProject.name='tealium-android-appsflyer-remote-command'

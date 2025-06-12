@@ -97,11 +97,8 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        if (host.isNotEmpty()) {
-            val prefix = if (hostPrefix.isNullOrEmpty()) "" else hostPrefix
+        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
             AppsFlyerLib.getInstance().setHost(host, prefix)
-        } else {
-            Log.w(BuildConfig.TAG, "setHost: host parameter cannot be empty")
         }
     }
 
@@ -138,130 +135,7 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
     }
 
-    override fun setDisableNetworkData(disable: Boolean) {
-        AppsFlyerLib.getInstance().setDisableNetworkData(disable)
-    }
-
-    override fun setDMAConsentData(consentData: Map<String, Any>) {
-        val gdprApplies = consentData[DMAConsent.GDPR_APPLIES] as? Boolean ?: false
-        val dataUsageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_DATA_USAGE] as? Boolean else null
-        val adsPersonalizationConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION] as? Boolean else null
-        val adStorageConsent = if (gdprApplies) consentData[DMAConsent.CONSENT_FOR_AD_STORAGE] as? Boolean else null
-        
-        val consent = AppsFlyerConsent(
-            isUserSubjectToGDPR = gdprApplies,
-            hasConsentForDataUsage = dataUsageConsent,
-            hasConsentForAdsPersonalization = adsPersonalizationConsent,
-            hasConsentForAdStorage = adStorageConsent
-        )
-        
-        AppsFlyerLib.getInstance().setConsentData(consent)
-    }
-
-    override fun disableAppSetId(enable: Boolean) {
-        AppsFlyerLib.getInstance().disableAppSetId()
-    }
-
-    override fun logAdRevenue(
-        monetizationNetwork: String,
-        mediationNetwork: MediationNetwork,
-        revenue: Double,
-        currency: String,
-        additionalParameters: Map<String, Any>?
-    ) {
-        try {
-            // Create AdRevenueData object directly with the provided MediationNetwork
-            val adRevenueData = AFAdRevenueData(
-                monetizationNetwork,
-                mediationNetwork,
-                currency,
-                revenue
-            )
-            
-            // Log the ad revenue with additional parameters if provided
-            AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters)
-        } catch (e: Exception) {
-            Log.e(BuildConfig.TAG, "Error logging ad revenue: ${e.message}")
-        }
-    }
-
-    override fun setPhoneNumber(phoneNumber: String) {
-        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber)
-    }
-
-    override fun setOutOfStore(sourceName: String) {
-        AppsFlyerLib.getInstance().setOutOfStore(sourceName)
-    }
-
-    override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
-        val pathArray = deepLinkPath.toTypedArray()
-        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
-    }
-
-    override fun sendPushNotificationData() {
-        weakActivity?.get()?.let { activity ->
-            AppsFlyerLib.getInstance().sendPushNotificationData(activity)
-        } ?: run {
-            Log.w(BuildConfig.TAG, "Cannot send push notification data: no active activity")
-        }
-    }
-
-    override fun validateAndLogInAppPurchase(
-        purchaseType: PurchaseType,
-        purchaseToken: String,
-        productId: String,
-        price: String,
-        currency: String,
-        additionalParameters: Map<String, Any>?
-    ) {
-        try {
-            val afPurchaseType = when (purchaseType) {
-                PurchaseType.ONE_TIME_PURCHASE -> AFPurchaseType.ONE_TIME_PURCHASE
-                PurchaseType.SUBSCRIPTION -> AFPurchaseType.SUBSCRIPTION
-            }
-            
-            val purchaseDetails = AFPurchaseDetails(
-                afPurchaseType,
-                purchaseToken,
-                productId,
-                price,
-                currency
-            )
-            
-            // Convert Map<String, Any> to Map<String, String> for additional parameters
-            val stringParams = additionalParameters?.mapValues { it.value.toString() }
-            
-            AppsFlyerLib.getInstance().validateAndLogInAppPurchase(
-                purchaseDetails,
-                stringParams,
-                null // No validation callback in this implementation
-            )
-        } catch (e: Exception) {
-            Log.e(BuildConfig.TAG, "Error validating and logging purchase: ${e.message}")
-        }
-    }
-
-    override fun logSession() {
-        weakActivity?.get()?.let { activity ->
-            AppsFlyerLib.getInstance().logSession(activity)
-        } ?: run {
-            AppsFlyerLib.getInstance().logSession(application.applicationContext)
-        }
-    }
-
-    override fun waitForCustomerUserId(wait: Boolean) {
-        AppsFlyerLib.getInstance().waitForCustomerUserId(wait)
-    }
-
-    override fun setCustomerIdAndLogSession(customerId: String) {
-        weakActivity?.get()?.let { activity ->
-            AppsFlyerLib.getInstance().setCustomerIdAndLogSession(customerId, activity)
-        } ?: run {
-            AppsFlyerLib.getInstance().setCustomerIdAndLogSession(customerId, application.applicationContext)
-        }
-    }
-
-    override fun setMinTimeBetweenSessions(seconds: Int) {
+    fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 

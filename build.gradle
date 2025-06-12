@@ -3,8 +3,8 @@
 buildscript {
     ext.kotlin_version = '1.9.23'
     ext.mockk_version = '1.13.9'
-    ext.tealium_appsflyer_version = '2.0.0'
-    ext.appsflyer_version = "[6.17,7)"
+    ext.tealium_appsflyer_version = '1.5.0'
+    ext.appsflyer_version = "[6.5,7)"
 
     repositories {
         google()
@@ -35,6 +35,6 @@ allprojects {
     }
 }
 
-tasks.register('clean', Delete) {
-    delete layout.buildDirectory
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }
