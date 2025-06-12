@@ -8,26 +8,4 @@
     <string name="track_location">Track Location</string>
     <string name="standard_events">Check Standard Events</string>
     <string name="custom_event">Custom Event</string>
-    <string name="set_dma_consent">Set DMA Consent</string>
-    <string name="log_ad_revenue">Log Ad Revenue</string>
-    <string name="disable_device_tracking">Disable Device Tracking</string>
-    <string name="disable_appset_id">Disable AppSet ID</string>
-    <string name="stop_tracking">Stop Tracking</string>
-    <string name="validate_purchase">Validate In-App Purchase</string>
-    <string name="set_phone_number">Set Phone Number</string>
-    <string name="set_out_of_store">Set Out-of-Store Source</string>
-    <string name="add_push_deep_link">Add Push Deep Link Path</string>
-    <string name="send_push_data">Send Push Notification Data</string>
-    <string name="log_session">Log Session</string>
-    <string name="wait_for_user_id">Wait for Customer User ID</string>
-    <string name="set_customer_id_and_log_session">Set Customer ID and Log Session</string>
-    <string name="disable_ad_identifiers">Disable Ad Identifiers</string>
-    <string name="enable_tcf">Enable TCF Data Collection</string>
-    <string name="resolve_deep_links">Resolve Deep Link URLs</string>
-    <string name="set_additional_data">Set Additional Data</string>
-    <string name="set_sharing_filter">Set Sharing Filter for Partners</string>
-    <string name="set_min_time_sessions">Set Min Time Between Sessions</string>
-    <string name="set_app_id">Set App ID</string>
-    <string name="update_uninstall_token">Update Uninstall Token</string>
-    <string name="set_is_update">Set Is Update</string>
 </resources>

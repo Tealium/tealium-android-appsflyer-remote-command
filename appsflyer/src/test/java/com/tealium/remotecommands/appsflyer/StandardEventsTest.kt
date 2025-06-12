@@ -200,7 +200,7 @@ class StandardEventsTest {
         payload.put("method", "12345")
         payload.put(Config.DEBUG, true)
         payload.put(Config.DEV_KEY, "12345")
-        payload.put(Config.ANONYMIZE_USER, true)
+        payload.put(Config.SETTINGS, "12345")
         payload.put(Commands.COMMAND_KEY, "12345")
         payload.put("app_id", "12345")
 

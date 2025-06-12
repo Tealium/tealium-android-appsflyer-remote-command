@@ -63,17 +63,9 @@ open class AppsFlyerRemoteCommand(
 
                 Commands.SET_USER_EMAILS -> {
                     val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
-                    val hashTypeString: String? = payload.optString(Customer.EMAIL_HASH_TYPE).takeIf { it.isNotEmpty() }
-                    val hashType: EmailHashType? = EmailHashType.fromString(hashTypeString)
-                    
-                    // Log warning if invalid hash type was provided
-                    if (hashTypeString != null && hashType == null) {
-                        Log.w(TAG, "Invalid email hash type: $hashTypeString. Valid values are: none, sha256")
-                    }
-                    
                     emails?.let {
                         val emailList = toList(emails)
-                        appsFlyerInstance.setUserEmails(emailList, hashType)
+                        appsFlyerInstance.setUserEmails(emailList)
                     }
                 }
 
@@ -102,11 +94,17 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
-                Commands.ANONYMIZE_USER -> {
-                    val anonymizeUser: Boolean =
-                        payload.optBoolean(Tracking.ANONYMIZE_USER, false)
-
-                    appsFlyerInstance.anonymizeUser(anonymizeUser)
+                Commands.DISABLE_DEVICE_TRACKING -> {
+                    val disableTracking: Boolean? =
+                        payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
+                    disableTracking?.let {
+                        appsFlyerInstance.disableDeviceTracking(it)
+                    } ?: run {
+                        Log.w(
+                            TAG,
+                            "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
+                        )
+                    }
                 }
 
                 Commands.RESOLVE_DEEPLINK_URLS -> {
@@ -123,8 +121,8 @@ open class AppsFlyerRemoteCommand(
                 }
 
                 Commands.STOP_TRACKING -> {
-                    val stopTracking: Boolean = payload.optBoolean(Tracking.STOP_TRACKING)
-                    stopTracking.let {
+                    val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
+                    stopTracking?.let {
                         appsFlyerInstance.stopTracking(it)
                     }
                 }
@@ -234,14 +232,7 @@ open class AppsFlyerRemoteCommand(
         val toRemove = listOf(
             Config.DEBUG,
             Config.DEV_KEY,
-            Config.ANONYMIZE_USER,
-            Config.DISABLE_NETWORK_DATA,
-            Config.DISABLE_APPSET_ID,
-            Config.MIN_TIME_BETWEEN_SESSIONS,
-            Config.COLLECT_DEVICE_NAME,
-            Config.DISABLE_AD_TRACKING,
-            Config.DISABLE_APPLE_AD_TRACKING,
-            Config.CUSTOM_DATA,
+            Config.SETTINGS,
             Commands.COMMAND_KEY,
             "method",
             "app_id",

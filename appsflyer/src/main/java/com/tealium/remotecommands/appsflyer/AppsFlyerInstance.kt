@@ -6,11 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.appsflyer.AppsFlyerConsent
-import com.appsflyer.AFAdRevenueData
-import com.appsflyer.MediationNetwork
-import com.appsflyer.AFPurchaseDetails
-import com.appsflyer.AFPurchaseType
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -38,7 +33,7 @@ class AppsFlyerInstance(
             }
 
             if (settings.containsKey(Config.ANONYMIZE_USER)) {
-                this.anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
+                anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
             }
 
             if (settings.containsKey(Config.CUSTOM_DATA)) {
@@ -58,20 +53,6 @@ class AppsFlyerInstance(
 
             if (settings.containsKey(Config.DEBUG)) {
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
-            }
-
-            if (settings.containsKey(Config.COLLECT_DEVICE_NAME)) {
-                setCollectDeviceName(settings[Config.COLLECT_DEVICE_NAME] as Boolean)
-            }
-
-            // Note: disable_ad_tracking and disable_apple_ad_tracking are iOS-specific
-            // and don't have direct Android equivalents in AppsFlyerLib
-            if (settings.containsKey(Config.DISABLE_AD_TRACKING)) {
-                Log.d(BuildConfig.TAG, "disable_ad_tracking is iOS-specific, ignoring on Android")
-            }
-
-            if (settings.containsKey(Config.DISABLE_APPLE_AD_TRACKING)) {
-                Log.d(BuildConfig.TAG, "disable_apple_ad_tracking is iOS-specific, ignoring on Android")
             }
         }
         if (!devKey.isNullOrEmpty()) {
@@ -102,16 +83,9 @@ class AppsFlyerInstance(
         }
     }
 
-    override fun setUserEmails(emails: List<String>, hashType: EmailHashType?) {
+    override fun setUserEmails(emails: List<String>) {
         val userEmails = emails.toTypedArray()
-        
-        if (hashType != null) {
-            // Use the method with encryption when hash type is specified
-            AppsFlyerLib.getInstance().setUserEmails(hashType.toAppsFlyerCryptType(), *userEmails)
-        } else {
-            // Use the simple method without encryption when no hash type is specified
             AppsFlyerLib.getInstance().setUserEmails(*userEmails)
-        }
     }
 
     override fun setCurrencyCode(currency: String) {
@@ -122,8 +96,8 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setCustomerUserId(id)
     }
 
-    override fun anonymizeUser(anonymize: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(anonymize)
+    override fun disableDeviceTracking(disable: Boolean) {
+        AppsFlyerLib.getInstance().anonymizeUser(disable)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
@@ -139,52 +113,19 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    override fun setAppId(appId: String) {
-        AppsFlyerLib.getInstance().setAppId(appId)
+    fun anonymizeUser(isDisabled: Boolean) {
+        AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
     }
 
-    override fun setDisableAdvertisingIdentifiers(disable: Boolean) {
-        AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(disable)
-    }
-
-    override fun enableTCFDataCollection(enable: Boolean) {
-        AppsFlyerLib.getInstance().enableTCFDataCollection(enable)
-    }
-
-    override fun setSharingFilterForPartners(partners: List<String>) {
-        val partnersArray = partners.toTypedArray()
-        AppsFlyerLib.getInstance().setSharingFilterForPartners(*partnersArray)
-    }
-
-    override fun updateServerUninstallToken(token: String) {
-        AppsFlyerLib.getInstance().updateServerUninstallToken(application.applicationContext, token)
-    }
-
-    override fun setIsUpdate(isUpdate: Boolean) {
-        AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
-    }
-
-    override fun setAdditionalData(additionalData: Map<String, Any>) {
-        AppsFlyerLib.getInstance().setAdditionalData(additionalData)
-    }
-
-    private fun setMinsBetweenSessions(seconds: Int) {
-        AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
-    }
-
-    private fun addCustomData(data: HashMap<String, Any>) {
+    fun addCustomData(data: HashMap<String, Any>) {
         AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
-    private fun enableDebugLog(shouldEnable: Boolean) {
+    fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-    private fun setCollectDeviceName(shouldCollect: Boolean) {
-        AppsFlyerLib.getInstance().setCollectAndroidID(shouldCollect)
-    }
-
-    private fun toMap(json: JSONObject): Map<String, Any> {
+    fun toMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         try {
             json.keys().forEach { key ->
