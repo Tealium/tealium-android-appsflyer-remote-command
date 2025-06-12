@@ -85,7 +85,7 @@ class AppsFlyerInstance(
 
     override fun setUserEmails(emails: List<String>) {
         val userEmails = emails.toTypedArray()
-        AppsFlyerLib.getInstance().setUserEmails(*userEmails)
+            AppsFlyerLib.getInstance().setUserEmails(*userEmails)
     }
 
     override fun setCurrencyCode(currency: String) {

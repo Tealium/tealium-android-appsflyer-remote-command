@@ -2,13 +2,13 @@ package com.tealium.demo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.tealium.demo.databinding.ActivityMainBinding
+import com.tealium.demo.databinding.ActivityMainBinding 
 import com.tealium.remotecommands.appsflyer.Host
 import org.json.JSONArray
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,13 +17,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         TealiumHelper.trackView("main_screen")
-        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "<your_key_here>"))
+        TealiumHelper.trackEvent("home_screen", mapOf("af_dev_key" to "YOUR_APPSFLYER_DEV_KEY"))
 
 
         binding.buttonSetHost.setOnClickListener {
             TealiumHelper.trackEvent(
                 "set_host",
-                mapOf(Host.HOST to "abc123", Host.HOST_PREFIX to "test_prefix")
+                mapOf(Host.HOST to "YOUR_APPSFLYER_DEV_KEY", Host.HOST_PREFIX to "uokf4p")
             )
         }
 
