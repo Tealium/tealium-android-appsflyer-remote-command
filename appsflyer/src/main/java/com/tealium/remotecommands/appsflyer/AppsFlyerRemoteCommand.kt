@@ -127,6 +127,100 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
+                Commands.ADD_PUSH_NOTIFICATION_DEEP_LINK_PATH -> {
+                    val pathJsonArray: JSONArray? = payload.optJSONArray(PushNotification.DEEP_LINK_PATH)
+                    pathJsonArray?.let {
+                        val pathList = toList(it)
+                        appsFlyerInstance.addPushNotificationDeepLinkPath(pathList)
+                    } ?: run {
+                        Log.w(
+                            TAG,
+                            "${PushNotification.DEEP_LINK_PATH} is a required key"
+                        )
+                    }
+                }
+
+                Commands.ANONYMIZE_USER -> {
+                    val shouldAnonymize: Boolean = payload.optBoolean(AnonymizeUser.SHOULD_ANONYMIZE, false)
+                    appsFlyerInstance.anonymizeUser(shouldAnonymize)
+                }
+
+                // New commands for additional Android SDK features
+                Commands.SET_IS_UPDATE -> {
+                    val isUpdate: Boolean = payload.optBoolean(AppUpdate.IS_UPDATE, false)
+                    appsFlyerInstance.setIsUpdate(isUpdate)
+                }
+                
+                Commands.SET_OUT_OF_STORE -> {
+                    val outOfStore: String? = payload.optString(OutOfStore.SOURCE)
+                    outOfStore?.let {
+                        if (it.isNotEmpty()) {
+                            appsFlyerInstance.setOutOfStore(it)
+                        }
+                    }
+                }
+                
+                Commands.SET_SHARING_FILTER_FOR_ALL_PARTNERS -> {
+                    appsFlyerInstance.setSharingFilterForAllPartners()
+                }
+
+                Commands.SET_PREINSTALL_ATTRIBUTION -> {
+                    val mediaSource: String? = payload.optString(PreinstallAttribution.MEDIA_SOURCE)
+                    val campaign: String? = payload.optString(PreinstallAttribution.CAMPAIGN)
+                    val siteId: String? = payload.optString(PreinstallAttribution.SITE_ID)
+                    
+                    if (!mediaSource.isNullOrEmpty() && !campaign.isNullOrEmpty()) {
+                        appsFlyerInstance.setPreinstallAttribution(mediaSource, campaign, siteId)
+                    } else {
+                        Log.w(TAG, "Media source and campaign are required for setPreinstallAttribution")
+                    }
+                }
+                
+                Commands.SET_ANDROID_ID_DATA -> {
+                    val androidId: String? = payload.optString(DeviceData.ANDROID_ID_DATA)
+                    androidId?.let {
+                        if (it.isNotEmpty()) {
+                            appsFlyerInstance.setAndroidIdData(it)
+                        } else {
+                            Log.w(TAG, "${DeviceData.ANDROID_ID_DATA} is required")
+                        }
+                    }
+                }
+                
+                Commands.SET_IMEI_DATA -> {
+                    val imei: String? = payload.optString(DeviceData.IMEI_DATA)
+                    imei?.let {
+                        if (it.isNotEmpty()) {
+                            appsFlyerInstance.setImeiData(it)
+                        } else {
+                            Log.w(TAG, "${DeviceData.IMEI_DATA} is required")
+                        }
+                    }
+                }
+                
+                Commands.SET_OAID_DATA -> {
+                    val oaid: String? = payload.optString(DeviceData.OAID_DATA)
+                    oaid?.let {
+                        if (it.isNotEmpty()) {
+                            appsFlyerInstance.setOaidData(it)
+                        } else {
+                            Log.w(TAG, "${DeviceData.OAID_DATA} is required")
+                        }
+                    }
+                }
+                
+                Commands.SET_SHARING_FILTER -> {
+                    val sharingFilterType: String? = payload.optString(SharingFilter.SHARING_FILTER_TYPE)
+                    val sharingFilterValues: JSONArray? = payload.optJSONArray(SharingFilter.SHARING_FILTER_VALUES)
+                    
+                    sharingFilterValues?.let {
+                        val filterList = toList(it)
+                        appsFlyerInstance.setSharingFilter(filterList)
+                    } ?: run {
+                        Log.w(TAG, "${SharingFilter.SHARING_FILTER_VALUES} is required for setSharingFilter")
+                    }
+                }
+
                 else -> {
                     val eventType = standardEvent(command) ?: command
                     val eventParameters: JSONObject =
