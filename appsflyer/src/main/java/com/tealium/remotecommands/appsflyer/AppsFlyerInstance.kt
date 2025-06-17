@@ -4,8 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
-import com.appsflyer.AppsFlyerConversionListener
-import com.appsflyer.AppsFlyerLib
+import com.appsflyer.*
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -25,8 +24,16 @@ class AppsFlyerInstance(
 
     override fun initialize(
         devKey: String?,
+        appId: String?,
         configSettings: Map<String, Any>?
     ) {
+        // Set app_id if provided
+        appId?.let {
+            if (it.isNotEmpty()) {
+                AppsFlyerLib.getInstance().setAppId(it)
+            }
+        }
+        
         configSettings?.let { settings ->
             if (settings.containsKey(Config.MIN_TIME_BETWEEN_SESSIONS)) {
                 setMinsBetweenSessions(settings[Config.MIN_TIME_BETWEEN_SESSIONS] as Int)
@@ -48,11 +55,163 @@ class AppsFlyerInstance(
                         }
                     }
                 }
-                addCustomData(dataMap)
+                appendCustomData(dataMap)
             }
 
             if (settings.containsKey(Config.DEBUG)) {
                 enableDebugLog(settings[Config.DEBUG] as Boolean)
+            }
+
+            // New configuration options
+            if (settings.containsKey(Config.DISABLE_AD_TRACKING)) {
+                AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(settings[Config.DISABLE_AD_TRACKING] as Boolean)
+            }
+
+            if (settings.containsKey(Config.DISABLE_NETWORK_DATA)) {
+                AppsFlyerLib.getInstance().setDisableNetworkData(settings[Config.DISABLE_NETWORK_DATA] as Boolean)
+            }
+
+            if (settings.containsKey(Config.DISABLE_APPSET_ID)) {
+                if (settings[Config.DISABLE_APPSET_ID] as Boolean) {
+                    AppsFlyerLib.getInstance().disableAppSetId()
+                }
+            }
+
+            if (settings.containsKey(Config.ENABLE_TCF_DATA_COLLECTION)) {
+                AppsFlyerLib.getInstance().enableTCFDataCollection(settings[Config.ENABLE_TCF_DATA_COLLECTION] as Boolean)
+            }
+
+            if (settings.containsKey(Config.APP_INVITE_ONELINK_ID)) {
+                AppsFlyerLib.getInstance().setAppInviteOneLink(settings[Config.APP_INVITE_ONELINK_ID] as String)
+            }
+
+            if (settings.containsKey(Config.ONELINK_CUSTOM_DOMAINS)) {
+                val domains = (settings[Config.ONELINK_CUSTOM_DOMAINS] as? List<String>)?.toTypedArray()
+                domains?.let {
+                    AppsFlyerLib.getInstance().setOneLinkCustomDomain(*it)
+                }
+            }
+
+            if (settings.containsKey(Config.CUSTOMER_EMAILS)) {
+                val emails = (settings[Config.CUSTOMER_EMAILS] as? List<String>)?.toTypedArray()
+                emails?.let {
+                    val hashType = settings[Config.EMAIL_HASH_TYPE] as? Int ?: 0
+                    val emailHashType = EmailHashType.fromInt(hashType)
+                    val cryptType = emailHashType.toAppsFlyerEmailsCryptType()
+                    AppsFlyerLib.getInstance().setUserEmails(cryptType, *it)
+                }
+            }
+
+            if (settings.containsKey(Config.HOST) && settings.containsKey(Config.HOST_PREFIX)) {
+                val host = settings[Config.HOST] as String
+                val hostPrefix = settings[Config.HOST_PREFIX] as String
+                AppsFlyerLib.getInstance().setHost(host, hostPrefix)
+            }
+
+            if (settings.containsKey(Config.RESOLVE_DEEP_LINKS)) {
+                val urls = (settings[Config.RESOLVE_DEEP_LINKS] as? List<String>)?.toTypedArray()
+                urls?.let {
+                    AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*it)
+                }
+            }
+
+            // New configuration options based on Android SDK
+            if (settings.containsKey(Config.COLLECT_ANDROID_ID)) {
+                AppsFlyerLib.getInstance().setCollectAndroidID(settings[Config.COLLECT_ANDROID_ID] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.COLLECT_IMEI)) {
+                AppsFlyerLib.getInstance().setCollectIMEI(settings[Config.COLLECT_IMEI] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.COLLECT_OAID)) {
+                AppsFlyerLib.getInstance().setCollectOaid(settings[Config.COLLECT_OAID] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.LOG_LEVEL)) {
+                val logLevelString = settings[Config.LOG_LEVEL] as String
+                val logLevel = LogLevel.fromString(logLevelString)
+                logLevel?.let {
+                    AppsFlyerLib.getInstance().setLogLevel(it.toAppsFlyerLogLevel())
+                }
+            }
+            
+            if (settings.containsKey(Config.WAIT_FOR_CUSTOMER_USER_ID)) {
+                AppsFlyerLib.getInstance().waitForCustomerUserId(settings[Config.WAIT_FOR_CUSTOMER_USER_ID] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.ENABLE_FACEBOOK_DEFERRED_APPLINKS)) {
+                AppsFlyerLib.getInstance().enableFacebookDeferredApplinks(settings[Config.ENABLE_FACEBOOK_DEFERRED_APPLINKS] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.OUT_OF_STORE)) {
+                val outOfStore = settings[Config.OUT_OF_STORE] as? String
+                outOfStore?.let {
+                    AppsFlyerLib.getInstance().setOutOfStore(it)
+                }
+            }
+            
+            if (settings.containsKey(Config.IS_UPDATE)) {
+                AppsFlyerLib.getInstance().setIsUpdate(settings[Config.IS_UPDATE] as Boolean)
+            }
+            
+            if (settings.containsKey(Config.EXTENSION)) {
+                val extension = settings[Config.EXTENSION] as? String
+                extension?.let {
+                    AppsFlyerLib.getInstance().setExtension(it)
+                }
+            }
+            
+            if (settings.containsKey(Config.PREINSTALL_ATTRIBUTION)) {
+                val preinstallData = settings[Config.PREINSTALL_ATTRIBUTION] as? Map<String, Any>
+                preinstallData?.let { data ->
+                    val mediaSource = data[PreinstallAttribution.MEDIA_SOURCE] as? String
+                    val campaign = data[PreinstallAttribution.CAMPAIGN] as? String  
+                    val siteId = data[PreinstallAttribution.SITE_ID] as? String
+                    
+                    if (!mediaSource.isNullOrEmpty() && !campaign.isNullOrEmpty()) {
+                        AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.APPEND_PARAMETERS_TO_DEEPLINK_URL)) {
+                val appendConfig = settings[Config.APPEND_PARAMETERS_TO_DEEPLINK_URL] as? Map<String, Any>
+                appendConfig?.let { config ->
+                    val urlContains = config[DeepLinkParameters.URL_CONTAINS] as? String
+                    val parameters = config[DeepLinkParameters.URL_PARAMETERS] as? Map<String, String>
+                    
+                    if (!urlContains.isNullOrEmpty() && parameters != null && parameters.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(urlContains, parameters)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.ANDROID_ID_DATA)) {
+                val androidId = settings[Config.ANDROID_ID_DATA] as? String
+                androidId?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setAndroidIdData(it)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.IMEI_DATA)) {
+                val imei = settings[Config.IMEI_DATA] as? String
+                imei?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setImeiData(it)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.OAID_DATA)) {
+                val oaid = settings[Config.OAID_DATA] as? String
+                oaid?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setOaidData(it)
+                    }
+                }
             }
         }
         if (!devKey.isNullOrEmpty()) {
@@ -77,15 +236,21 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().logEvent(application, eventType, eventParameters)
     }
 
+    override fun logSession() {
+        AppsFlyerLib.getInstance().logSession(application)
+    }
+
     override fun setHost(host: String, hostPrefix: String?) {
-        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
+        hostPrefix?.let { prefix ->
             AppsFlyerLib.getInstance().setHost(host, prefix)
         }
     }
 
-    override fun setUserEmails(emails: List<String>) {
+    override fun setUserEmails(emails: List<String>, cryptType: Int) {
         val userEmails = emails.toTypedArray()
-        AppsFlyerLib.getInstance().setUserEmails(*userEmails)
+        val emailHashType = EmailHashType.fromInt(cryptType)
+        val cryptMethod = emailHashType.toAppsFlyerEmailsCryptType()
+        AppsFlyerLib.getInstance().setUserEmails(cryptMethod, *userEmails)
     }
 
     override fun setCurrencyCode(currency: String) {
@@ -97,7 +262,8 @@ class AppsFlyerInstance(
     }
 
     override fun disableDeviceTracking(disable: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(disable)
+        // This method should disable device tracking, not anonymize user
+        AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(disable)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
@@ -109,23 +275,119 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
     }
 
-    fun setMinsBetweenSessions(seconds: Int) {
+    override fun anonymizeUser(shouldAnonymize: Boolean) {
+        AppsFlyerLib.getInstance().anonymizeUser(shouldAnonymize)
+    }
+
+    override fun logAdRevenue(
+        monetizationNetwork: String,
+        mediationNetwork: String,
+        revenue: Double,
+        currency: String,
+        additionalParams: Map<String, Any>?
+    ) {
+        try {
+            val mediationNetworkEnum = MediationNetwork.fromString(mediationNetwork)?.toAppsFlyerEnum()
+
+            if (mediationNetworkEnum == null) {
+                Log.e(BuildConfig.TAG, "Unknown mediation network: $mediationNetwork.")
+                return
+            }
+
+            val adRevenueData = AFAdRevenueData(
+                monetizationNetwork,
+                mediationNetworkEnum,
+                currency,
+                revenue
+            )
+
+            AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParams)
+        } catch (e: Exception) {
+            Log.e(BuildConfig.TAG, "Error logging ad revenue: ${e.message}")
+        }
+    }
+
+    override fun setDMAConsent(
+        gdprApplies: Boolean,
+        consentForDataUsage: Boolean,
+        consentForAdsPersonalization: Boolean,
+        consentForAdStorage: Boolean
+    ) {
+        val consent = AppsFlyerConsent(gdprApplies, consentForDataUsage, consentForAdsPersonalization, consentForAdStorage)
+        AppsFlyerLib.getInstance().setConsentData(consent)
+    }
+
+    override fun setPhoneNumber(phoneNumber: String) {
+        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber)
+    }
+
+    override fun addPushNotificationDeepLinkPath(path: List<String>) {
+        val pathArray = path.toTypedArray()
+        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
+    }
+
+    override fun validateAndLogPurchase(
+        purchaseType: String,
+        purchaseToken: String,
+        productId: String,
+        price: String,
+        currency: String,
+        additionalParams: Map<String, String>?
+    ) {
+        try {
+            val afPurchaseType = if (purchaseType.equals("subscription", true)) {
+                AFPurchaseType.SUBSCRIPTION
+            } else {
+                AFPurchaseType.ONE_TIME_PURCHASE
+            }
+
+            val purchaseDetails = AFPurchaseDetails(
+                afPurchaseType,
+                purchaseToken,
+                productId,
+                price,
+                currency
+            )
+
+            AppsFlyerLib.getInstance().validateAndLogInAppPurchase(
+                purchaseDetails,
+                additionalParams,
+                null // callback can be added if needed
+            )
+        } catch (e: Exception) {
+            Log.e(BuildConfig.TAG, "Error validating purchase: ${e.message}")
+        }
+    }
+
+    override fun setSharingFilterForPartners(partners: List<String>) {
+        val partnersArray = partners.toTypedArray()
+        AppsFlyerLib.getInstance().setSharingFilterForPartners(*partnersArray)
+    }
+
+    override fun appendCustomData(customData: Map<String, Any>) {
+        AppsFlyerLib.getInstance().setAdditionalData(customData.toMutableMap())
+    }
+
+    override fun setDeviceLanguage(language: String) {
+        // Android doesn't have this specific method like iOS
+        // Language is typically handled automatically by the system
+        Log.d(BuildConfig.TAG, "Device language setting: $language (handled automatically on Android)")
+    }
+
+    override fun setPartnerData(partnerId: String, partnerData: Map<String, Any>) {
+        AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerData)
+    }
+
+    // Private helper methods
+    private fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    fun anonymizeUser(isDisabled: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
-    }
-
-    fun addCustomData(data: HashMap<String, Any>) {
-        AppsFlyerLib.getInstance().setAdditionalData(data)
-    }
-
-    fun enableDebugLog(shouldEnable: Boolean) {
+    private fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-    fun toMap(json: JSONObject): Map<String, Any> {
+    private fun toMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         try {
             json.keys().forEach { key ->
@@ -176,35 +438,39 @@ class AppsFlyerInstance(
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>) {
 
-                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
+                if (conversionData.containsKey(Attribution.FIRST_LAUNCH) &&
+                    (conversionData[Attribution.FIRST_LAUNCH] as Boolean)
                 ) {
-                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                    remoteCommandContext.track(Attribution.CONVERSION_RECEIVED, conversionData.toMap())
                 }
             }
 
             override fun onConversionDataFail(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "conversion_data_request_failure"
-                map["error_message"] = errorMessage
+                map[Attribution.ERROR_NAME] = Attribution.CONVERSION_REQUEST_FAILURE
+                map[Attribution.ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(Attribution.ERROR, map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
                 remoteCommandContext.track(
-                    "app_open_attribution",
+                    Attribution.APP_OPEN,
                     attributionData as Map<String, Any>?
                 )
             }
 
             override fun onAttributionFailure(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "app_open_attribution_failure"
-                map["error_message"] = errorMessage
+                map[Attribution.ERROR_NAME] = Attribution.APP_OPEN_FAILURE
+                map[Attribution.ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(Attribution.ERROR, map)
             }
         }
+    }
+
+    override fun setIsUpdate(isUpdate: Boolean) {
+        AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
     }
 }
