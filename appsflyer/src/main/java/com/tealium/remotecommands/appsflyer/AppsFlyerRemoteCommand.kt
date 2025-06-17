@@ -57,6 +57,10 @@ open class AppsFlyerRemoteCommand(
                     trackLocation(payload)
                 }
 
+                Commands.LOG_SESSION -> {
+                    appsFlyerInstance.logSession()
+                }
+
                 Commands.SET_HOST -> {
                     setHost(payload)
                 }
@@ -151,60 +155,6 @@ open class AppsFlyerRemoteCommand(
                     appsFlyerInstance.setIsUpdate(isUpdate)
                 }
                 
-                Commands.SET_OUT_OF_STORE -> {
-                    val outOfStore: String? = payload.optString(OutOfStore.SOURCE)
-                    outOfStore?.let {
-                        if (it.isNotEmpty()) {
-                            appsFlyerInstance.setOutOfStore(it)
-                        }
-                    }
-                }
-                
-                Commands.SET_PREINSTALL_ATTRIBUTION -> {
-                    val mediaSource: String? = payload.optString(PreinstallAttribution.MEDIA_SOURCE)
-                    val campaign: String? = payload.optString(PreinstallAttribution.CAMPAIGN)
-                    val siteId: String? = payload.optString(PreinstallAttribution.SITE_ID)
-                    
-                    if (!mediaSource.isNullOrEmpty() && !campaign.isNullOrEmpty()) {
-                        appsFlyerInstance.setPreinstallAttribution(mediaSource, campaign, siteId)
-                    } else {
-                        Log.w(TAG, "Media source and campaign are required for setPreinstallAttribution")
-                    }
-                }
-                
-                Commands.SET_ANDROID_ID_DATA -> {
-                    val androidId: String? = payload.optString(DeviceData.ANDROID_ID_DATA)
-                    androidId?.let {
-                        if (it.isNotEmpty()) {
-                            appsFlyerInstance.setAndroidIdData(it)
-                        } else {
-                            Log.w(TAG, "${DeviceData.ANDROID_ID_DATA} is required")
-                        }
-                    }
-                }
-                
-                Commands.SET_IMEI_DATA -> {
-                    val imei: String? = payload.optString(DeviceData.IMEI_DATA)
-                    imei?.let {
-                        if (it.isNotEmpty()) {
-                            appsFlyerInstance.setImeiData(it)
-                        } else {
-                            Log.w(TAG, "${DeviceData.IMEI_DATA} is required")
-                        }
-                    }
-                }
-                
-                Commands.SET_OAID_DATA -> {
-                    val oaid: String? = payload.optString(DeviceData.OAID_DATA)
-                    oaid?.let {
-                        if (it.isNotEmpty()) {
-                            appsFlyerInstance.setOaidData(it)
-                        } else {
-                            Log.w(TAG, "${DeviceData.OAID_DATA} is required")
-                        }
-                    }
-                }
-
                 else -> {
                     val eventType = standardEvent(command) ?: command
                     val eventParameters: JSONObject =
@@ -230,9 +180,11 @@ open class AppsFlyerRemoteCommand(
 
     private fun initialize(payload: JSONObject) {
         val devKey: String = payload.optString(Config.DEV_KEY)
+        val appId: String = payload.optString(Config.APP_ID)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
-        appsFlyerInstance.initialize(devKey, configSettings)
+        
+        appsFlyerInstance.initialize(devKey, appId, configSettings)
     }
 
     private fun trackLocation(payload: JSONObject) {
@@ -310,10 +262,10 @@ open class AppsFlyerRemoteCommand(
         val toRemove = listOf(
             Config.DEBUG,
             Config.DEV_KEY,
+            Config.APP_ID,
             Config.SETTINGS,
             Commands.COMMAND_KEY,
             "method",
-            "app_id",
         )
         for (key in jsonObject.keys()) {
             if (toRemove.contains(key)) continue

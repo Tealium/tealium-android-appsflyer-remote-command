@@ -24,8 +24,16 @@ class AppsFlyerInstance(
 
     override fun initialize(
         devKey: String?,
+        appId: String?,
         configSettings: Map<String, Any>?
     ) {
+        // Set app_id if provided
+        appId?.let {
+            if (it.isNotEmpty()) {
+                AppsFlyerLib.getInstance().setAppId(it)
+            }
+        }
+        
         configSettings?.let { settings ->
             if (settings.containsKey(Config.MIN_TIME_BETWEEN_SESSIONS)) {
                 setMinsBetweenSessions(settings[Config.MIN_TIME_BETWEEN_SESSIONS] as Int)
@@ -47,7 +55,7 @@ class AppsFlyerInstance(
                         }
                     }
                 }
-                addCustomData(dataMap)
+                appendCustomData(dataMap)
             }
 
             if (settings.containsKey(Config.DEBUG)) {
@@ -115,11 +123,15 @@ class AppsFlyerInstance(
                 AppsFlyerLib.getInstance().setCollectIMEI(settings[Config.COLLECT_IMEI] as Boolean)
             }
             
+            if (settings.containsKey(Config.COLLECT_OAID)) {
+                AppsFlyerLib.getInstance().setCollectOaid(settings[Config.COLLECT_OAID] as Boolean)
+            }
+            
             if (settings.containsKey(Config.LOG_LEVEL)) {
                 val logLevelString = settings[Config.LOG_LEVEL] as String
                 val logLevel = LogLevel.fromString(logLevelString)
                 logLevel?.let {
-                    AppsFlyerLib.getInstance().setLogLevel(AFLogger.LogLevel.valueOf(it.value))
+                    AppsFlyerLib.getInstance().setLogLevel(it.toAppsFlyerLogLevel())
                 }
             }
             
@@ -161,6 +173,45 @@ class AppsFlyerInstance(
                     }
                 }
             }
+            
+            if (settings.containsKey(Config.APPEND_PARAMETERS_TO_DEEPLINK_URL)) {
+                val appendConfig = settings[Config.APPEND_PARAMETERS_TO_DEEPLINK_URL] as? Map<String, Any>
+                appendConfig?.let { config ->
+                    val urlContains = config["url_contains"] as? String
+                    val parameters = config["parameters"] as? Map<String, String>
+                    
+                    if (!urlContains.isNullOrEmpty() && parameters != null && parameters.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(urlContains, parameters)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.ANDROID_ID_DATA)) {
+                val androidId = settings[Config.ANDROID_ID_DATA] as? String
+                androidId?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setAndroidIdData(it)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.IMEI_DATA)) {
+                val imei = settings[Config.IMEI_DATA] as? String
+                imei?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setImeiData(it)
+                    }
+                }
+            }
+            
+            if (settings.containsKey(Config.OAID_DATA)) {
+                val oaid = settings[Config.OAID_DATA] as? String
+                oaid?.let {
+                    if (it.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setOaidData(it)
+                    }
+                }
+            }
         }
         if (!devKey.isNullOrEmpty()) {
             appsFlyerDevKey = devKey
@@ -182,6 +233,10 @@ class AppsFlyerInstance(
 
     override fun trackEvent(eventType: String, eventParameters: Map<String, Any>?) {
         AppsFlyerLib.getInstance().logEvent(application, eventType, eventParameters)
+    }
+
+    override fun logSession() {
+        AppsFlyerLib.getInstance().logSession(application)
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
@@ -321,17 +376,9 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerData)
     }
 
-    override fun appendParametersToDeepLinkUrl(urlContains: String, parameters: Map<String, String>) {
-        AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(urlContains, parameters)
-    }
-
     // Private helper methods
     private fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
-    }
-
-    private fun addCustomData(data: HashMap<String, Any>) {
-        AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
     private fun enableDebugLog(shouldEnable: Boolean) {
@@ -421,28 +468,7 @@ class AppsFlyerInstance(
         }
     }
 
-    // Implementation of new Android SDK functions
     override fun setIsUpdate(isUpdate: Boolean) {
         AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
-    }
-
-    override fun setOutOfStore(outOfStore: String) {
-        AppsFlyerLib.getInstance().setOutOfStore(outOfStore)
-    }
-
-    override fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String?) {
-        AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
-    }
-
-    override fun setAndroidIdData(androidId: String) {
-        AppsFlyerLib.getInstance().setAndroidIdData(androidId)
-    }
-
-    override fun setImeiData(imei: String) {
-        AppsFlyerLib.getInstance().setImeiData(imei)
-    }
-
-    override fun setOaidData(oaid: String) {
-        AppsFlyerLib.getInstance().setOaidData(oaid)
     }
 }

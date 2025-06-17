@@ -34,7 +34,17 @@
         "media_source": null,
         "campaign": null,
         "site_id": null
-      }
+      },
+      "append_parameters_to_deeplink_url": {
+        "url_contains": "example.com",
+        "parameters": {
+          "pid": "exampleDomain",
+          "is_retargeting": "true"
+        }
+      },
+      "android_id_data": null,
+      "imei_data": null,
+      "oaid_data": null
     }
   },
   "mappings": {
@@ -67,9 +77,6 @@
     "preinstall_site_id": "preinstall_site_id",
     "is_app_update": "is_update",
     "out_of_store_source": "out_of_store",
-    "android_id_data": "android_id_data",
-    "imei_data": "imei_data",
-    "oaid_data": "oaid_data",
     "sdk_extension": "extension",
     "signup_method": "event.af_registration_method",
     "achievement_id": "event.af_achievement_id",
@@ -171,6 +178,7 @@
   "commands": {
     "launch": "initialize",
     "track_location": "tracklocation",
+    "log_session": "logsession",
     "user_login": "login",
     "user_register": "setuseremails,setcustomerid,completeregistration",
     "show_offers": "adclick",
@@ -215,13 +223,7 @@
     "append_custom_data": "appendcustomdata",
     "set_device_language": "setcurrentdevicelanguage",
     "set_partner_data": "setpartnerdata",
-    "append_parameters_to_deeplink": "appendparameterstodeeplinkurl",
     "set_is_update": "setisupdate",
-    "set_out_of_store": "setoutofstore", 
-    "set_preinstall_attribution": "setpreinstallattribution",
-    "set_android_id_data": "setandroididdata",
-    "set_imei_data": "setimeidata",
-    "set_oaid_data": "setoaiddata",
     "custom_event": "custom_event"
   }
 }

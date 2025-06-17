@@ -3,6 +3,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
+import com.appsflyer.AFLogger
 
 object Commands {
     const val COMMAND_KEY = "command_name"
@@ -11,6 +12,7 @@ object Commands {
     const val INITIALIZE = "initialize"
     const val LAUNCH = "launch"
     const val TRACK_LOCATION = "tracklocation"
+    const val LOG_SESSION = "logsession"
     const val SET_HOST = "sethost"
     const val SET_USER_EMAILS = "setuseremails"
     const val SET_CURRENCY_CODE = "setcurrencycode"
@@ -28,14 +30,8 @@ object Commands {
     const val APPEND_CUSTOM_DATA = "appendcustomdata"
     const val SET_DEVICE_LANGUAGE = "setcurrentdevicelanguage"
     const val SET_PARTNER_DATA = "setpartnerdata"
-    const val APPEND_PARAMETERS_TO_DEEPLINK_URL = "appendparameterstodeeplinkurl"
     const val DISABLE_TRACKING = "disabletracking"
     const val SET_IS_UPDATE = "setisupdate"
-    const val SET_OUT_OF_STORE = "setoutofstore"
-    const val SET_PREINSTALL_ATTRIBUTION = "setpreinstallattribution"
-    const val SET_ANDROID_ID_DATA = "setandroididdata"
-    const val SET_IMEI_DATA = "setimeidata"
-    const val SET_OAID_DATA = "setoaiddata"
 }
 
 object StandardEvents {
@@ -79,6 +75,7 @@ object Config {
     const val CUSTOM_DATA = "custom_data"
     const val SETTINGS = "settings"
     const val DEV_KEY = "app_dev_key"
+    const val APP_ID = "app_id"
     const val DISABLE_AD_TRACKING = "disable_ad_tracking"
     const val DISABLE_NETWORK_DATA = "disable_network_data"
     const val DISABLE_APPSET_ID = "disable_appset_id"
@@ -88,7 +85,6 @@ object Config {
     const val DEEPLINK_TIMEOUT = "deeplink_timeout"
     const val ONELINK_CUSTOM_DOMAINS = "onelink_custom_domains"
     const val RESOLVE_DEEP_LINKS = "resolve_deep_links"
-    const val STOP_TRACKING = "stop_tracking"
     const val CUSTOMER_EMAILS = "customer_emails"
     const val EMAIL_HASH_TYPE = "email_hash_type"
     const val HOST = "host"
@@ -103,6 +99,10 @@ object Config {
     const val IS_UPDATE = "is_update"
     const val EXTENSION = "extension"
     const val PREINSTALL_ATTRIBUTION = "preinstall_attribution"
+    const val APPEND_PARAMETERS_TO_DEEPLINK_URL = "append_parameters_to_deeplink_url"
+    const val ANDROID_ID_DATA = "android_id_data"
+    const val IMEI_DATA = "imei_data"
+    const val OAID_DATA = "oaid_data"
 }
 
 object EventParameters {
@@ -324,6 +324,17 @@ enum class LogLevel(val value: String) {
     INFO("INFO"),
     DEBUG("DEBUG"),
     VERBOSE("VERBOSE");
+
+    fun toAppsFlyerLogLevel(): AFLogger.LogLevel {
+        return when (this) {
+            NONE -> AFLogger.LogLevel.NONE
+            ERROR -> AFLogger.LogLevel.ERROR
+            WARNING -> AFLogger.LogLevel.WARNING
+            INFO -> AFLogger.LogLevel.INFO
+            DEBUG -> AFLogger.LogLevel.DEBUG
+            VERBOSE -> AFLogger.LogLevel.VERBOSE
+        }
+    }
 
     companion object {
         fun fromString(value: String): LogLevel? {

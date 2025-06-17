@@ -1,10 +1,11 @@
 package com.tealium.remotecommands.appsflyer
 
 interface AppsFlyerCommand {
-    fun initialize(devKey: String? = null, configSettings: Map<String, Any>? = null)
+    fun initialize(devKey: String? = null, appId: String? = null, configSettings: Map<String, Any>? = null)
     fun trackLocation(latitude: Double, longitude: Double)
-    fun setHost(host: String, hostPrefix: String? = "")
     fun trackEvent(eventType: String, eventParameters: Map<String, Any>? = null)
+    fun logSession()
+    fun setHost(host: String, hostPrefix: String? = "")
     fun setUserEmails(emails: List<String>, cryptType: Int = 0)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
@@ -21,11 +22,5 @@ interface AppsFlyerCommand {
     fun appendCustomData(customData: Map<String, Any>)
     fun setDeviceLanguage(language: String)
     fun setPartnerData(partnerId: String, partnerData: Map<String, Any>)
-    fun appendParametersToDeepLinkUrl(urlContains: String, parameters: Map<String, String>)
     fun setIsUpdate(isUpdate: Boolean)
-    fun setOutOfStore(outOfStore: String)
-    fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String? = null)
-    fun setAndroidIdData(androidId: String)
-    fun setImeiData(imei: String)
-    fun setOaidData(oaid: String)
 }
