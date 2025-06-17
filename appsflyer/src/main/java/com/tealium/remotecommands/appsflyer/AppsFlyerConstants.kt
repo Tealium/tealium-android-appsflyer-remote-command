@@ -221,7 +221,6 @@ object DeepLink {
 object Tracking {
     const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
     const val STOP_TRACKING = "stop_tracking"
-    const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
 }
 
 object AdRevenue {
@@ -269,13 +268,10 @@ object Attribution {
     const val APP_OPEN = "app_open_attribution"
     const val APP_OPEN_FAILURE = "app_open_attribution_failure"
     const val FIRST_LAUNCH = "is_first_launch"
-    const val CONVERSION_RECEIVED = "conversion_data_received"
-    const val CONVERSION_FAILURE = "conversion_data_failure"
+    const val CONVERSION_RECEIVED = "conversion_data_received" 
+    const val CONVERSION_REQUEST_FAILURE = "conversion_data_request_failure"
     const val ERROR_NAME = "error_name"
-    const val ERROR_DESCRIPTION = "error_description"
-    const val STATUS = "af_status"
-    const val SOURCE = "source"
-    const val CAMPAIGN = "campaign"
+    const val ERROR_MESSAGE = "error_message"   
     const val ERROR = "appsflyer_error"
 }
 
@@ -287,34 +283,10 @@ object AnonymizeUser {
     const val SHOULD_ANONYMIZE = "anonymize_user"
 }
 
-// New objects for additional Android SDK parameters
-object DeviceData {
-    const val ANDROID_ID_DATA = "android_id_data"
-    const val IMEI_DATA = "imei_data"
-    const val OAID_DATA = "oaid_data"
-}
-
-object SharingFilter {
-    const val SHARING_FILTER_TYPE = "sharing_filter_type"
-    const val SHARING_FILTER_VALUES = "sharing_filter_values"
-}
-
 object PreinstallAttribution {
     const val MEDIA_SOURCE = "preinstall_media_source"
     const val CAMPAIGN = "preinstall_campaign"
     const val SITE_ID = "preinstall_site_id"
-}
-
-object AppUpdate {
-    const val IS_UPDATE = "is_update"
-}
-
-object OutOfStore {
-    const val SOURCE = "out_of_store"
-}
-
-object Extension {
-    const val EXTENSION = "extension"
 }
 
 enum class LogLevel(val value: String) {
@@ -387,11 +359,22 @@ enum class MediationNetwork(val value: String) {
 
 enum class EmailHashType(val value: Int) {
     NONE(0),
-    SHA256(3);
+    SHA256(3); // Matches AppsFlyerProperties.EmailsCryptType.SHA256 value
+
+    fun toAppsFlyerEmailsCryptType(): com.appsflyer.AppsFlyerProperties.EmailsCryptType {
+        return when (this) {
+            NONE -> com.appsflyer.AppsFlyerProperties.EmailsCryptType.NONE
+            SHA256 -> com.appsflyer.AppsFlyerProperties.EmailsCryptType.SHA256
+        }
+    }
 
     companion object {
-        fun fromInt(value: Int): EmailHashType? {
-            return entries.find { it.value == value }
+        fun fromInt(value: Int): EmailHashType {
+            return when (value) {
+                0 -> NONE
+                3 -> SHA256 // Matches AppsFlyer SDK value
+                else -> NONE // Default to NONE for safety
+            }
         }
     }
 }

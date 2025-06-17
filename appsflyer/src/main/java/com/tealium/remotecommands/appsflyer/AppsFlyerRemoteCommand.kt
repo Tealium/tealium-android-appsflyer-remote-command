@@ -69,7 +69,8 @@ open class AppsFlyerRemoteCommand(
                     val emails: JSONArray? = payload.optJSONArray(Customer.EMAILS)
                     emails?.let {
                         val emailList = toList(emails)
-                        appsFlyerInstance.setUserEmails(emailList)
+                        val cryptType = payload.optInt(Customer.EMAIL_HASH_TYPE, 0)
+                        appsFlyerInstance.setUserEmails(emailList, cryptType)
                     }
                 }
 
@@ -124,8 +125,8 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
-                Commands.STOP_TRACKING -> {
-                    val stopTracking: Boolean? = payload.optBoolean(Tracking.STOP_TRACKING)
+                Commands.DISABLE_TRACKING -> {
+                    val stopTracking: Boolean = payload.optBoolean(Tracking.STOP_TRACKING)
                     stopTracking?.let {
                         appsFlyerInstance.stopTracking(it)
                     }
@@ -151,8 +152,62 @@ open class AppsFlyerRemoteCommand(
 
                 // New commands for additional Android SDK features
                 Commands.SET_IS_UPDATE -> {
-                    val isUpdate: Boolean = payload.optBoolean(AppUpdate.IS_UPDATE, false)
+                    val isUpdate: Boolean = payload.optBoolean(Config.IS_UPDATE, false)
                     appsFlyerInstance.setIsUpdate(isUpdate)
+                }
+
+                Commands.LOG_AD_REVENUE -> {
+                    logAdRevenue(payload)
+                }
+
+                Commands.SET_DMA_CONSENT -> {
+                    setDMAConsent(payload)
+                }
+
+                Commands.SET_PHONE_NUMBER -> {
+                    val phoneNumber: String = payload.optString(PhoneNumber.PHONE_NUMBER)
+                    if (phoneNumber.isNotEmpty()) {
+                        appsFlyerInstance.setPhoneNumber(phoneNumber)
+                    } else {
+                        Log.w(TAG, "${PhoneNumber.PHONE_NUMBER} is a required key")
+                    }
+                }
+
+                Commands.VALIDATE_AND_LOG_PURCHASE -> {
+                    validateAndLogPurchase(payload)
+                }
+
+                Commands.SET_SHARING_FILTER_FOR_PARTNERS -> {
+                    val partnersJsonArray: JSONArray? = payload.optJSONArray(Partner.SHARING_FILTER_PARTNERS)
+                    partnersJsonArray?.let {
+                        val partnersList = toList(it)
+                        appsFlyerInstance.setSharingFilterForPartners(partnersList)
+                    } ?: run {
+                        Log.w(TAG, "${Partner.SHARING_FILTER_PARTNERS} is a required key")
+                    }
+                }
+
+                Commands.APPEND_CUSTOM_DATA -> {
+                    val customDataJson: JSONObject? = payload.optJSONObject(Partner.CUSTOM_DATA_TO_APPEND)
+                    customDataJson?.let {
+                        val customDataMap = jsonToMap(it)
+                        appsFlyerInstance.appendCustomData(customDataMap)
+                    } ?: run {
+                        Log.w(TAG, "${Partner.CUSTOM_DATA_TO_APPEND} is a required key")
+                    }
+                }
+
+                Commands.SET_DEVICE_LANGUAGE -> {
+                    val language: String = payload.optString(Partner.DEVICE_LANGUAGE)
+                    if (language.isNotEmpty()) {
+                        appsFlyerInstance.setDeviceLanguage(language)
+                    } else {
+                        Log.w(TAG, "${Partner.DEVICE_LANGUAGE} is a required key")
+                    }
+                }
+
+                Commands.SET_PARTNER_DATA -> {
+                    setPartnerData(payload)
                 }
                 
                 else -> {
@@ -182,7 +237,7 @@ open class AppsFlyerRemoteCommand(
         val devKey: String = payload.optString(Config.DEV_KEY)
         val appId: String = payload.optString(Config.APP_ID)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any>? = jsonToMap(config)
+        val configSettings: Map<String, Any> = jsonToMap(config)
         
         appsFlyerInstance.initialize(devKey, appId, configSettings)
     }
@@ -274,5 +329,63 @@ open class AppsFlyerRemoteCommand(
         }
 
         return JSONObject(jsonObject, toCopy.toTypedArray())
+    }
+
+    private fun logAdRevenue(payload: JSONObject) {
+        val monetizationNetwork: String = payload.optString(AdRevenue.AD_MONETIZATION_NETWORK)
+        val mediationNetwork: String = payload.optString(AdRevenue.AD_MEDIATION_NETWORK)
+        val revenue: Double = payload.optDouble(AdRevenue.AD_REVENUE)
+        val currency: String = payload.optString(TransactionProperties.CURRENCY)
+        val additionalParamsJson: JSONObject? = payload.optJSONObject(AdRevenue.AD_ADDITIONAL_PARAMETERS)
+
+        if (monetizationNetwork.isNotEmpty() && mediationNetwork.isNotEmpty() && 
+            !revenue.isNaN() && currency.isNotEmpty()) {
+            
+            val additionalParams = additionalParamsJson?.let { jsonToMap(it) }
+            appsFlyerInstance.logAdRevenue(monetizationNetwork, mediationNetwork, revenue, currency, additionalParams)
+        } else {
+            Log.w(TAG, "logAdRevenue requires monetization_network, mediation_network, revenue, and currency")
+        }
+    }
+
+    private fun setDMAConsent(payload: JSONObject) {
+        val gdprApplies: Boolean = payload.optBoolean(DMAConsent.GDPR_APPLIES, false)
+        val consentForDataUsage: Boolean = payload.optBoolean(DMAConsent.CONSENT_FOR_DATA_USAGE, false)
+        val consentForAdsPersonalization: Boolean = payload.optBoolean(DMAConsent.CONSENT_FOR_ADS_PERSONALIZATION, false)
+        val consentForAdStorage: Boolean = payload.optBoolean(DMAConsent.CONSENT_FOR_AD_STORAGE, false)
+
+        appsFlyerInstance.setDMAConsent(gdprApplies, consentForDataUsage, consentForAdsPersonalization, consentForAdStorage)
+    }
+
+    private fun validateAndLogPurchase(payload: JSONObject) {
+        val purchaseType: String = payload.optString(PurchaseValidation.PURCHASE_TYPE)
+        val purchaseToken: String = payload.optString(PurchaseValidation.TRANSACTION_ID)
+        val productId: String = payload.optString(PurchaseValidation.PRODUCT_ID)
+        val price: String = payload.optString(PurchaseValidation.PRICE)
+        val currency: String = payload.optString(PurchaseValidation.CURRENCY)
+        val additionalParamsJson: JSONObject? = payload.optJSONObject(PurchaseValidation.ADDITIONAL_PARAMETERS)
+
+        if (purchaseType.isNotEmpty() && purchaseToken.isNotEmpty() && 
+            productId.isNotEmpty() && price.isNotEmpty() && currency.isNotEmpty()) {
+            
+            val additionalParams = additionalParamsJson?.let { 
+                jsonToMap(it).mapValues { entry -> entry.value.toString() }
+            }
+            appsFlyerInstance.validateAndLogPurchase(purchaseType, purchaseToken, productId, price, currency, additionalParams)
+        } else {
+            Log.w(TAG, "validateAndLogPurchase requires purchase_type, transaction_id, product_id, price, and currency")
+        }
+    }
+
+    private fun setPartnerData(payload: JSONObject) {
+        val partnerId: String = payload.optString(Partner.PARTNER_ID)
+        val partnerInfoJson: JSONObject? = payload.optJSONObject(Partner.PARTNER_INFO)
+
+        if (partnerId.isNotEmpty() && partnerInfoJson != null) {
+            val partnerData = jsonToMap(partnerInfoJson)
+            appsFlyerInstance.setPartnerData(partnerId, partnerData)
+        } else {
+            Log.w(TAG, "setPartnerData requires partner_id and partner_info")
+        }
     }
 }

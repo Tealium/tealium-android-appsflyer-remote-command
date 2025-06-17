@@ -96,7 +96,8 @@ class AppsFlyerInstance(
                 val emails = (settings[Config.CUSTOMER_EMAILS] as? List<String>)?.toTypedArray()
                 emails?.let {
                     val hashType = settings[Config.EMAIL_HASH_TYPE] as? Int ?: 0
-                    val cryptType = AppsFlyerProperties.EmailsCryptType.values()[hashType]
+                    val emailHashType = EmailHashType.fromInt(hashType)
+                    val cryptType = emailHashType.toAppsFlyerEmailsCryptType()
                     AppsFlyerLib.getInstance().setUserEmails(cryptType, *it)
                 }
             }
@@ -164,9 +165,9 @@ class AppsFlyerInstance(
             if (settings.containsKey(Config.PREINSTALL_ATTRIBUTION)) {
                 val preinstallData = settings[Config.PREINSTALL_ATTRIBUTION] as? Map<String, Any>
                 preinstallData?.let { data ->
-                    val mediaSource = data["media_source"] as? String
-                    val campaign = data["campaign"] as? String  
-                    val siteId = data["site_id"] as? String
+                    val mediaSource = data[PreinstallAttribution.MEDIA_SOURCE] as? String
+                    val campaign = data[PreinstallAttribution.CAMPAIGN] as? String  
+                    val siteId = data[PreinstallAttribution.SITE_ID] as? String
                     
                     if (!mediaSource.isNullOrEmpty() && !campaign.isNullOrEmpty()) {
                         AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
@@ -177,8 +178,8 @@ class AppsFlyerInstance(
             if (settings.containsKey(Config.APPEND_PARAMETERS_TO_DEEPLINK_URL)) {
                 val appendConfig = settings[Config.APPEND_PARAMETERS_TO_DEEPLINK_URL] as? Map<String, Any>
                 appendConfig?.let { config ->
-                    val urlContains = config["url_contains"] as? String
-                    val parameters = config["parameters"] as? Map<String, String>
+                    val urlContains = config[DeepLinkParameters.URL_CONTAINS] as? String
+                    val parameters = config[DeepLinkParameters.URL_PARAMETERS] as? Map<String, String>
                     
                     if (!urlContains.isNullOrEmpty() && parameters != null && parameters.isNotEmpty()) {
                         AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(urlContains, parameters)
@@ -247,7 +248,8 @@ class AppsFlyerInstance(
 
     override fun setUserEmails(emails: List<String>, cryptType: Int) {
         val userEmails = emails.toTypedArray()
-        val cryptMethod = AppsFlyerProperties.EmailsCryptType.values()[cryptType]
+        val emailHashType = EmailHashType.fromInt(cryptType)
+        val cryptMethod = emailHashType.toAppsFlyerEmailsCryptType()
         AppsFlyerLib.getInstance().setUserEmails(cryptMethod, *userEmails)
     }
 
@@ -436,34 +438,34 @@ class AppsFlyerInstance(
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>) {
 
-                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
+                if (conversionData.containsKey(Attribution.FIRST_LAUNCH) &&
+                    (conversionData[Attribution.FIRST_LAUNCH] as Boolean)
                 ) {
-                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                    remoteCommandContext.track(Attribution.CONVERSION_RECEIVED, conversionData.toMap())
                 }
             }
 
             override fun onConversionDataFail(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "conversion_data_request_failure"
-                map["error_message"] = errorMessage
+                map[Attribution.ERROR_NAME] = Attribution.CONVERSION_REQUEST_FAILURE
+                map[Attribution.ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(Attribution.ERROR, map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
                 remoteCommandContext.track(
-                    "app_open_attribution",
+                    Attribution.APP_OPEN,
                     attributionData as Map<String, Any>?
                 )
             }
 
             override fun onAttributionFailure(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "app_open_attribution_failure"
-                map["error_message"] = errorMessage
+                map[Attribution.ERROR_NAME] = Attribution.APP_OPEN_FAILURE
+                map[Attribution.ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(Attribution.ERROR, map)
             }
         }
     }
