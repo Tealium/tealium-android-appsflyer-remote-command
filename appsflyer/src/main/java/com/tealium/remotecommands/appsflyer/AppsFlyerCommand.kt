@@ -24,10 +24,8 @@ interface AppsFlyerCommand {
     fun appendParametersToDeepLinkUrl(urlContains: String, parameters: Map<String, String>)
     fun setIsUpdate(isUpdate: Boolean)
     fun setOutOfStore(outOfStore: String)
-    fun setSharingFilterForAllPartners()
     fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String? = null)
     fun setAndroidIdData(androidId: String)
     fun setImeiData(imei: String)
     fun setOaidData(oaid: String)
-    fun setSharingFilter(partners: List<String>)
 }

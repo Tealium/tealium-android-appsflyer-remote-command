@@ -3,7 +3,6 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
-import com.appsflyer.MediationNetwork
 
 object Commands {
     const val COMMAND_KEY = "command_name"
@@ -33,12 +32,10 @@ object Commands {
     const val DISABLE_TRACKING = "disabletracking"
     const val SET_IS_UPDATE = "setisupdate"
     const val SET_OUT_OF_STORE = "setoutofstore"
-    const val SET_SHARING_FILTER_FOR_ALL_PARTNERS = "setsharingfilterforallpartners"
     const val SET_PREINSTALL_ATTRIBUTION = "setpreinstallattribution"
     const val SET_ANDROID_ID_DATA = "setandroididdata"
     const val SET_IMEI_DATA = "setimeidata"
     const val SET_OAID_DATA = "setoaiddata"
-    const val SET_SHARING_FILTER = "setsharingfilter"
 }
 
 object StandardEvents {

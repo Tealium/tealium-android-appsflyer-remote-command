@@ -115,10 +115,6 @@ class AppsFlyerInstance(
                 AppsFlyerLib.getInstance().setCollectIMEI(settings[Config.COLLECT_IMEI] as Boolean)
             }
             
-            if (settings.containsKey(Config.COLLECT_OAID)) {
-                AppsFlyerLib.getInstance().setCollectOaid(settings[Config.COLLECT_OAID] as Boolean)
-            }
-            
             if (settings.containsKey(Config.LOG_LEVEL)) {
                 val logLevelString = settings[Config.LOG_LEVEL] as String
                 val logLevel = LogLevel.fromString(logLevelString)
@@ -237,7 +233,7 @@ class AppsFlyerInstance(
             val mediationNetworkEnum = MediationNetwork.fromString(mediationNetwork)?.toAppsFlyerEnum()
 
             if (mediationNetworkEnum == null) {
-                Log.e(BuildConfig.TAG, "Unknown mediation network: $mediationNetwork. Please use one of the following: ${MediationNetwork.values().joinToString(", ")}")
+                Log.e(BuildConfig.TAG, "Unknown mediation network: $mediationNetwork.")
                 return
             }
 
@@ -260,7 +256,7 @@ class AppsFlyerInstance(
         consentForAdsPersonalization: Boolean,
         consentForAdStorage: Boolean
     ) {
-        val consent = AppsFlyerConsent.forGDPRUser(gdprApplies, consentForDataUsage)
+        val consent = AppsFlyerConsent(gdprApplies, consentForDataUsage, consentForAdsPersonalization, consentForAdStorage)
         AppsFlyerLib.getInstance().setConsentData(consent)
     }
 
@@ -434,10 +430,6 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setOutOfStore(outOfStore)
     }
 
-    override fun setSharingFilterForAllPartners() {
-        AppsFlyerLib.getInstance().setSharingFilterForAllPartners()
-    }
-
     override fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String?) {
         AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
     }
@@ -452,10 +444,5 @@ class AppsFlyerInstance(
 
     override fun setOaidData(oaid: String) {
         AppsFlyerLib.getInstance().setOaidData(oaid)
-    }
-
-    override fun setSharingFilter(partners: List<String>) {
-        val partnersArray = partners.toTypedArray()
-        AppsFlyerLib.getInstance().setSharingFilter(*partnersArray)
     }
 }

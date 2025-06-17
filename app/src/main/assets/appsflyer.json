@@ -70,8 +70,6 @@
     "android_id_data": "android_id_data",
     "imei_data": "imei_data",
     "oaid_data": "oaid_data",
-    "sharing_filter_type": "sharing_filter_type",
-    "sharing_filter_values": "sharing_filter_values",
     "sdk_extension": "extension",
     "signup_method": "event.af_registration_method",
     "achievement_id": "event.af_achievement_id",
@@ -220,12 +218,10 @@
     "append_parameters_to_deeplink": "appendparameterstodeeplinkurl",
     "set_is_update": "setisupdate",
     "set_out_of_store": "setoutofstore", 
-    "set_sharing_filter_for_all_partners": "setsharingfilterforallpartners",
     "set_preinstall_attribution": "setpreinstallattribution",
     "set_android_id_data": "setandroididdata",
     "set_imei_data": "setimeidata",
     "set_oaid_data": "setoaiddata",
-    "set_sharing_filter": "setsharingfilter",
     "custom_event": "custom_event"
   }
 }

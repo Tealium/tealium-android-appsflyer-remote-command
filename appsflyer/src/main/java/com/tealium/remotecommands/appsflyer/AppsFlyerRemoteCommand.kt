@@ -160,10 +160,6 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
                 
-                Commands.SET_SHARING_FILTER_FOR_ALL_PARTNERS -> {
-                    appsFlyerInstance.setSharingFilterForAllPartners()
-                }
-
                 Commands.SET_PREINSTALL_ATTRIBUTION -> {
                     val mediaSource: String? = payload.optString(PreinstallAttribution.MEDIA_SOURCE)
                     val campaign: String? = payload.optString(PreinstallAttribution.CAMPAIGN)
@@ -206,18 +202,6 @@ open class AppsFlyerRemoteCommand(
                         } else {
                             Log.w(TAG, "${DeviceData.OAID_DATA} is required")
                         }
-                    }
-                }
-                
-                Commands.SET_SHARING_FILTER -> {
-                    val sharingFilterType: String? = payload.optString(SharingFilter.SHARING_FILTER_TYPE)
-                    val sharingFilterValues: JSONArray? = payload.optJSONArray(SharingFilter.SHARING_FILTER_VALUES)
-                    
-                    sharingFilterValues?.let {
-                        val filterList = toList(it)
-                        appsFlyerInstance.setSharingFilter(filterList)
-                    } ?: run {
-                        Log.w(TAG, "${SharingFilter.SHARING_FILTER_VALUES} is required for setSharingFilter")
                     }
                 }
 
