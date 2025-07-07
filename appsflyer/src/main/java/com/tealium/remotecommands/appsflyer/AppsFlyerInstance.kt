@@ -28,16 +28,16 @@ class AppsFlyerInstance(
         configSettings: Map<String, Any>?
     ) {
         configSettings?.let { settings ->
-            if (settings.containsKey(Config.MIN_TIME_BETWEEN_SESSIONS)) {
-                setMinsBetweenSessions(settings[Config.MIN_TIME_BETWEEN_SESSIONS] as Int)
+            if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
+                setMinsBetweenSessions(settings[Settings.TIME_BETWEEN_SESSIONS] as Int)
             }
 
-            if (settings.containsKey(Config.ANONYMIZE_USER)) {
-                anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
+            if (settings.containsKey(Settings.ANONYMIZE_USER)) {
+                anonymizeUser(settings[Settings.ANONYMIZE_USER] as Boolean)
             }
 
-            if (settings.containsKey(Config.CUSTOM_DATA)) {
-                val data = toMap(settings[Config.CUSTOM_DATA] as JSONObject)
+            if (settings.containsKey(Settings.CUSTOM_DATA)) {
+                val data = toMap(settings[Settings.CUSTOM_DATA] as JSONObject)
                 val iterator = data.entries.iterator()
                 val dataMap = HashMap<String, Any>()
                 while (iterator.hasNext()) {
@@ -51,8 +51,8 @@ class AppsFlyerInstance(
                 addCustomData(dataMap)
             }
 
-            if (settings.containsKey(Config.DEBUG)) {
-                enableDebugLog(settings[Config.DEBUG] as Boolean)
+            if (settings.containsKey(Settings.DEBUG)) {
+                enableDebugLog(settings[Settings.DEBUG] as Boolean)
             }
         }
         if (!devKey.isNullOrEmpty()) {
