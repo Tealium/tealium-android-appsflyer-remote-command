@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "30.0.3"
-
+    namespace = "com.tealium.remotecommands.appsflyer"
+    compileSdk 35
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 33
+        targetSdkVersion 35
+
         buildConfigField 'String', 'TAG', "\"Tealium-AppsFlyer-$tealium_appsflyer_version\""
         buildConfigField 'String', "TEALIUM_APPSFLYER_VERSION", "\"$tealium_appsflyer_version\""
 
@@ -23,47 +23,64 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'com.tealium.remotecommands.appsflyer'
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId 'com.tealium.remotecommands'
+            artifactId 'appsflyer'
+            version "$tealium_appsflyer_version"
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+    // repositories {
+    //     maven {
+    //         url "s3://maven.tealiumiq.com/android/releases/"
+    //         credentials(AwsCredentials) {
+    //             // Dummy credentials provided in project's gradle.properties; these will be overridden by your global settings in ~/.gradle/gradle.properties
+    //             accessKey AWS_ACCESS_KEY
+    //             secretKey AWS_SECRET_KEY
+    //             sessionToken AWS_SESSION_TOKEN
+    //         }
+    //     }
+    // }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    api 'com.tealium:remotecommands:1.0.1'
+
+    // Tealium dependencies
+    api "com.tealium:remotecommands:1.0.3"
+    
+    // AppsFlyer dependencies
     api "com.appsflyer:af-android-sdk:$appsflyer_version"
     implementation 'com.android.installreferrer:installreferrer:2.2'
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation "org.robolectric:robolectric:4.13"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.robolectric:robolectric:4.14.1"
     testImplementation "io.mockk:mockk:$mockk_version"
-    androidTestImplementation 'androidx.test:rules:1.2.0'
-    androidTestImplementation 'androidx.test:runner:1.2.0'
-    androidTestImplementation 'androidx.test:core:1.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-
-    androidTestImplementation "io.mockk:mockk-android:$mockk_version"
 }
-
-afterEvaluate {
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.release
-                groupId 'com.tealium.remotecommands'
-                artifactId 'appsflyer'
-                version tealium_appsflyer_version
-            }
-        }
-
-//        repositories {
-//            maven {
-//                url "s3://maven.tealiumiq.com/android/releases/"
-//                credentials(AwsCredentials) {
-//                    accessKey AWS_ACCESS_KEY
-//                    secretKey AWS_SECRET_KEY
-//                    sessionToken AWS_SESSION_TOKEN
-//                }
-//            }
-//        }
-    }
-}
+ 
