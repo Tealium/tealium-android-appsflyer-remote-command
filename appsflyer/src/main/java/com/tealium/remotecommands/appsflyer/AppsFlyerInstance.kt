@@ -20,7 +20,7 @@ class AppsFlyerInstance(
     private var weakActivity: WeakReference<Activity>? = null
 
     init {
-        getApplication()
+        registerActivityLifecycleCallbacks()
     }
 
     override fun initialize(
@@ -29,30 +29,38 @@ class AppsFlyerInstance(
     ) {
         configSettings?.let { settings ->
             if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
-                setMinsBetweenSessions(settings[Settings.TIME_BETWEEN_SESSIONS] as Int)
+                (settings[Settings.TIME_BETWEEN_SESSIONS] as? Int)?.let { timeBetweenSessions ->
+                    setMinsBetweenSessions(timeBetweenSessions)
+                }
             }
 
             if (settings.containsKey(Settings.ANONYMIZE_USER)) {
-                anonymizeUser(settings[Settings.ANONYMIZE_USER] as Boolean)
+                (settings[Settings.ANONYMIZE_USER] as? Boolean)?.let { shouldAnonymizeUser ->
+                    anonymizeUser(shouldAnonymizeUser)
+                }
             }
 
             if (settings.containsKey(Settings.CUSTOM_DATA)) {
-                val data = toMap(settings[Settings.CUSTOM_DATA] as JSONObject)
-                val iterator = data.entries.iterator()
-                val dataMap = HashMap<String, Any>()
-                while (iterator.hasNext()) {
-                    val entry = iterator.next()
-                    (entry.key as? String)?.let { key ->
-                        entry.value.let { value ->
-                            dataMap.put(key, value)
+                (settings[Settings.CUSTOM_DATA] as? JSONObject)?.let { customDataJson ->
+                    val data = toMap(customDataJson)
+                    val iterator = data.entries.iterator()
+                    val dataMap = HashMap<String, Any>()
+                    while (iterator.hasNext()) {
+                        val entry = iterator.next()
+                        (entry.key as? String)?.let { key ->
+                            entry.value.let { value ->
+                                dataMap.put(key, value)
+                            }
                         }
                     }
+                    addCustomData(dataMap)
                 }
-                addCustomData(dataMap)
             }
 
             if (settings.containsKey(Settings.DEBUG)) {
-                enableDebugLog(settings[Settings.DEBUG] as Boolean)
+                (settings[Settings.DEBUG] as? Boolean)?.let { shouldEnableDebugLog ->
+                    enableDebugLog(shouldEnableDebugLog)
+                }
             }
         }
         if (!devKey.isNullOrEmpty()) {
@@ -151,7 +159,7 @@ class AppsFlyerInstance(
             .start(weakActivity?.get() ?: application.applicationContext)
     }
 
-    private fun getApplication() {
+    private fun registerActivityLifecycleCallbacks() {
         application.registerActivityLifecycleCallbacks(object :
             Application.ActivityLifecycleCallbacks {
             override fun onActivityPaused(p0: Activity) = Unit
@@ -176,10 +184,12 @@ class AppsFlyerInstance(
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>) {
 
-                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
-                ) {
-                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH)) {
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as? Boolean)?.let { isFirstLaunch ->
+                        if (isFirstLaunch) {
+                            remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                        }
+                    }
                 }
             }
 
