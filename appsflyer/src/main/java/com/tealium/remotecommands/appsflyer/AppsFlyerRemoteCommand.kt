@@ -192,7 +192,7 @@ open class AppsFlyerRemoteCommand(
     internal fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR).map {
-            it.trim().toLowerCase(Locale.ROOT)
+            it.trim().lowercase(Locale.ROOT)
         }.toTypedArray()
     }
 
@@ -230,12 +230,12 @@ open class AppsFlyerRemoteCommand(
     private fun filterPayload(jsonObject: JSONObject): JSONObject {
         val toCopy = mutableListOf<String>()
         val toRemove = listOf(
-            Config.DEBUG,
+            Settings.DEBUG,
             Config.DEV_KEY,
             Config.SETTINGS,
             Commands.COMMAND_KEY,
             "method",
-            "app_id",
+            Config.APP_ID,
         )
         for (key in jsonObject.keys()) {
             if (toRemove.contains(key)) continue

@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonLogPurchase.setOnClickListener {
-            TealiumHelper.trackEvent("purchase")
+            TealiumHelper.trackEvent("order")
         }
 
         binding.buttonTrackLevelAchieved.setOnClickListener {

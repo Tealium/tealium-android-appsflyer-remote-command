@@ -198,11 +198,11 @@ class StandardEventsTest {
     fun parseCommands_Logs_Event_Without_Filtered_Keys() {
         val payload = JSONObject()
         payload.put("method", "12345")
-        payload.put(Config.DEBUG, true)
+        payload.put(Settings.DEBUG, true)
         payload.put(Config.DEV_KEY, "12345")
         payload.put(Config.SETTINGS, "12345")
         payload.put(Commands.COMMAND_KEY, "12345")
-        payload.put("app_id", "12345")
+        payload.put(Config.APP_ID, "12345")
 
         appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
 

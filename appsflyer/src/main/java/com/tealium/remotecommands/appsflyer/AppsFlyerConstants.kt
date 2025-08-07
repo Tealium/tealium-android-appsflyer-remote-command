@@ -23,6 +23,9 @@ object Commands {
 object StandardEvents {
     const val EVENT_PARAMETERS = "event_parameters"
     const val EVENT_PARAMETERS_SHORT = "event"
+    
+    // Official AppsFlyer Standard Events from documentation
+    // https://dev.appsflyer.com/hc/docs/in-app-events-android
     val eventNames = mapOf(
         "levelachieved" to AFInAppEventType.LEVEL_ACHIEVED,
         "addpaymentinfo" to AFInAppEventType.ADD_PAYMENT_INFO,
@@ -32,32 +35,42 @@ object StandardEvents {
         "tutorialcompletion" to AFInAppEventType.TUTORIAL_COMPLETION,
         "initiatecheckout" to AFInAppEventType.INITIATED_CHECKOUT,
         "purchase" to AFInAppEventType.PURCHASE,
-        "cancelpurchase" to "cancel_purchase",
         "subscribe" to AFInAppEventType.SUBSCRIBE,
         "starttrial" to AFInAppEventType.START_TRIAL,
         "rate" to AFInAppEventType.RATE,
+        "search" to AFInAppEventType.SEARCH,
         "spentcredits" to AFInAppEventType.SPENT_CREDIT,
         "achievementunlocked" to AFInAppEventType.ACHIEVEMENT_UNLOCKED,
         "contentview" to AFInAppEventType.CONTENT_VIEW,
-        "listview" to "af_list_view",
+        "listview" to AFInAppEventType.LIST_VIEW,
         "adclick" to AFInAppEventType.AD_CLICK,
         "adview" to AFInAppEventType.AD_VIEW,
+        "travelbooking" to AFInAppEventType.TRAVEL_BOOKING,
         "share" to AFInAppEventType.SHARE,
         "invite" to AFInAppEventType.INVITE,
         "login" to AFInAppEventType.LOGIN,
         "reengage" to AFInAppEventType.RE_ENGAGE,
         "openfrompushnotification" to AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION,
-        "update" to AFInAppEventType.UPDATE
+        "update" to AFInAppEventType.UPDATE,
+        "locationcoordinates" to AFInAppEventType.LOCATION_COORDINATES,
+        "customersegment" to AFInAppEventType.CUSTOMER_SEGMENT
     )
 }
 
 object Config {
-    const val DEBUG = "debug"
-    const val MIN_TIME_BETWEEN_SESSIONS = "time_between_sessions"
-    const val ANONYMIZE_USER = "anonymize_user"
-    const val CUSTOM_DATA = "custom_data"
-    const val SETTINGS = "settings"
+    const val APP_ID = "app_id"
     const val DEV_KEY = "app_dev_key"
+    const val SETTINGS = "settings"
+}
+
+object Settings {
+    const val ANONYMIZE_USER = "anonymize_user"
+    const val COLLECT_DEVICE_NAME = "collect_device_name"
+    const val CUSTOM_DATA = "custom_data"
+    const val DEBUG = "debug"
+    const val DISABLE_AD_TRACKING = "disable_ad_tracking"
+    const val DISABLE_APPLE_AD_TRACKING = "disable_apple_ad_tracking"
+    const val TIME_BETWEEN_SESSIONS = "time_between_sessions"
 }
 
 object Customer {

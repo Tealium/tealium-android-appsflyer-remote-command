@@ -1,7 +1,7 @@
 {
   "config": {
-    "app_id": "test",
-    "app_dev_key": "test",
+    "app_id": "YOUR_APP_ID",
+    "app_dev_key": "YOUR_DEV_KEY",
     "settings": {
       "custom_data": {"custom_key": "custom_value"},
       "debug": true,
@@ -16,7 +16,6 @@
     "latitude": "event.af_lat",
     "longitude": "event.af_long",
     "customer_email": "customer_emails",
-    "hash_type": "email_hash_type",
     "currency_code": "af_currency",
     "customer_id": "af_customer_user_id",
     "signup_method": "event.signup_method",
@@ -54,17 +53,18 @@
     "wishlist_add": "addtowishlist",
     "payment": "addpaymentinfo",
     "unlock_achievement": "achievementunlocked",
-    "level_up": "achievelevel,customersegment",
+    "level_up": "levelachieved,customersegment",
     "email_signup": "subscribe",
     "product": "contentview",
-    "category": "listview",
     "share": "share",
     "rate": "rate",
     "search": "search",
     "invite": "invite",
     "checkout": "initiatecheckout",
-    "order":"purchase",
-    "set_currency" : "setcurrencycode",
+    "order": "purchase",
+    "listview": "listview",
+    "home_screen": "screen_view",
+    "set_currency": "setcurrencycode", 
     "set_host": "sethost",
     "custom_event": "custom_event"
   }

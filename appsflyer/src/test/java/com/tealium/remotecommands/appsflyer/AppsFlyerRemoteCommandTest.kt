@@ -47,7 +47,7 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun testInvokeTrackLocation() {
+    fun testTrackLocation() {
         val payload = JSONObject()
         payload.put(Location.LATITUDE, 10.0)
         payload.put(Location.LONGITUDE, 11.0)
@@ -215,5 +215,44 @@ class AppsFlyerRemoteCommandTest {
         }
 
         confirmVerified(relaxedMockInstance)
+    }
+
+    @Test
+    fun testInitialize() {
+        val payload = JSONObject()
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.initialize("test_dev_key", emptyMap())
+        }
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testInitializeWithSettings() {
+        val payload = JSONObject()
+        val settings = JSONObject()
+        settings.put(Settings.DEBUG, true)
+        settings.put(Settings.ANONYMIZE_USER, false)
+        
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.SETTINGS, settings)
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.initialize(
+                "test_dev_key",
+                mapOf(
+                    "debug" to true,
+                    "anonymize_user" to false
+                )
+            )
+        }
+        confirmVerified(mockAppsFlyerInstance)
     }
 }

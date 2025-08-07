@@ -20,7 +20,7 @@ class AppsFlyerInstance(
     private var weakActivity: WeakReference<Activity>? = null
 
     init {
-        getApplication()
+        registerActivityLifecycleCallbacks()
     }
 
     override fun initialize(
@@ -28,31 +28,39 @@ class AppsFlyerInstance(
         configSettings: Map<String, Any>?
     ) {
         configSettings?.let { settings ->
-            if (settings.containsKey(Config.MIN_TIME_BETWEEN_SESSIONS)) {
-                setMinsBetweenSessions(settings[Config.MIN_TIME_BETWEEN_SESSIONS] as Int)
+            if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
+                (settings[Settings.TIME_BETWEEN_SESSIONS] as? Int)?.let { timeBetweenSessions ->
+                    setMinsBetweenSessions(timeBetweenSessions)
+                }
             }
 
-            if (settings.containsKey(Config.ANONYMIZE_USER)) {
-                anonymizeUser(settings[Config.ANONYMIZE_USER] as Boolean)
+            if (settings.containsKey(Settings.ANONYMIZE_USER)) {
+                (settings[Settings.ANONYMIZE_USER] as? Boolean)?.let { shouldAnonymizeUser ->
+                    anonymizeUser(shouldAnonymizeUser)
+                }
             }
 
-            if (settings.containsKey(Config.CUSTOM_DATA)) {
-                val data = toMap(settings[Config.CUSTOM_DATA] as JSONObject)
-                val iterator = data.entries.iterator()
-                val dataMap = HashMap<String, Any>()
-                while (iterator.hasNext()) {
-                    val entry = iterator.next()
-                    (entry.key as? String)?.let { key ->
-                        entry.value.let { value ->
-                            dataMap.put(key, value)
+            if (settings.containsKey(Settings.CUSTOM_DATA)) {
+                (settings[Settings.CUSTOM_DATA] as? JSONObject)?.let { customDataJson ->
+                    val data = toMap(customDataJson)
+                    val iterator = data.entries.iterator()
+                    val dataMap = HashMap<String, Any>()
+                    while (iterator.hasNext()) {
+                        val entry = iterator.next()
+                        (entry.key as? String)?.let { key ->
+                            entry.value.let { value ->
+                                dataMap.put(key, value)
+                            }
                         }
                     }
+                    addCustomData(dataMap)
                 }
-                addCustomData(dataMap)
             }
 
-            if (settings.containsKey(Config.DEBUG)) {
-                enableDebugLog(settings[Config.DEBUG] as Boolean)
+            if (settings.containsKey(Settings.DEBUG)) {
+                (settings[Settings.DEBUG] as? Boolean)?.let { shouldEnableDebugLog ->
+                    enableDebugLog(shouldEnableDebugLog)
+                }
             }
         }
         if (!devKey.isNullOrEmpty()) {
@@ -151,7 +159,7 @@ class AppsFlyerInstance(
             .start(weakActivity?.get() ?: application.applicationContext)
     }
 
-    private fun getApplication() {
+    private fun registerActivityLifecycleCallbacks() {
         application.registerActivityLifecycleCallbacks(object :
             Application.ActivityLifecycleCallbacks {
             override fun onActivityPaused(p0: Activity) = Unit
@@ -176,10 +184,12 @@ class AppsFlyerInstance(
         return object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: MutableMap<String, Any>) {
 
-                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH) &&
-                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as Boolean)
-                ) {
-                    remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH)) {
+                    (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as? Boolean)?.let { isFirstLaunch ->
+                        if (isFirstLaunch) {
+                            remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                        }
+                    }
                 }
             }
 
