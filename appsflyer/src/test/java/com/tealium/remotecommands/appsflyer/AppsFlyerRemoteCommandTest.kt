@@ -134,21 +134,6 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun testDisableTracking() {
-        val payload = JSONObject()
-        payload.put(Tracking.DISABLE_DEVICE_TRACKING, true)
-        payload.put(COMMAND_NAME_KEY, Commands.DISABLE_DEVICE_TRACKING)
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.DISABLE_DEVICE_TRACKING), payload)
-
-        verify {
-            mockAppsFlyerInstance.disableDeviceTracking(true)
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
     fun testResolveDeepLinkUrls() {
         val deepLinkProperties = JSONArray()
         deepLinkProperties.put("val1")
@@ -253,6 +238,161 @@ class AppsFlyerRemoteCommandTest {
                 )
             )
         }
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testInitializeWithAdditionalSettings() {
+        val payload = JSONObject()
+        val settings = JSONObject()
+        val deepLinkPath = JSONArray()
+        deepLinkPath.put("path1")
+        deepLinkPath.put("path2")
+        
+        settings.put(Settings.TIME_BETWEEN_SESSIONS, 300)
+        settings.put(Settings.COLLECT_DEVICE_NAME, true)
+        settings.put(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH, deepLinkPath)
+        
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.SETTINGS, settings)
+        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        verify {
+            mockAppsFlyerInstance.initialize(
+                "test_dev_key",
+                mapOf(
+                    "time_between_sessions" to 300,
+                    "collect_device_name" to true,
+                    "push_notification_deep_link_path" to deepLinkPath
+                )
+            )
+        }
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetPhoneNumber() {
+        val payload = JSONObject()
+        payload.put(PhoneNumberParam.PHONE_NUMBER, "+1234567890")
+        payload.put(COMMAND_NAME_KEY, Commands.SET_PHONE_NUMBER)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), payload)
+
+        verify {
+            mockAppsFlyerInstance.setPhoneNumber("+1234567890")
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testLogAdRevenue() {
+        val payload = JSONObject()
+        val additionalParams = JSONObject()
+        additionalParams.put("param1", "value1")
+        
+        payload.put(AdRevenueParams.MONETIZATION_NETWORK, "TestNetwork")
+        payload.put(AdRevenueParams.MEDIATION_NETWORK, "googleadmob")
+        payload.put(AdRevenueParams.AD_REVENUE_CURRENCY, "USD")
+        payload.put(AdRevenueParams.AD_REVENUE_AMOUNT, 1.99)
+        payload.put(AdRevenueParams.AD_REVENUE_ADDITIONAL_PARAMS, additionalParams)
+        payload.put(COMMAND_NAME_KEY, Commands.LOG_AD_REVENUE)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        verify {
+            mockAppsFlyerInstance.logAdRevenue(any(), mapOf("param1" to "value1"))
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetConsentData() {
+        val payload = JSONObject()
+        payload.put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, true)
+        payload.put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, true)
+        payload.put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, false)
+        payload.put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, true)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_CONSENT_DATA)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+
+        verify {
+            mockAppsFlyerInstance.setConsentData(true, true, false, true)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetPartnerData() {
+        val payload = JSONObject()
+        val partnerInfo = JSONObject()
+        partnerInfo.put("key1", "value1")
+        partnerInfo.put("key2", "value2")
+        
+        payload.put(PartnerDataParams.PARTNER_ID, "test_partner")
+        payload.put(PartnerDataParams.PARTNER_INFO, partnerInfo)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_PARTNER_DATA)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_PARTNER_DATA), payload)
+
+        verify {
+            mockAppsFlyerInstance.setPartnerData("test_partner", mapOf("key1" to "value1", "key2" to "value2"))
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetSharingFilterForPartners() {
+        val payload = JSONObject()
+        val sharingFilter = JSONArray()
+        sharingFilter.put("partner1")
+        sharingFilter.put("partner2")
+        
+        payload.put(SharingFilterParams.SHARING_FILTER, sharingFilter)
+        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setSharingFilterForPartners(arrayOf("partner1", "partner2"))
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testSetSharingFilterForPartnersReset() {
+        val payload = JSONObject()
+        // No sharing_filter parameter - should reset filter
+        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+
+        verify {
+            mockAppsFlyerInstance.setSharingFilterForPartners(null)
+        }
+
+        confirmVerified(mockAppsFlyerInstance)
+    }
+
+    @Test
+    fun testAnonymizeUser() {
+        val payload = JSONObject()
+        payload.put(Tracking.ANONYMIZE_USER, true)
+        payload.put(COMMAND_NAME_KEY, Commands.ANONYMIZE_USER)
+
+        appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)
+
+        verify {
+            mockAppsFlyerInstance.anonymizeUser(true)
+        }
+
         confirmVerified(mockAppsFlyerInstance)
     }
 }

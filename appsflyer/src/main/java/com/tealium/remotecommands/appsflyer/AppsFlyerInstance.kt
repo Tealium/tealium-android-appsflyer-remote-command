@@ -4,7 +4,9 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AppsFlyerConversionListener
+import com.appsflyer.AppsFlyerConsent
 import com.appsflyer.AppsFlyerLib
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
@@ -36,7 +38,7 @@ class AppsFlyerInstance(
 
             if (settings.containsKey(Settings.ANONYMIZE_USER)) {
                 (settings[Settings.ANONYMIZE_USER] as? Boolean)?.let { shouldAnonymizeUser ->
-                    anonymizeUser(shouldAnonymizeUser)
+                    this.anonymizeUser(shouldAnonymizeUser)
                 }
             }
 
@@ -60,6 +62,15 @@ class AppsFlyerInstance(
             if (settings.containsKey(Settings.DEBUG)) {
                 (settings[Settings.DEBUG] as? Boolean)?.let { shouldEnableDebugLog ->
                     enableDebugLog(shouldEnableDebugLog)
+                }
+            }
+
+            if (settings.containsKey(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH)) {
+                (settings[Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH] as? List<*>)?.let { pathList ->
+                    val stringPathList = pathList.filterIsInstance<String>()
+                    if (stringPathList.isNotEmpty()) {
+                        addPushNotificationDeepLinkPath(stringPathList)
+                    }
                 }
             }
         }
@@ -104,8 +115,39 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setCustomerUserId(id)
     }
 
-    override fun disableDeviceTracking(disable: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(disable)
+    override fun setPhoneNumber(phoneNumber: String) {
+        AppsFlyerLib.getInstance().setPhoneNumber(phoneNumber)
+    }
+
+    override fun logAdRevenue(adRevenueData: AFAdRevenueData, additionalParameters: Map<String, Any>?) {
+        AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters)
+    }
+
+    override fun setConsentData(isUserSubjectToGDPR: Boolean, hasConsentForDataUsage: Boolean, hasConsentForAdsPersonalization: Boolean, hasConsentForAdStorage: Boolean) {
+        val consent = AppsFlyerConsent(
+            isUserSubjectToGDPR,
+            hasConsentForDataUsage,
+            hasConsentForAdsPersonalization,
+            hasConsentForAdStorage
+        )
+        AppsFlyerLib.getInstance().setConsentData(consent)
+    }
+
+    override fun setPartnerData(partnerId: String, partnerInfo: Map<String, Any>?) {
+        AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerInfo)
+    }
+
+    override fun setSharingFilterForPartners(partners: Array<String>?) {
+        if (partners != null) {
+            AppsFlyerLib.getInstance().setSharingFilterForPartners(*partners)
+        } else {
+            // Reset filter by calling with no arguments
+            AppsFlyerLib.getInstance().setSharingFilterForPartners()
+        }
+    }
+
+    override fun anonymizeUser(anonymize: Boolean) {
+        AppsFlyerLib.getInstance().anonymizeUser(anonymize)
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
@@ -117,12 +159,13 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
     }
 
-    fun setMinsBetweenSessions(seconds: Int) {
-        AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
+    override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
+        val pathArray = deepLinkPath.toTypedArray()
+        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
     }
 
-    fun anonymizeUser(isDisabled: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(isDisabled)
+    fun setMinsBetweenSessions(seconds: Int) {
+        AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
     fun addCustomData(data: HashMap<String, Any>) {

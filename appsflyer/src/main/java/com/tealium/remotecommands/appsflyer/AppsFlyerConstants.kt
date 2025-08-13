@@ -8,14 +8,18 @@ object Commands {
     const val COMMAND_KEY = "command_name"
     const val SEPARATOR = ","
 
-    const val INITIALIZE = "initialize"
-    const val LAUNCH = "launch"
+    const val INITIALIZE = "initialize" 
     const val TRACK_LOCATION = "tracklocation"
     const val SET_HOST = "sethost"
     const val SET_USER_EMAILS = "setuseremails"
     const val SET_CURRENCY_CODE = "setcurrencycode"
     const val SET_CUSTOMER_ID = "setcustomerid"
-    const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
+    const val SET_PHONE_NUMBER = "setphonenumber"
+    const val LOG_AD_REVENUE = "logadrevenue"
+    const val SET_CONSENT_DATA = "setconsentdata"
+    const val SET_PARTNER_DATA = "setpartnerdata"
+    const val SET_SHARING_FILTER_FOR_PARTNERS = "setsharingfilterforpartners"
+    const val ANONYMIZE_USER = "anonymizeuser"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
     const val STOP_TRACKING = "stoptracking"
 }
@@ -71,6 +75,7 @@ object Settings {
     const val DISABLE_AD_TRACKING = "disable_ad_tracking"
     const val DISABLE_APPLE_AD_TRACKING = "disable_apple_ad_tracking"
     const val TIME_BETWEEN_SESSIONS = "time_between_sessions"
+    const val PUSH_NOTIFICATION_DEEP_LINK_PATH = "push_notification_deep_link_path"
 }
 
 object Customer {
@@ -97,7 +102,54 @@ object DeepLink {
 }
 
 object Tracking {
-    const val DISABLE_DEVICE_TRACKING = "disable_device_tracking"
+    const val ANONYMIZE_USER = "anonymize_user"
     const val STOP_TRACKING = "stop_tracking"
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
+}
+
+object PhoneNumberParam {
+    const val PHONE_NUMBER = "phone_number"
+}
+
+object AdRevenueParams {
+    const val MONETIZATION_NETWORK = "monetization_network"
+    const val MEDIATION_NETWORK = "mediation_network"
+    const val AD_REVENUE_CURRENCY = "ad_revenue_currency"
+    const val AD_REVENUE_AMOUNT = "ad_revenue_amount"
+    const val AD_REVENUE_ADDITIONAL_PARAMS = "ad_revenue_additional_params"
+}
+
+object MediationNetworks { 
+    val networkNames = mapOf(
+        "googleadmob" to "GOOGLE_ADMOB",
+        "ironsource" to "IRONSOURCE", 
+        "applovinmax" to "APPLOVIN_MAX",
+        "fyber" to "FYBER",
+        "appodeal" to "APPODEAL",
+        "admost" to "ADMOST",
+        "topon" to "TOPON",
+        "tradplus" to "TRADPLUS",
+        "yandex" to "YANDEX",
+        "chartboost" to "CHARTBOOST",
+        "unity" to "UNITY",
+        "toponpte" to "TOPON_PTE",
+        "custom" to "CUSTOM_MEDIATION",
+        "direct" to "DIRECT_MONETIZATION_NETWORK"
+    )
+}
+
+object ConsentDataParams {
+    const val IS_USER_SUBJECT_TO_GDPR = "is_user_subject_to_gdpr"
+    const val HAS_CONSENT_FOR_DATA_USAGE = "has_consent_for_data_usage"
+    const val HAS_CONSENT_FOR_ADS_PERSONALIZATION = "has_consent_for_ads_personalization"
+    const val HAS_CONSENT_FOR_AD_STORAGE = "has_consent_for_ad_storage"
+}
+
+object PartnerDataParams {
+    const val PARTNER_ID = "partner_id"
+    const val PARTNER_INFO = "partner_info"
+}
+
+object SharingFilterParams {
+    const val SHARING_FILTER = "sharing_filter"
 }

@@ -62,4 +62,40 @@
         android:layout_height="wrap_content"
         android:text="@string/custom_event" />
 
+    <Button
+        android:id="@+id/button_setPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_phone_number" />
+
+    <Button
+        android:id="@+id/button_logAdRevenue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/log_ad_revenue" />
+
+    <Button
+        android:id="@+id/button_setConsentData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_consent_data" />
+
+    <Button
+        android:id="@+id/button_setPartnerData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_partner_data" />
+
+    <Button
+        android:id="@+id/button_anonymizeUser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/anonymize_user" />
+
+    <Button
+        android:id="@+id/button_setSharingFilter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sharing_filter" />
+
 </LinearLayout>

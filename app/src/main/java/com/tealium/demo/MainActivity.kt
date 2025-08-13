@@ -72,5 +72,49 @@ class MainActivity : AppCompatActivity() {
         binding.buttonCustomEvent.setOnClickListener {
             TealiumHelper.trackEvent("custom_event", mapOf())
         }
+
+        binding.buttonSetPhoneNumber.setOnClickListener {
+            TealiumHelper.trackEvent("set_phone_number", mapOf("phone_number" to "+1234567890"))
+        }
+
+        binding.buttonLogAdRevenue.setOnClickListener {
+            TealiumHelper.trackEvent("ad_revenue", mapOf(
+                "monetization_network" to "TestNetwork",
+                "mediation_network" to "googleadmob", 
+                "ad_revenue_currency" to "USD",
+                "ad_revenue_amount" to 1.99,
+                "ad_revenue_ad_unit_id" to "test_ad_unit",
+                "ad_revenue_ad_format" to "banner"
+            ))
+        }
+
+        binding.buttonSetConsentData.setOnClickListener {
+            TealiumHelper.trackEvent("set_consent", mapOf(
+                "is_user_subject_to_gdpr" to true,
+                "has_consent_for_data_usage" to true,
+                "has_consent_for_ads_personalization" to false,
+                "has_consent_for_ad_storage" to true
+            ))
+        }
+
+        binding.buttonSetPartnerData.setOnClickListener {
+            TealiumHelper.trackEvent("set_partner_data", mapOf(
+                "partner_id" to "test_partner_123",
+                "partner_puid" to "user123",
+                "partner_user_segment" to "premium",
+                "partner_ltv" to 150.0
+            ))
+        }
+
+        binding.buttonAnonymizeUser.setOnClickListener {
+            TealiumHelper.trackEvent("anonymize_user", mapOf("anonymize_user" to true))
+        }
+
+        binding.buttonSetSharingFilter.setOnClickListener {
+            val filterArray = JSONArray()
+            filterArray.put("partner1")
+            filterArray.put("partner2")
+            TealiumHelper.trackEvent("set_sharing_filter", mapOf("sharing_filter" to filterArray))
+        }
     }
 }

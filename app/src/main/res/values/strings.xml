@@ -8,4 +8,10 @@
     <string name="track_location">Track Location</string>
     <string name="standard_events">Check Standard Events</string>
     <string name="custom_event">Custom Event</string>
+    <string name="set_phone_number">Set Phone Number</string>
+    <string name="log_ad_revenue">Log Ad Revenue</string>
+    <string name="set_consent_data">Set Consent Data</string>
+    <string name="set_partner_data">Set Partner Data</string>
+    <string name="anonymize_user">Anonymize User</string>
+    <string name="sharing_filter">Set Sharing Filter</string>
 </resources>

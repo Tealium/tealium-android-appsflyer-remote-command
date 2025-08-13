@@ -2,6 +2,8 @@ package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
 import android.util.Log
+import com.appsflyer.AFAdRevenueData
+import com.appsflyer.MediationNetwork
 import com.tealium.remotecommands.RemoteCommand
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONArray
@@ -94,15 +96,129 @@ open class AppsFlyerRemoteCommand(
                     }
                 }
 
-                Commands.DISABLE_DEVICE_TRACKING -> {
-                    val disableTracking: Boolean? =
-                        payload.optBoolean(Tracking.DISABLE_DEVICE_TRACKING, false)
-                    disableTracking?.let {
-                        appsFlyerInstance.disableDeviceTracking(it)
+                Commands.SET_PHONE_NUMBER -> {
+                    val phoneNumber: String = payload.optString(PhoneNumberParam.PHONE_NUMBER)
+                    if (phoneNumber.isNotEmpty()) {
+                        appsFlyerInstance.setPhoneNumber(phoneNumber)
+                    } else {
+                        Log.w(
+                            TAG,
+                            "${PhoneNumberParam.PHONE_NUMBER} is a required key"
+                        )
+                    }
+                }
+
+                Commands.LOG_AD_REVENUE -> {
+                    val monetizationNetwork: String = payload.optString(AdRevenueParams.MONETIZATION_NETWORK)
+                    val mediationNetwork: String = payload.optString(AdRevenueParams.MEDIATION_NETWORK)
+                    val currency: String = payload.optString(AdRevenueParams.AD_REVENUE_CURRENCY)
+                    val revenue: Double = payload.optDouble(AdRevenueParams.AD_REVENUE_AMOUNT)
+                    
+                    if (monetizationNetwork.isNotEmpty() && 
+                        mediationNetwork.isNotEmpty() && 
+                        currency.isNotEmpty() && 
+                        !revenue.isNaN()
+                    ) {
+                        try {
+                            // Convert mediation network string to MediationNetwork enum using mapping
+                            val mediationNetworkEnumName = MediationNetworks.networkNames[mediationNetwork.lowercase()]
+                            val mediationNetworkEnum = if (mediationNetworkEnumName != null) {
+                                try {
+                                    MediationNetwork.valueOf(mediationNetworkEnumName)
+                                } catch (e: IllegalArgumentException) {
+                                    Log.w(TAG, "Invalid enum value for mediation network: $mediationNetworkEnumName")
+                                    null
+                                }
+                            } else {
+                                Log.w(TAG, "Unknown mediation network: $mediationNetwork, supported networks: ${MediationNetworks.networkNames.keys.joinToString(", ")}")
+                                null
+                            }
+                            
+                            if (mediationNetworkEnum != null) {
+                                val adRevenueData = AFAdRevenueData(
+                                    monetizationNetwork,
+                                    mediationNetworkEnum,
+                                    currency,
+                                    revenue
+                                )
+                                
+                                val additionalParams: JSONObject? = payload.optJSONObject(AdRevenueParams.AD_REVENUE_ADDITIONAL_PARAMS)
+                                val additionalParamsMap = jsonToMap(additionalParams)
+                                
+                                appsFlyerInstance.logAdRevenue(adRevenueData, additionalParamsMap)
+                            } else {
+                                Log.e(TAG, "Cannot log ad revenue: invalid mediation network '$mediationNetwork'")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error logging ad revenue: ${e.message}")
+                        }
+                    } else {
+                        Log.w(
+                            TAG,
+                            "Ad revenue requires ${AdRevenueParams.MONETIZATION_NETWORK}, ${AdRevenueParams.MEDIATION_NETWORK}, ${AdRevenueParams.AD_REVENUE_CURRENCY}, and ${AdRevenueParams.AD_REVENUE_AMOUNT}"
+                        )
+                    }
+                }
+
+                Commands.SET_CONSENT_DATA -> {
+                    val isUserSubjectToGDPR: Boolean? = payload.optBoolean(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR)
+                    val hasConsentForDataUsage: Boolean? = payload.optBoolean(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE)
+                    val hasConsentForAdsPersonalization: Boolean? = payload.optBoolean(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION)
+                    val hasConsentForAdStorage: Boolean? = payload.optBoolean(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE)
+                    
+                    if (isUserSubjectToGDPR != null && hasConsentForDataUsage != null && 
+                        hasConsentForAdsPersonalization != null && hasConsentForAdStorage != null) {
+                        
+                        appsFlyerInstance.setConsentData(
+                            isUserSubjectToGDPR,
+                            hasConsentForDataUsage,
+                            hasConsentForAdsPersonalization,
+                            hasConsentForAdStorage
+                        )
+                    } else {
+                        Log.w(
+                            TAG,
+                            "Consent data requires ${ConsentDataParams.IS_USER_SUBJECT_TO_GDPR}, ${ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE}, ${ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION}, and ${ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE}"
+                        )
+                    }
+                }
+
+                Commands.SET_PARTNER_DATA -> {
+                    val partnerId: String = payload.optString(PartnerDataParams.PARTNER_ID)
+                    
+                    if (partnerId.isNotEmpty()) {
+                        val partnerInfo: JSONObject? = payload.optJSONObject(PartnerDataParams.PARTNER_INFO)
+                        val partnerInfoMap = jsonToMap(partnerInfo)
+                        
+                        appsFlyerInstance.setPartnerData(partnerId, partnerInfoMap)
+                    } else {
+                        Log.w(
+                            TAG,
+                            "${PartnerDataParams.PARTNER_ID} is a required key"
+                        )
+                    }
+                }
+
+                Commands.SET_SHARING_FILTER_FOR_PARTNERS -> {
+                    val sharingFilterJsonArray: JSONArray? = payload.optJSONArray(SharingFilterParams.SHARING_FILTER)
+                    val sharingFilterArray = if (sharingFilterJsonArray != null) {
+                        toList(sharingFilterJsonArray).toTypedArray()
+                    } else {
+                        null // Reset filter
+                    }
+                    
+                    appsFlyerInstance.setSharingFilterForPartners(sharingFilterArray)
+                }
+
+                Commands.ANONYMIZE_USER -> {
+                    val anonymizeUser: Boolean? =
+                        payload.optBoolean(Tracking.ANONYMIZE_USER, false)
+                    anonymizeUser?.let {
+                        appsFlyerInstance.anonymizeUser(it)
                     } ?: run {
                         Log.w(
                             TAG,
-                            "${Tracking.DISABLE_DEVICE_TRACKING} is a required key"
+                            "${Tracking.ANONYMIZE_USER} is a required key"
                         )
                     }
                 }
