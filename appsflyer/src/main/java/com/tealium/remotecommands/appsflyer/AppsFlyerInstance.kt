@@ -3,7 +3,6 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerConsent
@@ -81,10 +80,7 @@ class AppsFlyerInstance(
         appsFlyerDevKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
-            Log.e(
-                BuildConfig.TAG,
-                "${Config.DEV_KEY} is a required key"
-            )
+            RemoteCommandLogger.error("${Config.DEV_KEY} is a required key")
         }
     }
 
@@ -97,9 +93,7 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        hostPrefix?.let { prefix -> // prefix @NonNull from v6.10+
-            AppsFlyerLib.getInstance().setHost(host, prefix)
-        }
+        AppsFlyerLib.getInstance().setHost(host, hostPrefix ?: "")
     }
 
     override fun setUserEmails(emails: List<String>) {
@@ -164,19 +158,19 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
     }
 
-    fun setMinsBetweenSessions(seconds: Int) {
+    private fun setMinsBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 
-    fun addCustomData(data: HashMap<String, Any>) {
+    private fun addCustomData(data: HashMap<String, Any>) {
         AppsFlyerLib.getInstance().setAdditionalData(data)
     }
 
-    fun enableDebugLog(shouldEnable: Boolean) {
+    private fun enableDebugLog(shouldEnable: Boolean) {
         AppsFlyerLib.getInstance().setDebugLog(shouldEnable)
     }
 
-    fun toMap(json: JSONObject): Map<String, Any> {
+    private fun toMap(json: JSONObject): Map<String, Any> {
         val map = mutableMapOf<String, Any>()
         try {
             json.keys().forEach { key ->
@@ -185,7 +179,7 @@ class AppsFlyerInstance(
                 }
             }
         } catch (ex: JSONException) {
-            Log.e("AppsFlyerTracker", "Error in JSON Config")
+            RemoteCommandLogger.error("Error in JSON Config", ex)
         }
 
         return map.toMap()
@@ -230,7 +224,10 @@ class AppsFlyerInstance(
                 if (conversionData.containsKey(Tracking.GCD_IS_FIRST_LAUNCH)) {
                     (conversionData[Tracking.GCD_IS_FIRST_LAUNCH] as? Boolean)?.let { isFirstLaunch ->
                         if (isFirstLaunch) {
-                            remoteCommandContext.track("conversion_data_received", conversionData.toMap())
+                            remoteCommandContext.track(
+                                AttributionEvents.CONVERSION_DATA_RECEIVED,
+                                conversionData.toMap()
+                            )
                         }
                     }
                 }
@@ -238,25 +235,25 @@ class AppsFlyerInstance(
 
             override fun onConversionDataFail(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "conversion_data_request_failure"
-                map["error_message"] = errorMessage
+                map[AttributionEvents.KEY_ERROR_NAME] = AttributionEvents.ERROR_CONVERSION_DATA_REQUEST_FAILURE
+                map[AttributionEvents.KEY_ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(AttributionEvents.APPSFLYER_ERROR, map)
             }
 
             override fun onAppOpenAttribution(attributionData: MutableMap<String, String>?) {
                 remoteCommandContext.track(
-                    "app_open_attribution",
+                    AttributionEvents.APP_OPEN_ATTRIBUTION,
                     attributionData as Map<String, Any>?
                 )
             }
 
             override fun onAttributionFailure(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map["error_name"] = "app_open_attribution_failure"
-                map["error_message"] = errorMessage
+                map[AttributionEvents.KEY_ERROR_NAME] = AttributionEvents.ERROR_APP_OPEN_ATTRIBUTION_FAILURE
+                map[AttributionEvents.KEY_ERROR_MESSAGE] = errorMessage
 
-                remoteCommandContext.track("appsflyer_error", map)
+                remoteCommandContext.track(AttributionEvents.APPSFLYER_ERROR, map)
             }
         }
     }
