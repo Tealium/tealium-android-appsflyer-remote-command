@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.appsflyer.AFAdRevenueData
+import com.appsflyer.AFLogger
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerConsent
 import com.appsflyer.AppsFlyerLib
@@ -29,6 +30,13 @@ class AppsFlyerInstance(
         configSettings: Map<String, Any>?
     ) {
         configSettings?.let { settings ->
+            // Must run before init() — Facebook SDK integration for deferred app links.
+            if (settings.containsKey(Settings.ENABLE_FACEBOOK_DEFERRED_APPLINKS)) {
+                (settings[Settings.ENABLE_FACEBOOK_DEFERRED_APPLINKS] as? Boolean)?.let { isEnabled ->
+                    AppsFlyerLib.getInstance().enableFacebookDeferredApplinks(isEnabled)
+                }
+            }
+
             if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
                 (settings[Settings.TIME_BETWEEN_SESSIONS] as? Int)?.let { timeBetweenSessions ->
                     setMinsBetweenSessions(timeBetweenSessions)
@@ -69,6 +77,55 @@ class AppsFlyerInstance(
                     val stringPathList = pathList.filterIsInstance<String>()
                     if (stringPathList.isNotEmpty()) {
                         addPushNotificationDeepLinkPath(stringPathList)
+                    }
+                }
+            }
+
+            if (settings.containsKey(Settings.ENABLE_TCF_DATA_COLLECTION)) {
+                (settings[Settings.ENABLE_TCF_DATA_COLLECTION] as? Boolean)?.let { isEnabled ->
+                    AppsFlyerLib.getInstance().enableTCFDataCollection(isEnabled)
+                }
+            }
+
+            if (settings.containsKey(Settings.ONE_LINK_CUSTOM_DOMAINS)) {
+                (settings[Settings.ONE_LINK_CUSTOM_DOMAINS] as? List<*>)?.let { domainList ->
+                    val domains = domainList.filterIsInstance<String>().toTypedArray()
+                    if (domains.isNotEmpty()) {
+                        AppsFlyerLib.getInstance().setOneLinkCustomDomain(*domains)
+                    }
+                }
+            }
+
+            if (settings.containsKey(Settings.DISABLE_ADVERTISING_IDENTIFIERS)) {
+                (settings[Settings.DISABLE_ADVERTISING_IDENTIFIERS] as? Boolean)?.let { isDisabled ->
+                    AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(isDisabled)
+                }
+            }
+
+            if (settings.containsKey(Settings.DISABLE_APP_SET_ID)) {
+                (settings[Settings.DISABLE_APP_SET_ID] as? Boolean)?.let { isDisabled ->
+                    if (isDisabled) {
+                        AppsFlyerLib.getInstance().disableAppSetId()
+                    }
+                }
+            }
+
+            if (settings.containsKey(Settings.COLLECT_OAID)) {
+                (settings[Settings.COLLECT_OAID] as? Boolean)?.let { isCollect ->
+                    AppsFlyerLib.getInstance().setCollectOaid(isCollect)
+                }
+            }
+
+            // Must be called before start().
+            if (settings.containsKey(Settings.DEEP_LINK_PARAMETERS)) {
+                (settings[Settings.DEEP_LINK_PARAMETERS] as? List<*>)?.forEach { entry ->
+                    (entry as? Map<*, *>)?.let { map ->
+                        val contains = map[DeepLinkParameterEntry.CONTAINS] as? String
+                        @Suppress("UNCHECKED_CAST")
+                        val parameters = map[DeepLinkParameterEntry.PARAMETERS] as? Map<String, String>
+                        if (!contains.isNullOrEmpty() && parameters != null) {
+                            AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(contains, parameters)
+                        }
                     }
                 }
             }
@@ -156,6 +213,44 @@ class AppsFlyerInstance(
     override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
         val pathArray = deepLinkPath.toTypedArray()
         AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
+    }
+
+    override fun logSession() {
+        AppsFlyerLib.getInstance().logSession(application)
+    }
+
+    override fun setOaid(oaid: String) {
+        AppsFlyerLib.getInstance().setOaidData(oaid)
+    }
+
+    override fun setOutOfStore(storeName: String) {
+        AppsFlyerLib.getInstance().setOutOfStore(storeName)
+    }
+
+    override fun setDisableNetworkData(disable: Boolean) {
+        AppsFlyerLib.getInstance().setDisableNetworkData(disable)
+    }
+
+    override fun setAppInviteOneLink(oneLinkId: String) {
+        AppsFlyerLib.getInstance().setAppInviteOneLink(oneLinkId)
+    }
+
+    override fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String) {
+        AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
+    }
+
+    override fun setIsUpdate(isUpdate: Boolean) {
+        AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
+    }
+
+    override fun setLogLevel(logLevel: String) {
+        val level = try {
+            AFLogger.LogLevel.valueOf(logLevel.uppercase())
+        } catch (e: IllegalArgumentException) {
+            RemoteCommandLogger.error("Invalid log level: $logLevel")
+            return
+        }
+        AppsFlyerLib.getInstance().setLogLevel(level)
     }
 
     private fun setMinsBetweenSessions(seconds: Int) {

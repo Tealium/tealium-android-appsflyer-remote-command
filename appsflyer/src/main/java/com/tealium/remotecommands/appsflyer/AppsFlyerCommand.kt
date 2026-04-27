@@ -17,4 +17,12 @@ interface AppsFlyerCommand {
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
     fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>)
+    fun logSession()
+    fun setOaid(oaid: String)
+    fun setOutOfStore(storeName: String)
+    fun setDisableNetworkData(disable: Boolean)
+    fun setAppInviteOneLink(oneLinkId: String)
+    fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String)
+    fun setIsUpdate(isUpdate: Boolean)
+    fun setLogLevel(logLevel: String)
 }

@@ -88,6 +88,12 @@ enum class Command(val commandName: String) {
     ANONYMIZE_USER("anonymizeuser"),
 
     /**
+     * Legacy alias for ANONYMIZE_USER. Kept for backwards compatibility.
+     * TODO: Remove in next major version.
+     */
+    DISABLE_DEVICE_TRACKING("disabledevicetracking"),
+
+    /**
      * Registers URLs that should be resolved as deep links.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#resolvedeeplinkurls
      */
@@ -97,13 +103,68 @@ enum class Command(val commandName: String) {
      * Stops the AppsFlyer SDK from sending attribution data.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stoptracking
      */
-    STOP_TRACKING("stoptracking");
+    STOP_TRACKING("stoptracking"),
+
+    /** iOS alias for STOP_TRACKING. */
+    DISABLE_TRACKING("disabletracking"),
+
+    /**
+     * Manually logs an af_app_opened session event.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#logsession
+     */
+    LOG_SESSION("logsession"),
+
+    /**
+     * Manually sets the OAID when auto-collection is unavailable.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setoaiddata
+     */
+    SET_OAID("setoaid"),
+
+    /**
+     * Sets the alternative app store name for attribution.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setoutofstore
+     */
+    SET_OUT_OF_STORE("setoutofstore"),
+
+    /**
+     * Opts out of collecting carrier/SIM operator name.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setdisablenetworkdata
+     */
+    SET_DISABLE_NETWORK_DATA("setdisablenetworkdata"),
+
+    /**
+     * Sets the OneLink ID used for user-invite links.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setappinviteonelink
+     */
+    SET_APP_INVITE_ONE_LINK("setappinviteonelink"),
+
+    /**
+     * Attributes a preinstalled app to a media source and campaign.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setpreinstallattribution
+     */
+    SET_PREINSTALL_ATTRIBUTION("setpreinstallattribution"),
+
+    /**
+     * Manually flags that the app was updated when auto-detection fails.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setisupdate
+     */
+    SET_IS_UPDATE("setisupdate"),
+
+    /**
+     * Sets the SDK log level with more granularity than the boolean debug flag.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setloglevel
+     */
+    SET_LOG_LEVEL("setloglevel");
 
     companion object {
         /**
          * Resolves a command string to a [Command]. Returns null when the string is
          * not a built-in command — callers should fall back to treating it as a
          * custom event name.
+         *
+         * "disabledevicetracking" is kept as a legacy alias for ANONYMIZE_USER to avoid
+         * breaking existing payloads. The command name was misleading (it called anonymizeUser
+         * internally) and is a candidate for removal in a future major version.
          */
         fun fromString(command: String): Command? {
             val normalized = command.lowercase().trim()
@@ -147,7 +208,13 @@ object StandardEvents {
         "openfrompushnotification" to AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION,
         "update" to AFInAppEventType.UPDATE,
         "locationcoordinates" to AFInAppEventType.LOCATION_COORDINATES,
-        "customersegment" to AFInAppEventType.CUSTOMER_SEGMENT
+        "customersegment" to AFInAppEventType.CUSTOMER_SEGMENT,
+        // iOS naming aliases — both variants accepted on all platforms.
+        "achievelevel" to AFInAppEventType.LEVEL_ACHIEVED,
+        "viewedcontent" to AFInAppEventType.CONTENT_VIEW,
+        "completetutorial" to AFInAppEventType.TUTORIAL_COMPLETION,
+        "unlockachievement" to AFInAppEventType.ACHIEVEMENT_UNLOCKED,
+        "pushnotificationopened" to AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION
     )
 }
 
@@ -156,7 +223,6 @@ object StandardEvents {
  * @see https://dev.appsflyer.com/hc/docs/integrate-android-sdk
  */
 object Config {
-    const val APP_ID = "app_id"
     const val DEV_KEY = "app_dev_key"
     const val SETTINGS = "settings"
 }
@@ -171,6 +237,17 @@ object Settings {
     const val DEBUG = "debug"
     const val TIME_BETWEEN_SESSIONS = "time_between_sessions"
     const val PUSH_NOTIFICATION_DEEP_LINK_PATH = "push_notification_deep_link_path"
+
+    // Must be called before init() — placed first in the initialize() processing order.
+    const val ENABLE_FACEBOOK_DEFERRED_APPLINKS = "enable_facebook_deferred_applinks"
+
+    // Must be called before start().
+    const val ENABLE_TCF_DATA_COLLECTION = "enable_tcf_data_collection"
+    const val ONE_LINK_CUSTOM_DOMAINS = "one_link_custom_domains"
+    const val DISABLE_ADVERTISING_IDENTIFIERS = "disable_advertising_identifiers"
+    const val DISABLE_APP_SET_ID = "disable_app_set_id"
+    const val COLLECT_OAID = "collect_oaid"
+    const val DEEP_LINK_PARAMETERS = "deep_link_parameters"
 }
 
 object Customer {
@@ -210,6 +287,8 @@ object DeepLink {
     /** List of URL schemes to register as deep links.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#resolvedeeplinkurls */
     const val URLS = "af_deep_link"
+    // TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
+    const val URLS_LEGACY_TIQ = "resolve_deep_links"
 }
 
 object Tracking {
@@ -326,4 +405,43 @@ object PartnerDataParams {
 object SharingFilterParams {
     /** List of partner IDs to exclude from data sharing. */
     const val SHARING_FILTER = "sharing_filter"
+}
+
+/**
+ * Sub-parameters for each entry in the deep_link_parameters settings array.
+ * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#appendparameterstodeeplinkingurl
+ */
+object DeepLinkParameterEntry {
+    const val CONTAINS = "contains"
+    const val PARAMETERS = "parameters"
+}
+
+/**
+ * Parameters for the setCurrentDeviceLanguage command.
+ * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setcurrentdevicelanguage
+ */
+object DeviceLanguageParams {
+    const val DEVICE_LANGUAGE = "device_language"
+}
+
+/**
+ * Parameters for the setPreinstallAttribution command.
+ * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setpreinstallattribution
+ */
+object PreinstallParams {
+    const val MEDIA_SOURCE = "preinstall_media_source"
+    const val CAMPAIGN = "preinstall_campaign"
+    const val SITE_ID = "preinstall_site_id"
+}
+
+/**
+ * Parameters for commands that take a single string value.
+ */
+object StringCommandParams {
+    const val OAID = "oaid"
+    const val STORE_NAME = "store_name"
+    const val APP_INVITE_ONE_LINK_ID = "app_invite_onelink_id"
+    const val DISABLE_NETWORK_DATA = "disable_network_data"
+    const val IS_UPDATE = "is_update"
+    const val LOG_LEVEL = "log_level"
 }

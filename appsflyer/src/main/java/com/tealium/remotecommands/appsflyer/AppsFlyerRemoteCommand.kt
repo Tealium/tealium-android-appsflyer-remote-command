@@ -64,9 +64,19 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
                     Command.SET_CONSENT_DATA -> setConsentData(payload)
                     Command.SET_PARTNER_DATA -> setPartnerData(payload)
                     Command.SET_SHARING_FILTER_FOR_PARTNERS -> setSharingFilterForPartners(payload)
-                    Command.ANONYMIZE_USER -> anonymizeUser(payload)
+                    Command.ANONYMIZE_USER,
+                    Command.DISABLE_DEVICE_TRACKING -> anonymizeUser(payload)
                     Command.RESOLVE_DEEPLINK_URLS -> resolveDeepLinkUrls(payload)
-                    Command.STOP_TRACKING -> stopTracking(payload)
+                    Command.STOP_TRACKING,
+                    Command.DISABLE_TRACKING -> stopTracking(payload)
+                    Command.LOG_SESSION -> appsFlyerInstance.logSession()
+                    Command.SET_OAID -> setOaid(payload)
+                    Command.SET_OUT_OF_STORE -> setOutOfStore(payload)
+                    Command.SET_DISABLE_NETWORK_DATA -> setDisableNetworkData(payload)
+                    Command.SET_APP_INVITE_ONE_LINK -> setAppInviteOneLink(payload)
+                    Command.SET_PREINSTALL_ATTRIBUTION -> setPreinstallAttribution(payload)
+                    Command.SET_IS_UPDATE -> setIsUpdate(payload)
+                    Command.SET_LOG_LEVEL -> setLogLevel(payload)
                     null -> dispatchCustomEvent(commandString, payload)
                 }
             } catch (e: AppsFlyerCommandError) {
@@ -86,6 +96,9 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
 
     private fun initialize(payload: JSONObject) {
         val devKey: String = payload.optString(Config.DEV_KEY)
+        if (devKey.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
+        }
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any>? = jsonToMap(config)
         RemoteCommandLogger.debug("Initializing AppsFlyer SDK")
@@ -224,12 +237,75 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
 
     private fun resolveDeepLinkUrls(payload: JSONObject) {
         val deepLinkJsonArray: JSONArray = payload.optJSONArray(DeepLink.URLS)
+            ?: payload.optJSONArray(DeepLink.URLS_LEGACY_TIQ)
             ?: throw AppsFlyerCommandError.missingParameter(DeepLink.URLS)
         appsFlyerInstance.resolveDeepLinkUrls(toList(deepLinkJsonArray))
     }
 
     private fun stopTracking(payload: JSONObject) {
         appsFlyerInstance.stopTracking(payload.optBoolean(Tracking.STOP_TRACKING))
+    }
+
+    private fun setOaid(payload: JSONObject) {
+        val oaid = payload.optString(StringCommandParams.OAID)
+        if (oaid.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.OAID)
+        }
+        appsFlyerInstance.setOaid(oaid)
+    }
+
+    private fun setOutOfStore(payload: JSONObject) {
+        val storeName = payload.optString(StringCommandParams.STORE_NAME)
+        if (storeName.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.STORE_NAME)
+        }
+        appsFlyerInstance.setOutOfStore(storeName)
+    }
+
+    private fun setDisableNetworkData(payload: JSONObject) {
+        if (!payload.has(StringCommandParams.DISABLE_NETWORK_DATA)) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.DISABLE_NETWORK_DATA)
+        }
+        appsFlyerInstance.setDisableNetworkData(payload.optBoolean(StringCommandParams.DISABLE_NETWORK_DATA))
+    }
+
+    private fun setAppInviteOneLink(payload: JSONObject) {
+        val oneLinkId = payload.optString(StringCommandParams.APP_INVITE_ONE_LINK_ID)
+        if (oneLinkId.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.APP_INVITE_ONE_LINK_ID)
+        }
+        appsFlyerInstance.setAppInviteOneLink(oneLinkId)
+    }
+
+    private fun setPreinstallAttribution(payload: JSONObject) {
+        val mediaSource = payload.optString(PreinstallParams.MEDIA_SOURCE)
+        val campaign = payload.optString(PreinstallParams.CAMPAIGN)
+        val siteId = payload.optString(PreinstallParams.SITE_ID)
+        if (mediaSource.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(PreinstallParams.MEDIA_SOURCE)
+        }
+        if (campaign.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(PreinstallParams.CAMPAIGN)
+        }
+        if (siteId.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(PreinstallParams.SITE_ID)
+        }
+        appsFlyerInstance.setPreinstallAttribution(mediaSource, campaign, siteId)
+    }
+
+    private fun setIsUpdate(payload: JSONObject) {
+        if (!payload.has(StringCommandParams.IS_UPDATE)) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.IS_UPDATE)
+        }
+        appsFlyerInstance.setIsUpdate(payload.optBoolean(StringCommandParams.IS_UPDATE))
+    }
+
+    private fun setLogLevel(payload: JSONObject) {
+        val logLevel = payload.optString(StringCommandParams.LOG_LEVEL)
+        if (logLevel.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.LOG_LEVEL)
+        }
+        appsFlyerInstance.setLogLevel(logLevel)
     }
 
     private fun dispatchCustomEvent(commandString: String, payload: JSONObject) {
@@ -295,7 +371,7 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             Config.SETTINGS,
             Commands.COMMAND_KEY,
             METHOD_KEY,
-            Config.APP_ID,
+            APP_ID_KEY,
         )
         for (key in jsonObject.keys()) {
             if (toRemove.contains(key)) continue
@@ -308,3 +384,4 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
 }
 
 private const val METHOD_KEY = "method"
+private const val APP_ID_KEY = "app_id"
