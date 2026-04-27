@@ -51,18 +51,7 @@ class AppsFlyerInstance(
 
             if (settings.containsKey(Settings.CUSTOM_DATA)) {
                 (settings[Settings.CUSTOM_DATA] as? JSONObject)?.let { customDataJson ->
-                    val data = toMap(customDataJson)
-                    val iterator = data.entries.iterator()
-                    val dataMap = HashMap<String, Any>()
-                    while (iterator.hasNext()) {
-                        val entry = iterator.next()
-                        (entry.key as? String)?.let { key ->
-                            entry.value.let { value ->
-                                dataMap.put(key, value)
-                            }
-                        }
-                    }
-                    addCustomData(dataMap)
+                    addCustomData(HashMap(toMap(customDataJson)))
                 }
             }
 
@@ -110,12 +99,6 @@ class AppsFlyerInstance(
                 }
             }
 
-            if (settings.containsKey(Settings.COLLECT_OAID)) {
-                (settings[Settings.COLLECT_OAID] as? Boolean)?.let { isCollect ->
-                    AppsFlyerLib.getInstance().setCollectOaid(isCollect)
-                }
-            }
-
             // Must be called before start().
             if (settings.containsKey(Settings.DEEP_LINK_PARAMETERS)) {
                 (settings[Settings.DEEP_LINK_PARAMETERS] as? List<*>)?.forEach { entry ->
@@ -123,7 +106,7 @@ class AppsFlyerInstance(
                         val contains = map[DeepLinkParameterEntry.CONTAINS] as? String
                         @Suppress("UNCHECKED_CAST")
                         val parameters = map[DeepLinkParameterEntry.PARAMETERS] as? Map<String, String>
-                        if (!contains.isNullOrEmpty() && parameters != null) {
+                        if (!contains.isNullOrEmpty() && (parameters != null)) {
                             AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(contains, parameters)
                         }
                     }
@@ -246,7 +229,7 @@ class AppsFlyerInstance(
     override fun setLogLevel(logLevel: String) {
         val level = try {
             AFLogger.LogLevel.valueOf(logLevel.uppercase())
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             RemoteCommandLogger.error("Invalid log level: $logLevel")
             return
         }

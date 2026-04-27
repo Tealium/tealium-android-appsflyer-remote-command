@@ -52,6 +52,25 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var stopTrackingParam: Boolean? = null
     var addPushNotificationDeepLinkPathParam: List<String>? = null
 
+    var logSessionCallCount = 0
+    var setOaidCallCount = 0
+    var setOutOfStoreCallCount = 0
+    var setDisableNetworkDataCallCount = 0
+    var setAppInviteOneLinkCallCount = 0
+    var setPreinstallAttributionCallCount = 0
+    var setIsUpdateCallCount = 0
+    var setLogLevelCallCount = 0
+
+    var setOaidParam: String? = null
+    var setOutOfStoreParam: String? = null
+    var setDisableNetworkDataParam: Boolean? = null
+    var setAppInviteOneLinkParam: String? = null
+    var setPreinstallMediaSourceParam: String? = null
+    var setPreinstallCampaignParam: String? = null
+    var setPreinstallSiteIdParam: String? = null
+    var setIsUpdateParam: Boolean? = null
+    var setLogLevelParam: String? = null
+
     data class TrackEventCall(val eventType: String, val eventParameters: Map<String, Any>?)
 
     val trackEventCalls: MutableList<TrackEventCall> = mutableListOf()
@@ -151,6 +170,47 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         addPushNotificationDeepLinkPathParam = deepLinkPath
     }
 
+    override fun logSession() {
+        logSessionCallCount++
+    }
+
+    override fun setOaid(oaid: String) {
+        setOaidCallCount++
+        setOaidParam = oaid
+    }
+
+    override fun setOutOfStore(storeName: String) {
+        setOutOfStoreCallCount++
+        setOutOfStoreParam = storeName
+    }
+
+    override fun setDisableNetworkData(disable: Boolean) {
+        setDisableNetworkDataCallCount++
+        setDisableNetworkDataParam = disable
+    }
+
+    override fun setAppInviteOneLink(oneLinkId: String) {
+        setAppInviteOneLinkCallCount++
+        setAppInviteOneLinkParam = oneLinkId
+    }
+
+    override fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String) {
+        setPreinstallAttributionCallCount++
+        setPreinstallMediaSourceParam = mediaSource
+        setPreinstallCampaignParam = campaign
+        setPreinstallSiteIdParam = siteId
+    }
+
+    override fun setIsUpdate(isUpdate: Boolean) {
+        setIsUpdateCallCount++
+        setIsUpdateParam = isUpdate
+    }
+
+    override fun setLogLevel(logLevel: String) {
+        setLogLevelCallCount++
+        setLogLevelParam = logLevel
+    }
+
     fun verifyNoCalls(): Boolean = initializeCallCount == 0 &&
             trackLocationCallCount == 0 &&
             setHostCallCount == 0 &&
@@ -166,5 +226,13 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
             anonymizeUserCallCount == 0 &&
             resolveDeepLinkUrlsCallCount == 0 &&
             stopTrackingCallCount == 0 &&
-            addPushNotificationDeepLinkPathCallCount == 0
+            addPushNotificationDeepLinkPathCallCount == 0 &&
+            logSessionCallCount == 0 &&
+            setOaidCallCount == 0 &&
+            setOutOfStoreCallCount == 0 &&
+            setDisableNetworkDataCallCount == 0 &&
+            setAppInviteOneLinkCallCount == 0 &&
+            setPreinstallAttributionCallCount == 0 &&
+            setIsUpdateCallCount == 0 &&
+            setLogLevelCallCount == 0
 }

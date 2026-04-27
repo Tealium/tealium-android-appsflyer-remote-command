@@ -13,14 +13,14 @@ internal val mediationNetworkValidValues: List<String>
 /**
  * Converts a payload string to the AppsFlyer [MediationNetwork] enum.
  * Case-insensitive with whitespace trimming. Returns null when the value
- * is not recognized — callers should throw [AppsFlyerCommandError.InvalidParameterValue].
+ * is not recognized — callers should throw [AppsFlyerCommandError.invalidParameterValue].
  */
 internal fun String.toMediationNetwork(): MediationNetwork? {
     val normalized = this.lowercase().trim()
     val enumName = MediationNetworks.networkNames[normalized] ?: return null
     return try {
         MediationNetwork.valueOf(enumName)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         null
     }
 }

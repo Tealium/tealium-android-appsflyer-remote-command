@@ -98,4 +98,52 @@
         android:layout_height="wrap_content"
         android:text="@string/sharing_filter" />
 
+    <Button
+        android:id="@+id/button_logSession"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/log_session" />
+
+    <Button
+        android:id="@+id/button_setOaid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_oaid" />
+
+    <Button
+        android:id="@+id/button_setOutOfStore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_out_of_store" />
+
+    <Button
+        android:id="@+id/button_setDisableNetworkData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_disable_network_data" />
+
+    <Button
+        android:id="@+id/button_setAppInviteOnelink"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_app_invite_onelink" />
+
+    <Button
+        android:id="@+id/button_setPreinstallAttribution"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_preinstall_attribution" />
+
+    <Button
+        android:id="@+id/button_setIsUpdate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_is_update" />
+
+    <Button
+        android:id="@+id/button_setLogLevel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/set_log_level" />
+
 </LinearLayout>

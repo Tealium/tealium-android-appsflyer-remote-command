@@ -34,7 +34,7 @@ class CommandEnumTest {
 
     @Test
     fun commandValues_areUnique() {
-        val names = Command.values().map { it.commandName }
+        val names = Command.entries.map { it.commandName }
         assertEquals(names.size, names.toSet().size)
     }
 

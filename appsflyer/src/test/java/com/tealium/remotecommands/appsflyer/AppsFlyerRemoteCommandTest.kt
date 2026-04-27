@@ -14,7 +14,7 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class AppsFlyerRemoteCommandTest {
 
-    val COMMAND_NAME_KEY = "command_name"
+    val commandNameKey = Commands.COMMAND_KEY
 
     @MockK
     lateinit var mockApplication: Application
@@ -51,7 +51,7 @@ class AppsFlyerRemoteCommandTest {
         val payload = JSONObject()
         payload.put(Location.LATITUDE, 10.0)
         payload.put(Location.LONGITUDE, 11.0)
-        payload.put(COMMAND_NAME_KEY, Commands.TRACK_LOCATION)
+        payload.put(commandNameKey, Commands.TRACK_LOCATION)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.TRACK_LOCATION), payload)
 
@@ -66,12 +66,12 @@ class AppsFlyerRemoteCommandTest {
     fun testSetHost() {
         val payload = JSONObject()
         payload.put(Host.HOST, "www.test123.com")
-        payload.put(Host.HOST_PREFIX, "")
-        payload.put(COMMAND_NAME_KEY, Commands.SET_HOST)
+        payload.put(Host.HOST_PREFIX, "my_prefix")
+        payload.put(commandNameKey, Commands.SET_HOST)
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_HOST), payload)
 
         verify {
-            mockAppsFlyerInstance.setHost("www.test123.com")
+            mockAppsFlyerInstance.setHost("www.test123.com", "my_prefix")
         }
 
         confirmVerified(mockAppsFlyerInstance)
@@ -86,7 +86,7 @@ class AppsFlyerRemoteCommandTest {
 
         val payload = JSONObject()
         payload.put(Customer.EMAILS, userEmailProperties)
-        payload.put(COMMAND_NAME_KEY, Commands.SET_USER_EMAILS)
+        payload.put(commandNameKey, Commands.SET_USER_EMAILS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
 
@@ -107,7 +107,7 @@ class AppsFlyerRemoteCommandTest {
     fun testSetCurrencyCode() {
         val payload = JSONObject()
         payload.put(TransactionProperties.CURRENCY, "USD")
-        payload.put(COMMAND_NAME_KEY, Commands.SET_CURRENCY_CODE)
+        payload.put(commandNameKey, Commands.SET_CURRENCY_CODE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CURRENCY_CODE), payload)
 
@@ -122,7 +122,7 @@ class AppsFlyerRemoteCommandTest {
     fun testSetCustomerId() {
         val payload = JSONObject()
         payload.put(Customer.USER_ID, "1234")
-        payload.put(COMMAND_NAME_KEY, Commands.SET_CUSTOMER_ID)
+        payload.put(commandNameKey, Commands.SET_CUSTOMER_ID)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID), payload)
 
@@ -143,7 +143,7 @@ class AppsFlyerRemoteCommandTest {
 
         val payload = JSONObject()
         payload.put(DeepLink.URLS, deepLinkProperties)
-        payload.put(COMMAND_NAME_KEY, Commands.RESOLVE_DEEPLINK_URLS)
+        payload.put(commandNameKey, Commands.RESOLVE_DEEPLINK_URLS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.RESOLVE_DEEPLINK_URLS), payload)
 
@@ -158,7 +158,7 @@ class AppsFlyerRemoteCommandTest {
     fun testStopTracking() {
         val payload = JSONObject()
         payload.put(Tracking.STOP_TRACKING, true)
-        payload.put(COMMAND_NAME_KEY, Commands.STOP_TRACKING)
+        payload.put(commandNameKey, Commands.STOP_TRACKING)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), payload)
 
@@ -187,6 +187,7 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun testBlankCommandDoesntAffectOtherCommands() {
         val payload = JSONObject()
+        payload.put(Tracking.STOP_TRACKING, false)
         val relaxedMockInstance: AppsFlyerInstance = mockk(relaxed = true)
         appsFlyerRemoteCommand.appsFlyerInstance = relaxedMockInstance
 
@@ -206,7 +207,7 @@ class AppsFlyerRemoteCommandTest {
     fun testInitialize() {
         val payload = JSONObject()
         payload.put(Config.DEV_KEY, "test_dev_key")
-        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+        payload.put(commandNameKey, Commands.INITIALIZE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
 
@@ -225,7 +226,7 @@ class AppsFlyerRemoteCommandTest {
         
         payload.put(Config.DEV_KEY, "test_dev_key")
         payload.put(Config.SETTINGS, settings)
-        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+        payload.put(commandNameKey, Commands.INITIALIZE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
 
@@ -250,12 +251,11 @@ class AppsFlyerRemoteCommandTest {
         deepLinkPath.put("path2")
         
         settings.put(Settings.TIME_BETWEEN_SESSIONS, 300)
-        settings.put(Settings.COLLECT_DEVICE_NAME, true)
         settings.put(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH, deepLinkPath)
         
         payload.put(Config.DEV_KEY, "test_dev_key")
         payload.put(Config.SETTINGS, settings)
-        payload.put(COMMAND_NAME_KEY, Commands.INITIALIZE)
+        payload.put(commandNameKey, Commands.INITIALIZE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
 
@@ -264,7 +264,6 @@ class AppsFlyerRemoteCommandTest {
                 "test_dev_key",
                 mapOf(
                     "time_between_sessions" to 300,
-                    "collect_device_name" to true,
                     "push_notification_deep_link_path" to deepLinkPath
                 )
             )
@@ -276,7 +275,7 @@ class AppsFlyerRemoteCommandTest {
     fun testSetPhoneNumber() {
         val payload = JSONObject()
         payload.put(PhoneNumberParam.PHONE_NUMBER, "+1234567890")
-        payload.put(COMMAND_NAME_KEY, Commands.SET_PHONE_NUMBER)
+        payload.put(commandNameKey, Commands.SET_PHONE_NUMBER)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), payload)
 
@@ -298,7 +297,7 @@ class AppsFlyerRemoteCommandTest {
         payload.put(AdRevenueParams.AD_REVENUE_CURRENCY, "USD")
         payload.put(AdRevenueParams.AD_REVENUE_AMOUNT, 1.99)
         payload.put(AdRevenueParams.AD_REVENUE_ADDITIONAL_PARAMS, additionalParams)
-        payload.put(COMMAND_NAME_KEY, Commands.LOG_AD_REVENUE)
+        payload.put(commandNameKey, Commands.LOG_AD_REVENUE)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
 
@@ -316,12 +315,17 @@ class AppsFlyerRemoteCommandTest {
         payload.put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, true)
         payload.put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, false)
         payload.put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, true)
-        payload.put(COMMAND_NAME_KEY, Commands.SET_CONSENT_DATA)
+        payload.put(commandNameKey, Commands.SET_CONSENT_DATA)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
 
         verify {
-            mockAppsFlyerInstance.setConsentData(true, true, false, true)
+            mockAppsFlyerInstance.setConsentData(
+                isUserSubjectToGDPR = true,
+                hasConsentForDataUsage = true,
+                hasConsentForAdsPersonalization = false,
+                hasConsentForAdStorage = true
+            )
         }
 
         confirmVerified(mockAppsFlyerInstance)
@@ -336,7 +340,7 @@ class AppsFlyerRemoteCommandTest {
         
         payload.put(PartnerDataParams.PARTNER_ID, "test_partner")
         payload.put(PartnerDataParams.PARTNER_INFO, partnerInfo)
-        payload.put(COMMAND_NAME_KEY, Commands.SET_PARTNER_DATA)
+        payload.put(commandNameKey, Commands.SET_PARTNER_DATA)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_PARTNER_DATA), payload)
 
@@ -355,7 +359,7 @@ class AppsFlyerRemoteCommandTest {
         sharingFilter.put("partner2")
         
         payload.put(SharingFilterParams.SHARING_FILTER, sharingFilter)
-        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+        payload.put(commandNameKey, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
 
@@ -370,7 +374,7 @@ class AppsFlyerRemoteCommandTest {
     fun testSetSharingFilterForPartnersReset() {
         val payload = JSONObject()
         // No sharing_filter parameter - should reset filter
-        payload.put(COMMAND_NAME_KEY, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
+        payload.put(commandNameKey, Commands.SET_SHARING_FILTER_FOR_PARTNERS)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
 
@@ -385,7 +389,7 @@ class AppsFlyerRemoteCommandTest {
     fun testAnonymizeUser() {
         val payload = JSONObject()
         payload.put(Tracking.ANONYMIZE_USER, true)
-        payload.put(COMMAND_NAME_KEY, Commands.ANONYMIZE_USER)
+        payload.put(commandNameKey, Commands.ANONYMIZE_USER)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)
 

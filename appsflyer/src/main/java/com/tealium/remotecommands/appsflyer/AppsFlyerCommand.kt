@@ -1,5 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
+import com.appsflyer.AFAdRevenueData
+
 interface AppsFlyerCommand {
     fun initialize(devKey: String? = null, configSettings: Map<String, Any>? = null)
     fun trackLocation(latitude: Double, longitude: Double)
@@ -9,11 +11,12 @@ interface AppsFlyerCommand {
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
     fun setPhoneNumber(phoneNumber: String)
-    fun logAdRevenue(adRevenueData: com.appsflyer.AFAdRevenueData, additionalParameters: Map<String, Any>?)
+    fun logAdRevenue(adRevenueData: AFAdRevenueData, additionalParameters: Map<String, Any>?)
     fun setConsentData(isUserSubjectToGDPR: Boolean, hasConsentForDataUsage: Boolean, hasConsentForAdsPersonalization: Boolean, hasConsentForAdStorage: Boolean)
     fun setPartnerData(partnerId: String, partnerInfo: Map<String, Any>?)
     fun setSharingFilterForPartners(partners: Array<String>?)
     fun anonymizeUser(anonymize: Boolean)
+
     fun resolveDeepLinkUrls(links: List<String>)
     fun stopTracking(isTrackingStopped: Boolean)
     fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>)

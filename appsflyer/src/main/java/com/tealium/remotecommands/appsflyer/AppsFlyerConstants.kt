@@ -7,6 +7,30 @@ import com.appsflyer.AFInAppEventType
 object Commands {
     const val COMMAND_KEY = "command_name"
     const val SEPARATOR = ","
+    const val INITIALIZE = "initialize"
+    const val TRACK_LOCATION = "tracklocation"
+    const val SET_HOST = "sethost"
+    const val SET_USER_EMAILS = "setuseremails"
+    const val SET_CURRENCY_CODE = "setcurrencycode"
+    const val SET_CUSTOMER_ID = "setcustomerid"
+    const val SET_PHONE_NUMBER = "setphonenumber"
+    const val LOG_AD_REVENUE = "logadrevenue"
+    const val SET_CONSENT_DATA = "setconsentdata"
+    const val SET_PARTNER_DATA = "setpartnerdata"
+    const val SET_SHARING_FILTER_FOR_PARTNERS = "setsharingfilterforpartners"
+    const val ANONYMIZE_USER = "anonymizeuser"
+    const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
+    const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
+    const val STOP_TRACKING = "stoptracking"
+    const val DISABLE_TRACKING = "disabletracking"
+    const val LOG_SESSION = "logsession"
+    const val SET_OAID = "setoaid"
+    const val SET_OUT_OF_STORE = "setoutofstore"
+    const val SET_DISABLE_NETWORK_DATA = "setdisablenetworkdata"
+    const val SET_APP_INVITE_ONE_LINK = "setappinviteonelink"
+    const val SET_PREINSTALL_ATTRIBUTION = "setpreinstallattribution"
+    const val SET_IS_UPDATE = "setisupdate"
+    const val SET_LOG_LEVEL = "setloglevel"
 }
 
 /**
@@ -157,6 +181,9 @@ enum class Command(val commandName: String) {
     SET_LOG_LEVEL("setloglevel");
 
     companion object {
+        // Cached to avoid re-allocating an array on every call to fromString.
+        private val BY_NAME: Map<String, Command> = Command.entries.associateBy { it.commandName }
+
         /**
          * Resolves a command string to a [Command]. Returns null when the string is
          * not a built-in command — callers should fall back to treating it as a
@@ -166,10 +193,7 @@ enum class Command(val commandName: String) {
          * breaking existing payloads. The command name was misleading (it called anonymizeUser
          * internally) and is a candidate for removal in a future major version.
          */
-        fun fromString(command: String): Command? {
-            val normalized = command.lowercase().trim()
-            return values().find { it.commandName == normalized }
-        }
+        fun fromString(command: String): Command? = BY_NAME[command.lowercase().trim()]
     }
 }
 
@@ -225,6 +249,7 @@ object StandardEvents {
 object Config {
     const val DEV_KEY = "app_dev_key"
     const val SETTINGS = "settings"
+    const val APP_ID = "app_id"
 }
 
 /**
@@ -246,7 +271,6 @@ object Settings {
     const val ONE_LINK_CUSTOM_DOMAINS = "one_link_custom_domains"
     const val DISABLE_ADVERTISING_IDENTIFIERS = "disable_advertising_identifiers"
     const val DISABLE_APP_SET_ID = "disable_app_set_id"
-    const val COLLECT_OAID = "collect_oaid"
     const val DEEP_LINK_PARAMETERS = "deep_link_parameters"
 }
 
@@ -414,14 +438,6 @@ object SharingFilterParams {
 object DeepLinkParameterEntry {
     const val CONTAINS = "contains"
     const val PARAMETERS = "parameters"
-}
-
-/**
- * Parameters for the setCurrentDeviceLanguage command.
- * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setcurrentdevicelanguage
- */
-object DeviceLanguageParams {
-    const val DEVICE_LANGUAGE = "device_language"
 }
 
 /**

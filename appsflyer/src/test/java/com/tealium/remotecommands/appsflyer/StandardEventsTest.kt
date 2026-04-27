@@ -97,7 +97,7 @@ class StandardEventsTest {
         eventParams.put(AFInAppEventParameterName.LEVEL, 5)
         eventParams.put(AFInAppEventParameterName.SCORE, 500)
 
-        payload.put(StandardEvents.EVENT_PARAMETERS, eventParams)
+        payload.put(StandardEvents.EVENT_PARAMETERS_SHORT, eventParams)
 
         appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
 
@@ -109,21 +109,6 @@ class StandardEventsTest {
                     AFInAppEventParameterName.SCORE to 500
                 )
             )
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Logs_Event_Using_Payload_When_EventParametersShort_Not_Present() {
-        val payload = JSONObject()
-        payload.put("af_data", "12345")
-        appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(AFInAppEventType.LEVEL_ACHIEVED, mapOf(
-                "af_data" to "12345"
-            ))
         }
 
         confirmVerified(mockAppsFlyerInstance)

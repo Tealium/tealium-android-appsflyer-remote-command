@@ -100,7 +100,7 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
         }
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any>? = jsonToMap(config)
+        val configSettings: Map<String, Any> = jsonToMap(config)
         RemoteCommandLogger.debug("Initializing AppsFlyer SDK")
         appsFlyerInstance.initialize(devKey, configSettings)
     }
@@ -125,11 +125,10 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
         if (host.isEmpty()) {
             throw AppsFlyerCommandError.missingParameter(Host.HOST)
         }
-        if (hostPrefix.isNotEmpty()) {
-            appsFlyerInstance.setHost(host, hostPrefix)
-        } else {
-            appsFlyerInstance.setHost(host)
+        if (hostPrefix.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(Host.HOST_PREFIX)
         }
+        appsFlyerInstance.setHost(host, hostPrefix)
     }
 
     private fun setUserEmails(payload: JSONObject) {
@@ -243,6 +242,9 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
     }
 
     private fun stopTracking(payload: JSONObject) {
+        if (!payload.has(Tracking.STOP_TRACKING)) {
+            throw AppsFlyerCommandError.missingParameter(Tracking.STOP_TRACKING)
+        }
         appsFlyerInstance.stopTracking(payload.optBoolean(Tracking.STOP_TRACKING))
     }
 
