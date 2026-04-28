@@ -25,6 +25,8 @@ object Commands {
     const val DISABLE_TRACKING = "disabletracking"
     const val LOG_SESSION = "logsession"
     const val SET_OAID = "setoaid"
+    const val SET_ANDROID_ID = "setandroidid"
+    const val SET_IMEI = "setimei"
     const val SET_OUT_OF_STORE = "setoutofstore"
     const val SET_DISABLE_NETWORK_DATA = "setdisablenetworkdata"
     const val SET_APP_INVITE_ONE_LINK = "setappinviteonelink"
@@ -112,8 +114,9 @@ enum class Command(val commandName: String) {
     ANONYMIZE_USER("anonymizeuser"),
 
     /**
-     * Legacy alias for ANONYMIZE_USER. Kept for backwards compatibility.
-     * TODO: Remove in next major version.
+     * Alias for ANONYMIZE_USER — accepted for backwards compatibility.
+     * The original Android command name mapped to anonymizeUser() internally;
+     * the name "disabledevicetracking" was misleading so it was standardised to "anonymizeuser".
      */
     DISABLE_DEVICE_TRACKING("disabledevicetracking"),
 
@@ -129,7 +132,10 @@ enum class Command(val commandName: String) {
      */
     STOP_TRACKING("stoptracking"),
 
-    /** iOS alias for STOP_TRACKING. */
+    /**
+     * iOS command name for the same stop-tracking intent — accepted here so that
+     * cross-platform payloads work on both platforms without separate TiQ tags.
+     */
     DISABLE_TRACKING("disabletracking"),
 
     /**
@@ -143,6 +149,18 @@ enum class Command(val commandName: String) {
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setoaiddata
      */
     SET_OAID("setoaid"),
+
+    /**
+     * Manually sets the Android ID when auto-collection is unavailable (Android > 4.4 without Google Play Services).
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setandroididdata
+     */
+    SET_ANDROID_ID("setandroidid"),
+
+    /**
+     * Manually sets the device IMEI when auto-collection is unavailable (Android > 4.4 without Google Play Services).
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setimeidata
+     */
+    SET_IMEI("setimei"),
 
     /**
      * Sets the alternative app store name for attribution.
@@ -188,10 +206,6 @@ enum class Command(val commandName: String) {
          * Resolves a command string to a [Command]. Returns null when the string is
          * not a built-in command — callers should fall back to treating it as a
          * custom event name.
-         *
-         * "disabledevicetracking" is kept as a legacy alias for ANONYMIZE_USER to avoid
-         * breaking existing payloads. The command name was misleading (it called anonymizeUser
-         * internally) and is a candidate for removal in a future major version.
          */
         fun fromString(command: String): Command? = BY_NAME[command.lowercase().trim()]
     }
@@ -271,6 +285,9 @@ object Settings {
     const val ONE_LINK_CUSTOM_DOMAINS = "one_link_custom_domains"
     const val DISABLE_ADVERTISING_IDENTIFIERS = "disable_advertising_identifiers"
     const val DISABLE_APP_SET_ID = "disable_app_set_id"
+    const val COLLECT_OAID = "collect_oaid"
+    const val COLLECT_ANDROID_ID = "collect_android_id"
+    const val COLLECT_IMEI = "collect_imei"
     const val DEEP_LINK_PARAMETERS = "deep_link_parameters"
 }
 
@@ -455,6 +472,8 @@ object PreinstallParams {
  */
 object StringCommandParams {
     const val OAID = "oaid"
+    const val ANDROID_ID = "android_id"
+    const val IMEI = "imei"
     const val STORE_NAME = "store_name"
     const val APP_INVITE_ONE_LINK_ID = "app_invite_onelink_id"
     const val DISABLE_NETWORK_DATA = "disable_network_data"

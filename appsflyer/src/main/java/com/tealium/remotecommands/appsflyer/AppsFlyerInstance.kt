@@ -99,6 +99,24 @@ class AppsFlyerInstance(
                 }
             }
 
+            if (settings.containsKey(Settings.COLLECT_OAID)) {
+                (settings[Settings.COLLECT_OAID] as? Boolean)?.let { shouldCollect ->
+                    AppsFlyerLib.getInstance().setCollectOaid(shouldCollect)
+                }
+            }
+
+            if (settings.containsKey(Settings.COLLECT_ANDROID_ID)) {
+                (settings[Settings.COLLECT_ANDROID_ID] as? Boolean)?.let { shouldCollect ->
+                    AppsFlyerLib.getInstance().setCollectAndroidID(shouldCollect)
+                }
+            }
+
+            if (settings.containsKey(Settings.COLLECT_IMEI)) {
+                (settings[Settings.COLLECT_IMEI] as? Boolean)?.let { shouldCollect ->
+                    AppsFlyerLib.getInstance().setCollectIMEI(shouldCollect)
+                }
+            }
+
             // Must be called before start().
             if (settings.containsKey(Settings.DEEP_LINK_PARAMETERS)) {
                 (settings[Settings.DEEP_LINK_PARAMETERS] as? List<*>)?.forEach { entry ->
@@ -204,6 +222,14 @@ class AppsFlyerInstance(
 
     override fun setOaid(oaid: String) {
         AppsFlyerLib.getInstance().setOaidData(oaid)
+    }
+
+    override fun setAndroidId(androidId: String) {
+        AppsFlyerLib.getInstance().setAndroidIdData(androidId)
+    }
+
+    override fun setImei(imei: String) {
+        AppsFlyerLib.getInstance().setImeiData(imei)
     }
 
     override fun setOutOfStore(storeName: String) {

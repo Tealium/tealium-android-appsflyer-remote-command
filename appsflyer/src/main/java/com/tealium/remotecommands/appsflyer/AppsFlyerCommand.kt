@@ -22,6 +22,8 @@ interface AppsFlyerCommand {
     fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>)
     fun logSession()
     fun setOaid(oaid: String)
+    fun setAndroidId(androidId: String)
+    fun setImei(imei: String)
     fun setOutOfStore(storeName: String)
     fun setDisableNetworkData(disable: Boolean)
     fun setAppInviteOneLink(oneLinkId: String)

@@ -476,6 +476,74 @@ class AppsFlyerRemoteCommandValidationTest {
     }
 
     @Test
+    fun setAndroidId_valid_callsSDK() {
+        val payload = JSONObject()
+        payload.put(StringCommandParams.ANDROID_ID, "test_android_id")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_ANDROID_ID), payload)
+        assertEquals(1, mockInstance.setAndroidIdCallCount)
+        assertEquals("test_android_id", mockInstance.setAndroidIdParam)
+    }
+
+    @Test
+    fun setAndroidId_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_ANDROID_ID), JSONObject())
+        assertEquals(0, mockInstance.setAndroidIdCallCount)
+    }
+
+    @Test
+    fun setImei_valid_callsSDK() {
+        val payload = JSONObject()
+        payload.put(StringCommandParams.IMEI, "123456789012345")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_IMEI), payload)
+        assertEquals(1, mockInstance.setImeiCallCount)
+        assertEquals("123456789012345", mockInstance.setImeiParam)
+    }
+
+    @Test
+    fun setImei_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_IMEI), JSONObject())
+        assertEquals(0, mockInstance.setImeiCallCount)
+    }
+
+    @Test
+    fun initialize_collectAndroidId_passedInSettings() {
+        val settings = JSONObject()
+        settings.put(Settings.COLLECT_ANDROID_ID, true)
+        val payload = JSONObject()
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.SETTINGS, settings)
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+        assertEquals(1, mockInstance.initializeCallCount)
+        assertEquals(true, mockInstance.initializeSettingsParam?.get(Settings.COLLECT_ANDROID_ID))
+    }
+
+    @Test
+    fun initialize_collectImei_passedInSettings() {
+        val settings = JSONObject()
+        settings.put(Settings.COLLECT_IMEI, true)
+        val payload = JSONObject()
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.SETTINGS, settings)
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+        assertEquals(1, mockInstance.initializeCallCount)
+        assertEquals(true, mockInstance.initializeSettingsParam?.get(Settings.COLLECT_IMEI))
+    }
+
+    @Test
+    fun initialize_collectOaid_passedInSettings() {
+        val settings = JSONObject()
+        settings.put(Settings.COLLECT_OAID, true)
+        val payload = JSONObject()
+        payload.put(Config.DEV_KEY, "test_dev_key")
+        payload.put(Config.SETTINGS, settings)
+
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        assertEquals(1, mockInstance.initializeCallCount)
+        assertEquals(true, mockInstance.initializeSettingsParam?.get(Settings.COLLECT_OAID))
+    }
+
+    @Test
     fun initialize_missingDevKey_skipsCall() {
         remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject())
         assertEquals(0, mockInstance.initializeCallCount)

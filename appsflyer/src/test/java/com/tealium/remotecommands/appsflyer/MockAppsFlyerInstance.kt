@@ -54,6 +54,8 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
 
     var logSessionCallCount = 0
     var setOaidCallCount = 0
+    var setAndroidIdCallCount = 0
+    var setImeiCallCount = 0
     var setOutOfStoreCallCount = 0
     var setDisableNetworkDataCallCount = 0
     var setAppInviteOneLinkCallCount = 0
@@ -62,6 +64,8 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setLogLevelCallCount = 0
 
     var setOaidParam: String? = null
+    var setAndroidIdParam: String? = null
+    var setImeiParam: String? = null
     var setOutOfStoreParam: String? = null
     var setDisableNetworkDataParam: Boolean? = null
     var setAppInviteOneLinkParam: String? = null
@@ -179,6 +183,16 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         setOaidParam = oaid
     }
 
+    override fun setAndroidId(androidId: String) {
+        setAndroidIdCallCount++
+        setAndroidIdParam = androidId
+    }
+
+    override fun setImei(imei: String) {
+        setImeiCallCount++
+        setImeiParam = imei
+    }
+
     override fun setOutOfStore(storeName: String) {
         setOutOfStoreCallCount++
         setOutOfStoreParam = storeName
@@ -229,6 +243,8 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
             addPushNotificationDeepLinkPathCallCount == 0 &&
             logSessionCallCount == 0 &&
             setOaidCallCount == 0 &&
+            setAndroidIdCallCount == 0 &&
+            setImeiCallCount == 0 &&
             setOutOfStoreCallCount == 0 &&
             setDisableNetworkDataCallCount == 0 &&
             setAppInviteOneLinkCallCount == 0 &&

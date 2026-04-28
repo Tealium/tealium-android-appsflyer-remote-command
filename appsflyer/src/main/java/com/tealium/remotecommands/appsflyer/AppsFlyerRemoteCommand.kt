@@ -65,12 +65,14 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
                     Command.SET_PARTNER_DATA -> setPartnerData(payload)
                     Command.SET_SHARING_FILTER_FOR_PARTNERS -> setSharingFilterForPartners(payload)
                     Command.ANONYMIZE_USER,
-                    Command.DISABLE_DEVICE_TRACKING -> anonymizeUser(payload)
+                    Command.DISABLE_DEVICE_TRACKING -> anonymizeUser(payload) // DISABLE_DEVICE_TRACKING is a backwards-compatible alias
                     Command.RESOLVE_DEEPLINK_URLS -> resolveDeepLinkUrls(payload)
                     Command.STOP_TRACKING,
-                    Command.DISABLE_TRACKING -> stopTracking(payload)
+                    Command.DISABLE_TRACKING -> stopTracking(payload) // DISABLE_TRACKING is the iOS command name accepted here for cross-platform payloads
                     Command.LOG_SESSION -> appsFlyerInstance.logSession()
                     Command.SET_OAID -> setOaid(payload)
+                    Command.SET_ANDROID_ID -> setAndroidId(payload)
+                    Command.SET_IMEI -> setImei(payload)
                     Command.SET_OUT_OF_STORE -> setOutOfStore(payload)
                     Command.SET_DISABLE_NETWORK_DATA -> setDisableNetworkData(payload)
                     Command.SET_APP_INVITE_ONE_LINK -> setAppInviteOneLink(payload)
@@ -254,6 +256,22 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             throw AppsFlyerCommandError.missingParameter(StringCommandParams.OAID)
         }
         appsFlyerInstance.setOaid(oaid)
+    }
+
+    private fun setAndroidId(payload: JSONObject) {
+        val androidId = payload.optString(StringCommandParams.ANDROID_ID)
+        if (androidId.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.ANDROID_ID)
+        }
+        appsFlyerInstance.setAndroidId(androidId)
+    }
+
+    private fun setImei(payload: JSONObject) {
+        val imei = payload.optString(StringCommandParams.IMEI)
+        if (imei.isEmpty()) {
+            throw AppsFlyerCommandError.missingParameter(StringCommandParams.IMEI)
+        }
+        appsFlyerInstance.setImei(imei)
     }
 
     private fun setOutOfStore(payload: JSONObject) {
