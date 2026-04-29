@@ -21,6 +21,7 @@ object Commands {
     const val ANONYMIZE_USER = "anonymizeuser"
     const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
+    const val START = "start"
     const val STOP_TRACKING = "stoptracking"
     const val DISABLE_TRACKING = "disabletracking"
     const val LOG_SESSION = "logsession"
@@ -32,7 +33,6 @@ object Commands {
     const val SET_APP_INVITE_ONE_LINK = "setappinviteonelink"
     const val SET_PREINSTALL_ATTRIBUTION = "setpreinstallattribution"
     const val SET_IS_UPDATE = "setisupdate"
-    const val SET_LOG_LEVEL = "setloglevel"
 }
 
 /**
@@ -127,6 +127,12 @@ enum class Command(val commandName: String) {
     RESOLVE_DEEPLINK_URLS("resolvedeeplinkurls"),
 
     /**
+     * Explicitly starts the SDK — useful after stoptracking to resume attribution.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#start
+     */
+    START("start"),
+
+    /**
      * Stops the AppsFlyer SDK from sending attribution data.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stoptracking
      */
@@ -190,13 +196,7 @@ enum class Command(val commandName: String) {
      * Manually flags that the app was updated when auto-detection fails.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setisupdate
      */
-    SET_IS_UPDATE("setisupdate"),
-
-    /**
-     * Sets the SDK log level with more granularity than the boolean debug flag.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setloglevel
-     */
-    SET_LOG_LEVEL("setloglevel");
+    SET_IS_UPDATE("setisupdate");
 
     companion object {
         // Cached to avoid re-allocating an array on every call to fromString.
@@ -284,11 +284,15 @@ object Settings {
     const val ENABLE_TCF_DATA_COLLECTION = "enable_tcf_data_collection"
     const val ONE_LINK_CUSTOM_DOMAINS = "one_link_custom_domains"
     const val DISABLE_ADVERTISING_IDENTIFIERS = "disable_advertising_identifiers"
+    // iOS cross-platform alias — accepted alongside the canonical Android key.
+    const val DISABLE_AD_TRACKING_ALIAS = "disable_ad_tracking"
     const val DISABLE_APP_SET_ID = "disable_app_set_id"
-    const val COLLECT_OAID = "collect_oaid"
     const val COLLECT_ANDROID_ID = "collect_android_id"
     const val COLLECT_IMEI = "collect_imei"
     const val DEEP_LINK_PARAMETERS = "deep_link_parameters"
+
+    // More granular than the boolean `debug` flag — one of NONE, ERROR, WARNING, INFO, DEBUG, VERBOSE.
+    const val LOG_LEVEL = "log_level"
 }
 
 object Customer {
@@ -299,6 +303,10 @@ object Customer {
     /** List of email addresses for cross-platform attribution.
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremails */
     const val EMAILS = "customer_emails"
+
+    /** Encryption type for user emails. Integer matching iOS EmailCryptType raw values (0 = NONE, 3 = SHA256).
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremails */
+    const val EMAIL_HASH_TYPE = "email_hash_type"
 }
 
 object Location {
@@ -384,29 +392,6 @@ object AdRevenueParams {
 
     /** Optional map of extra parameters to attach to the ad revenue event. */
     const val AD_REVENUE_ADDITIONAL_PARAMS = "ad_revenue_additional_params"
-}
-
-/**
- * Supported mediation network identifiers for ad revenue logging.
- * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-mediationnetworktype
- */
-object MediationNetworks {
-    val networkNames: Map<String, String> = mapOf(
-        "googleadmob" to "GOOGLE_ADMOB",
-        "ironsource" to "IRONSOURCE",
-        "applovinmax" to "APPLOVIN_MAX",
-        "fyber" to "FYBER",
-        "appodeal" to "APPODEAL",
-        "admost" to "ADMOST",
-        "topon" to "TOPON",
-        "tradplus" to "TRADPLUS",
-        "yandex" to "YANDEX",
-        "chartboost" to "CHARTBOOST",
-        "unity" to "UNITY",
-        "toponpte" to "TOPON_PTE",
-        "custom" to "CUSTOM_MEDIATION",
-        "direct" to "DIRECT_MONETIZATION_NETWORK"
-    )
 }
 
 /**

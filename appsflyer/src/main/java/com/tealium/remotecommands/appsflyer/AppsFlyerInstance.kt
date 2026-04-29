@@ -4,10 +4,10 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import com.appsflyer.AFAdRevenueData
-import com.appsflyer.AFLogger
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerConsent
 import com.appsflyer.AppsFlyerLib
+import com.appsflyer.AppsFlyerProperties
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONException
 import org.json.JSONObject
@@ -61,6 +61,12 @@ class AppsFlyerInstance(
                 }
             }
 
+            if (settings.containsKey(Settings.LOG_LEVEL)) {
+                (settings[Settings.LOG_LEVEL] as? String)?.let { logLevel ->
+                    setLogLevel(logLevel)
+                }
+            }
+
             if (settings.containsKey(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH)) {
                 (settings[Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH] as? List<*>)?.let { pathList ->
                     val stringPathList = pathList.filterIsInstance<String>()
@@ -79,16 +85,14 @@ class AppsFlyerInstance(
             if (settings.containsKey(Settings.ONE_LINK_CUSTOM_DOMAINS)) {
                 (settings[Settings.ONE_LINK_CUSTOM_DOMAINS] as? List<*>)?.let { domainList ->
                     val domains = domainList.filterIsInstance<String>().toTypedArray()
-                    if (domains.isNotEmpty()) {
-                        AppsFlyerLib.getInstance().setOneLinkCustomDomain(*domains)
-                    }
+                    AppsFlyerLib.getInstance().setOneLinkCustomDomain(*domains)
                 }
             }
 
-            if (settings.containsKey(Settings.DISABLE_ADVERTISING_IDENTIFIERS)) {
-                (settings[Settings.DISABLE_ADVERTISING_IDENTIFIERS] as? Boolean)?.let { isDisabled ->
-                    AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(isDisabled)
-                }
+            val disableAdTrackingValue = (settings[Settings.DISABLE_ADVERTISING_IDENTIFIERS]
+                ?: settings[Settings.DISABLE_AD_TRACKING_ALIAS]) as? Boolean
+            disableAdTrackingValue?.let { isDisabled ->
+                AppsFlyerLib.getInstance().setDisableAdvertisingIdentifiers(isDisabled)
             }
 
             if (settings.containsKey(Settings.DISABLE_APP_SET_ID)) {
@@ -96,12 +100,6 @@ class AppsFlyerInstance(
                     if (isDisabled) {
                         AppsFlyerLib.getInstance().disableAppSetId()
                     }
-                }
-            }
-
-            if (settings.containsKey(Settings.COLLECT_OAID)) {
-                (settings[Settings.COLLECT_OAID] as? Boolean)?.let { shouldCollect ->
-                    AppsFlyerLib.getInstance().setCollectOaid(shouldCollect)
                 }
             }
 
@@ -151,12 +149,12 @@ class AppsFlyerInstance(
     }
 
     override fun setHost(host: String, hostPrefix: String?) {
-        AppsFlyerLib.getInstance().setHost(host, hostPrefix ?: "")
+        AppsFlyerLib.getInstance().setHost(hostPrefix ?: "", host)
     }
 
-    override fun setUserEmails(emails: List<String>) {
-        val userEmails = emails.toTypedArray()
-        AppsFlyerLib.getInstance().setUserEmails(*userEmails)
+    override fun setUserEmails(emails: List<String>, cryptType: Int) {
+        val emailCryptType = EmailCryptTypeMapping.fromInt(cryptType) ?: AppsFlyerProperties.EmailsCryptType.NONE
+        AppsFlyerLib.getInstance().setUserEmails(emailCryptType, *emails.toTypedArray())
     }
 
     override fun setCurrencyCode(currency: String) {
@@ -175,13 +173,7 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().logAdRevenue(adRevenueData, additionalParameters)
     }
 
-    override fun setConsentData(isUserSubjectToGDPR: Boolean, hasConsentForDataUsage: Boolean, hasConsentForAdsPersonalization: Boolean, hasConsentForAdStorage: Boolean) {
-        val consent = AppsFlyerConsent(
-            isUserSubjectToGDPR,
-            hasConsentForDataUsage,
-            hasConsentForAdsPersonalization,
-            hasConsentForAdStorage
-        )
+    override fun setConsentData(consent: AppsFlyerConsent) {
         AppsFlyerLib.getInstance().setConsentData(consent)
     }
 
@@ -190,12 +182,7 @@ class AppsFlyerInstance(
     }
 
     override fun setSharingFilterForPartners(partners: Array<String>?) {
-        if (partners != null) {
-            AppsFlyerLib.getInstance().setSharingFilterForPartners(*partners)
-        } else {
-            // Reset filter by calling with no arguments
-            AppsFlyerLib.getInstance().setSharingFilterForPartners()
-        }
+        AppsFlyerLib.getInstance().setSharingFilterForPartners(*(partners ?: emptyArray()))
     }
 
     override fun anonymizeUser(anonymize: Boolean) {
@@ -205,6 +192,10 @@ class AppsFlyerInstance(
     override fun resolveDeepLinkUrls(links: List<String>) {
         val urlLinks = links.toTypedArray()
         AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*urlLinks)
+    }
+
+    override fun start() {
+        AppsFlyerLib.getInstance().start(weakActivity?.get() ?: application.applicationContext)
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
@@ -217,7 +208,7 @@ class AppsFlyerInstance(
     }
 
     override fun logSession() {
-        AppsFlyerLib.getInstance().logSession(application)
+        AppsFlyerLib.getInstance().logSession(application.applicationContext)
     }
 
     override fun setOaid(oaid: String) {
@@ -252,11 +243,11 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
     }
 
-    override fun setLogLevel(logLevel: String) {
-        val level = try {
-            AFLogger.LogLevel.valueOf(logLevel.uppercase())
-        } catch (_: IllegalArgumentException) {
-            RemoteCommandLogger.error("Invalid log level: $logLevel")
+    private fun setLogLevel(logLevel: String) {
+        val level = LogLevelMapping.fromString(logLevel) ?: run {
+            RemoteCommandLogger.error(
+                "Invalid log_level: '$logLevel'. Accepted values: ${LogLevelMapping.validValues.joinToString()}"
+            )
             return
         }
         AppsFlyerLib.getInstance().setLogLevel(level)

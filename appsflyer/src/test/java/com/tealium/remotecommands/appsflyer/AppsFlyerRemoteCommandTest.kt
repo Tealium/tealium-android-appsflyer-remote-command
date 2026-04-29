@@ -3,6 +3,7 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Application
 import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.AFInAppEventType
+import com.appsflyer.MediationNetwork
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
 import org.json.JSONArray
@@ -898,6 +899,69 @@ class AppsFlyerRemoteCommandTest {
 
         AppsFlyerRemoteCommand(mockApplication, "key", logLevel = RemoteCommandLogLevel.SILENT)
         assertEquals(RemoteCommandLogLevel.SILENT, RemoteCommandLogger.logLevel)
+    }
+
+    // endregion
+
+    // region boolean commands — false branch
+
+    @Test
+    fun anonymizeUser_false_callsSDK() {
+        val payload = JSONObject().put(Tracking.ANONYMIZE_USER, false)
+        remoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)
+        assertEquals(1, mockInstance.anonymizeUserCallCount)
+        assertEquals(false, mockInstance.anonymizeUserParam)
+    }
+
+    @Test
+    fun setDisableNetworkData_false_callsSDK() {
+        val payload = JSONObject().put(StringCommandParams.DISABLE_NETWORK_DATA, false)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_DISABLE_NETWORK_DATA), payload)
+        assertEquals(1, mockInstance.setDisableNetworkDataCallCount)
+        assertEquals(false, mockInstance.setDisableNetworkDataParam)
+    }
+
+    @Test
+    fun setIsUpdate_false_callsSDK() {
+        val payload = JSONObject().put(StringCommandParams.IS_UPDATE, false)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_IS_UPDATE), payload)
+        assertEquals(1, mockInstance.setIsUpdateCallCount)
+        assertEquals(false, mockInstance.setIsUpdateParam)
+    }
+
+    // endregion
+
+    // region logAdRevenue — data field verification
+
+    @Test
+    fun logAdRevenue_allRequiredParams_forwardsCorrectFields() {
+        val payload = JSONObject()
+            .put(AdRevenueParams.MONETIZATION_NETWORK, "TestNetwork")
+            .put(AdRevenueParams.MEDIATION_NETWORK, "googleadmob")
+            .put(AdRevenueParams.AD_REVENUE_CURRENCY, "EUR")
+            .put(AdRevenueParams.AD_REVENUE_AMOUNT, 2.50)
+
+        remoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        val data = mockInstance.logAdRevenueDataParam!!
+        assertEquals("TestNetwork", data.monetizationNetwork)
+        assertEquals(MediationNetwork.GOOGLE_ADMOB, data.mediationNetwork)
+        assertEquals("EUR", data.currencyIso4217Code)
+        assertEquals(2.50, data.revenue, 0.0001)
+    }
+
+    @Test
+    fun logAdRevenue_missingAdditionalParams_forwardsEmptyMap() {
+        val payload = JSONObject()
+            .put(AdRevenueParams.MONETIZATION_NETWORK, "TestNetwork")
+            .put(AdRevenueParams.MEDIATION_NETWORK, "googleadmob")
+            .put(AdRevenueParams.AD_REVENUE_CURRENCY, "USD")
+            .put(AdRevenueParams.AD_REVENUE_AMOUNT, 1.0)
+
+        remoteCommand.parseCommands(arrayOf(Commands.LOG_AD_REVENUE), payload)
+
+        assertEquals(1, mockInstance.logAdRevenueCallCount)
+        assertEquals(emptyMap<String, Any>(), mockInstance.logAdRevenueAdditionalParamsParam)
     }
 
     // endregion
