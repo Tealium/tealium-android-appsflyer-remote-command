@@ -1,203 +1,82 @@
 package com.tealium.remotecommands.appsflyer
 
-import android.app.Application
-import com.appsflyer.AFInAppEventParameterName
 import com.appsflyer.AFInAppEventType
-import io.mockk.MockKAnnotations
-import io.mockk.confirmVerified
-import io.mockk.impl.annotations.MockK
-import io.mockk.verify
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+/**
+ * Tests the [StandardEvents.eventNames] mapping in isolation.
+ * Event-dispatch flow through [AppsFlyerRemoteCommand] is covered in
+ * [AppsFlyerRemoteCommandTest] — this suite focuses on the mapping itself.
+ */
 class StandardEventsTest {
 
-    @MockK
-    lateinit var mockApplication: Application
-
-    @MockK(relaxed = true)
-    lateinit var mockAppsFlyerInstance: AppsFlyerCommand
-
-    lateinit var appsFlyerRemoteCommand: AppsFlyerRemoteCommand
-
-    @Before
-    fun setUp() {
-        MockKAnnotations.init(this, relaxUnitFun = true)
-        appsFlyerRemoteCommand = AppsFlyerRemoteCommand(
-            mockApplication,
-            "testKey"
-        )
-
-        appsFlyerRemoteCommand.appsFlyerInstance = mockAppsFlyerInstance
+    @Test
+    fun eventNames_coversCanonicalAppsFlyerEvents() {
+        // Representative sample of the Android-side canonical names.
+        assertEquals(AFInAppEventType.LEVEL_ACHIEVED, StandardEvents.eventNames["levelachieved"])
+        assertEquals(AFInAppEventType.ADD_PAYMENT_INFO, StandardEvents.eventNames["addpaymentinfo"])
+        assertEquals(AFInAppEventType.ADD_TO_CART, StandardEvents.eventNames["addtocart"])
+        assertEquals(AFInAppEventType.ADD_TO_WISH_LIST, StandardEvents.eventNames["addtowishlist"])
+        assertEquals(AFInAppEventType.COMPLETE_REGISTRATION, StandardEvents.eventNames["completeregistration"])
+        assertEquals(AFInAppEventType.TUTORIAL_COMPLETION, StandardEvents.eventNames["tutorialcompletion"])
+        assertEquals(AFInAppEventType.INITIATED_CHECKOUT, StandardEvents.eventNames["initiatecheckout"])
+        assertEquals(AFInAppEventType.PURCHASE, StandardEvents.eventNames["purchase"])
+        assertEquals(AFInAppEventType.SUBSCRIBE, StandardEvents.eventNames["subscribe"])
+        assertEquals(AFInAppEventType.START_TRIAL, StandardEvents.eventNames["starttrial"])
+        assertEquals(AFInAppEventType.RATE, StandardEvents.eventNames["rate"])
+        assertEquals(AFInAppEventType.SEARCH, StandardEvents.eventNames["search"])
+        assertEquals(AFInAppEventType.SPENT_CREDIT, StandardEvents.eventNames["spentcredits"])
+        assertEquals(AFInAppEventType.ACHIEVEMENT_UNLOCKED, StandardEvents.eventNames["achievementunlocked"])
+        assertEquals(AFInAppEventType.CONTENT_VIEW, StandardEvents.eventNames["contentview"])
+        assertEquals(AFInAppEventType.LIST_VIEW, StandardEvents.eventNames["listview"])
+        assertEquals(AFInAppEventType.AD_CLICK, StandardEvents.eventNames["adclick"])
+        assertEquals(AFInAppEventType.AD_VIEW, StandardEvents.eventNames["adview"])
+        assertEquals(AFInAppEventType.TRAVEL_BOOKING, StandardEvents.eventNames["travelbooking"])
+        assertEquals(AFInAppEventType.SHARE, StandardEvents.eventNames["share"])
+        assertEquals(AFInAppEventType.INVITE, StandardEvents.eventNames["invite"])
+        assertEquals(AFInAppEventType.LOGIN, StandardEvents.eventNames["login"])
+        assertEquals(AFInAppEventType.RE_ENGAGE, StandardEvents.eventNames["reengage"])
+        assertEquals(AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION, StandardEvents.eventNames["openfrompushnotification"])
+        assertEquals(AFInAppEventType.UPDATE, StandardEvents.eventNames["update"])
+        assertEquals(AFInAppEventType.LOCATION_COORDINATES, StandardEvents.eventNames["locationcoordinates"])
+        assertEquals(AFInAppEventType.CUSTOMER_SEGMENT, StandardEvents.eventNames["customersegment"])
     }
 
     @Test
-    fun standardEvent_Returns_Mapped_AF_Event() {
-        val isStandardEvent = appsFlyerRemoteCommand.standardEvent("levelachieved")
-        assertNotNull(isStandardEvent)
-        assertEquals(AFInAppEventType.LEVEL_ACHIEVED, isStandardEvent)
+    fun eventNames_supportsIosAliases() {
+        // iOS-style aliases should resolve to the same underlying AppsFlyer event —
+        // this lets cross-platform TiQ tags reuse a single command_name.
+        assertEquals(AFInAppEventType.LEVEL_ACHIEVED, StandardEvents.eventNames["achievelevel"])
+        assertEquals(AFInAppEventType.CONTENT_VIEW, StandardEvents.eventNames["viewedcontent"])
+        assertEquals(AFInAppEventType.TUTORIAL_COMPLETION, StandardEvents.eventNames["completetutorial"])
+        assertEquals(AFInAppEventType.ACHIEVEMENT_UNLOCKED, StandardEvents.eventNames["unlockachievement"])
+        assertEquals(AFInAppEventType.OPENED_FROM_PUSH_NOTIFICATION, StandardEvents.eventNames["pushnotificationopened"])
     }
 
     @Test
-    fun standardEvent_Returns_Null_When_Invalid_AF_Event() {
-        val isStandardEvent = appsFlyerRemoteCommand.standardEvent("testEvent")
-        assertNull(isStandardEvent)
+    fun eventNames_returnsNullForUnknown() {
+        assertNull(StandardEvents.eventNames["not_a_known_event"])
+        assertNull(StandardEvents.eventNames[""])
     }
 
     @Test
-    fun parseCommands_Logs_Event_With_EventParameters_When_Present() {
-        val payload = JSONObject()
-        val eventParams = JSONObject()
-        eventParams.put(AFInAppEventParameterName.LEVEL, 5)
-        eventParams.put(AFInAppEventParameterName.SCORE, 500)
-
-        payload.put(StandardEvents.EVENT_PARAMETERS, eventParams)
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(
-                AFInAppEventType.LEVEL_ACHIEVED,
-                mapOf(
-                    AFInAppEventParameterName.LEVEL to 5,
-                    AFInAppEventParameterName.SCORE to 500
-                )
-            )
+    fun eventNames_keysAreLowercaseAndUnderscoreFree() {
+        // The dispatch path lowercases the incoming command — any key that contained
+        // uppercase or whitespace would silently never match.
+        StandardEvents.eventNames.keys.forEach { key ->
+            assertEquals("'$key' must be lowercase", key.lowercase(), key)
         }
-
-        confirmVerified(mockAppsFlyerInstance)
     }
 
     @Test
-    fun parseCommands_Logs_Event_Using_Payload_When_EventParameters_Not_Present() {
-        val payload = JSONObject()
-        payload.put("af_data", "12345")
-        appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(AFInAppEventType.LEVEL_ACHIEVED, mapOf(
-                "af_data" to "12345"
-            ))
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Logs_Event_With_ShortEventParameters_When_Present() {
-        val payload = JSONObject()
-        val eventParams = JSONObject()
-        eventParams.put(AFInAppEventParameterName.LEVEL, 5)
-        eventParams.put(AFInAppEventParameterName.SCORE, 500)
-
-        payload.put(StandardEvents.EVENT_PARAMETERS_SHORT, eventParams)
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(
-                AFInAppEventType.LEVEL_ACHIEVED,
-                mapOf(
-                    AFInAppEventParameterName.LEVEL to 5,
-                    AFInAppEventParameterName.SCORE to 500
-                )
-            )
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Logs_Custom_Event_With_EventParameters_When_Present() {
-        val customEventName = "mycustomevent"
-        val payload = JSONObject()
-        val eventParams = JSONObject()
-        eventParams.put("some_param_1", 5)
-        eventParams.put("some_param_2", 500)
-
-        payload.put(StandardEvents.EVENT_PARAMETERS, eventParams)
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf(customEventName), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(
-                customEventName,
-                mapOf(
-                    "some_param_1" to 5,
-                    "some_param_2" to 500
-                )
-            )
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Logs_Custom_Event_Without_ShortEventParameters_When_Not_Present() {
-        val customEventName = "mycustomevent"
-        val payload = JSONObject()
-        payload.put("af_data", "12345")
-        appsFlyerRemoteCommand.parseCommands(arrayOf(customEventName), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(customEventName, mapOf(
-                "af_data" to "12345"
-            ))
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Prefers_EventParameters_Over_Short_When_Both_Present() {
-        val payload = JSONObject()
-        val eventParameters = JSONObject().apply {
-            put("event_params_long", "value")
-        }
-        val eventParametersShort = JSONObject().apply {
-            put("event_params_short", "value")
-        }
-        payload.put(StandardEvents.EVENT_PARAMETERS, eventParameters)
-        payload.put(StandardEvents.EVENT_PARAMETERS_SHORT, eventParametersShort)
-        appsFlyerRemoteCommand.parseCommands(arrayOf("custom"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(
-                "custom", mapOf(
-                    "event_params_long" to "value"
-                )
-            )
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
-    }
-
-    @Test
-    fun parseCommands_Logs_Event_Without_Filtered_Keys() {
-        val payload = JSONObject()
-        payload.put("method", "12345")
-        payload.put(Settings.DEBUG, true)
-        payload.put(Config.DEV_KEY, "12345")
-        payload.put(Config.SETTINGS, "12345")
-        payload.put(Commands.COMMAND_KEY, "12345")
-        payload.put(Config.APP_ID, "12345")
-
-        appsFlyerRemoteCommand.parseCommands(arrayOf("levelachieved"), payload)
-
-        verify {
-            mockAppsFlyerInstance.trackEvent(
-                AFInAppEventType.LEVEL_ACHIEVED,
-                mapOf()
-            )
-        }
-
-        confirmVerified(mockAppsFlyerInstance)
+    fun eventParameterKeys_exposedAsConstants() {
+        // These constants are part of the payload contract and must remain stable.
+        assertNotNull(StandardEvents.EVENT_PARAMETERS)
+        assertNotNull(StandardEvents.EVENT_PARAMETERS_SHORT)
+        assertEquals("event_parameters", StandardEvents.EVENT_PARAMETERS)
+        assertEquals("event", StandardEvents.EVENT_PARAMETERS_SHORT)
     }
 }

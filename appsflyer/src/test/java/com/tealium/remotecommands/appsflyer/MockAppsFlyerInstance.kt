@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFAdRevenueData
+import com.appsflyer.AppsFlyerConsent
 
 /**
  * Fully inspectable test double for [AppsFlyerCommand].
@@ -23,8 +24,18 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setSharingFilterForPartnersCallCount = 0
     var anonymizeUserCallCount = 0
     var resolveDeepLinkUrlsCallCount = 0
+    var startCallCount = 0
     var stopTrackingCallCount = 0
     var addPushNotificationDeepLinkPathCallCount = 0
+    var logSessionCallCount = 0
+    var setOaidCallCount = 0
+    var setAndroidIdCallCount = 0
+    var setImeiCallCount = 0
+    var setOutOfStoreCallCount = 0
+    var setDisableNetworkDataCallCount = 0
+    var setAppInviteOneLinkCallCount = 0
+    var setPreinstallAttributionCallCount = 0
+    var setIsUpdateCallCount = 0
 
     var initializeDevKeyParam: String? = null
     var initializeSettingsParam: Map<String, Any>? = null
@@ -35,15 +46,13 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var trackEventTypeParam: String? = null
     var trackEventParametersParam: Map<String, Any>? = null
     var setUserEmailsParam: List<String>? = null
+    var setUserEmailsCryptTypeParam: Int? = null
     var setCurrencyCodeParam: String? = null
     var setCustomerIdParam: String? = null
     var setPhoneNumberParam: String? = null
     var logAdRevenueDataParam: AFAdRevenueData? = null
     var logAdRevenueAdditionalParamsParam: Map<String, Any>? = null
-    var setConsentGdprParam: Boolean? = null
-    var setConsentDataUsageParam: Boolean? = null
-    var setConsentAdsPersonalizationParam: Boolean? = null
-    var setConsentAdStorageParam: Boolean? = null
+    var setConsentDataParam: AppsFlyerConsent? = null
     var setPartnerDataIdParam: String? = null
     var setPartnerDataInfoParam: Map<String, Any>? = null
     var setSharingFilterForPartnersParam: Array<String>? = null
@@ -51,18 +60,6 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var resolveDeepLinkUrlsParam: List<String>? = null
     var stopTrackingParam: Boolean? = null
     var addPushNotificationDeepLinkPathParam: List<String>? = null
-
-    var logSessionCallCount = 0
-    var setOaidCallCount = 0
-    var setAndroidIdCallCount = 0
-    var setImeiCallCount = 0
-    var setOutOfStoreCallCount = 0
-    var setDisableNetworkDataCallCount = 0
-    var setAppInviteOneLinkCallCount = 0
-    var setPreinstallAttributionCallCount = 0
-    var setIsUpdateCallCount = 0
-    var setLogLevelCallCount = 0
-
     var setOaidParam: String? = null
     var setAndroidIdParam: String? = null
     var setImeiParam: String? = null
@@ -73,7 +70,13 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setPreinstallCampaignParam: String? = null
     var setPreinstallSiteIdParam: String? = null
     var setIsUpdateParam: Boolean? = null
-    var setLogLevelParam: String? = null
+
+    // Convenience accessors — AppsFlyerConsent's boxed Booleans surface as non-null via the builder
+    // path exercised by AppsFlyerRemoteCommand (requireBoolean() unboxes before construction).
+    val setConsentGdprParam: Boolean? get() = setConsentDataParam?.isUserSubjectToGDPR
+    val setConsentDataUsageParam: Boolean? get() = setConsentDataParam?.hasConsentForDataUsage
+    val setConsentAdsPersonalizationParam: Boolean? get() = setConsentDataParam?.hasConsentForAdsPersonalization
+    val setConsentAdStorageParam: Boolean? get() = setConsentDataParam?.hasConsentForAdStorage
 
     data class TrackEventCall(val eventType: String, val eventParameters: Map<String, Any>?)
 
@@ -104,9 +107,10 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         trackEventCalls.add(TrackEventCall(eventType, eventParameters))
     }
 
-    override fun setUserEmails(emails: List<String>) {
+    override fun setUserEmails(emails: List<String>, cryptType: Int) {
         setUserEmailsCallCount++
         setUserEmailsParam = emails
+        setUserEmailsCryptTypeParam = cryptType
     }
 
     override fun setCurrencyCode(currency: String) {
@@ -130,17 +134,9 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         logAdRevenueAdditionalParamsParam = additionalParameters
     }
 
-    override fun setConsentData(
-        isUserSubjectToGDPR: Boolean,
-        hasConsentForDataUsage: Boolean,
-        hasConsentForAdsPersonalization: Boolean,
-        hasConsentForAdStorage: Boolean
-    ) {
+    override fun setConsentData(consent: AppsFlyerConsent) {
         setConsentDataCallCount++
-        setConsentGdprParam = isUserSubjectToGDPR
-        setConsentDataUsageParam = hasConsentForDataUsage
-        setConsentAdsPersonalizationParam = hasConsentForAdsPersonalization
-        setConsentAdStorageParam = hasConsentForAdStorage
+        setConsentDataParam = consent
     }
 
     override fun setPartnerData(partnerId: String, partnerInfo: Map<String, Any>?) {
@@ -162,6 +158,10 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     override fun resolveDeepLinkUrls(links: List<String>) {
         resolveDeepLinkUrlsCallCount++
         resolveDeepLinkUrlsParam = links
+    }
+
+    override fun start() {
+        startCallCount++
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
@@ -220,11 +220,6 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         setIsUpdateParam = isUpdate
     }
 
-    override fun setLogLevel(logLevel: String) {
-        setLogLevelCallCount++
-        setLogLevelParam = logLevel
-    }
-
     fun verifyNoCalls(): Boolean = initializeCallCount == 0 &&
             trackLocationCallCount == 0 &&
             setHostCallCount == 0 &&
@@ -239,6 +234,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
             setSharingFilterForPartnersCallCount == 0 &&
             anonymizeUserCallCount == 0 &&
             resolveDeepLinkUrlsCallCount == 0 &&
+            startCallCount == 0 &&
             stopTrackingCallCount == 0 &&
             addPushNotificationDeepLinkPathCallCount == 0 &&
             logSessionCallCount == 0 &&
@@ -249,6 +245,5 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
             setDisableNetworkDataCallCount == 0 &&
             setAppInviteOneLinkCallCount == 0 &&
             setPreinstallAttributionCallCount == 0 &&
-            setIsUpdateCallCount == 0 &&
-            setLogLevelCallCount == 0
+            setIsUpdateCallCount == 0
 }
