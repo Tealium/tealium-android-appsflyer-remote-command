@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonSetLogLevel.setOnClickListener {
-            TealiumHelper.trackEvent("set_log_level", mapOf(StringCommandParams.LOG_LEVEL to "VERBOSE"))
+            TealiumHelper.trackEvent("launch", mapOf(StringCommandParams.LOG_LEVEL to "VERBOSE"))
         }
     }
 }

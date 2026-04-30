@@ -5,30 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.0]
+## [1.5.0] - 2026-04-30
 
 ### Added
-- Support for setting user phone numbers
-- Support for logging ad revenue
-- Support for managing GDPR/CCPA consent data
-- Support for setting partner data
-- Support for setting partner sharing filters
-- Support for anonymizing users
-- New command mappings in `appsflyer.json`
-- Enhanced unit test coverage for new functionalities
+- New remote commands:
+  - User data: `setphonenumber`, `anonymizeuser` (`disabledevicetracking` as backwards-compatible alias)
+  - Consent & ad revenue: `setconsentdata` (GDPR/DMA flags), `logadrevenue`
+  - Partner management: `setpartnerdata`, `setsharingfilterforpartners`
+  - Tracking control: `start`, `stoptracking` (`disabletracking` as iOS cross-platform alias), `logsession`
+  - Deep links: `resolvedeeplinkurls` (with legacy TiQ alias `resolve_deep_links`)
+  - Device identifiers: `setoaid`, `setandroidid`, `setimei`
+  - Attribution: `setoutofstore`, `setpreinstallattribution`, `setisupdate`
+  - Misc: `setdisablenetworkdata`, `setappinviteonelink`
+- New initialize settings:
+  - `log_level` — granular SDK log level (NONE/ERROR/WARNING/INFO/DEBUG/VERBOSE)
+  - `deep_link_parameters` — calls `appendParametersToDeepLinkingURL` before `start()`
+  - `enable_facebook_deferred_applinks`, `enable_tcf_data_collection`, `one_link_custom_domains`
+  - `disable_advertising_identifiers` (`disable_ad_tracking` as iOS alias), `disable_app_set_id`
+  - `collect_android_id`, `collect_imei`, `collect_oaid`
+- `AppsFlyerCommandError` for structured per-command error handling
+- `RemoteCommandLogger` and `RemoteCommandLogLevel` for controllable internal logging
+- Comprehensive unit test coverage for all new commands and settings
 
 ### Changed
-- Update Gradle configurations and dependencies to latest versions
-- Upgrade Kotlin, Android SDK, and Tealium libraries
-- Upgrade Tealium Kotlin core to 1.9.1
-- Upgrade Robolectric to 4.15.1
-- Refactor settings access to use the new `Settings` object in `AppsFlyerInstance` and `AppsFlyerRemoteCommand`
-- Replace placeholder values in `appsflyer.json`
-- Update event names in `MainActivity` and `AppsFlyerConstants`
-- Improve compile options and clean task registration in build scripts
+- Refactoring:
+  - Introduce type-safe `Command` enum with exhaustive `when` dispatch in `AppsFlyerRemoteCommand`
+  - Extract `EmailCryptTypeMapping`, `LogLevelMapping`, and `MediationNetworkMapping` into dedicated files
+  - Refactor settings access to use the new `Settings` object in `AppsFlyerInstance` and `AppsFlyerRemoteCommand`
+- Dependencies:
+  - Upgrade Tealium Kotlin core to 1.9.1
+  - Upgrade Robolectric to 4.15.1
+  - Update Gradle configurations, Kotlin, and Android SDK to latest versions
 
 ### Fixed
 - Use safe casting for settings parameters during initialization
+- One failing command no longer blocks execution of subsequent commands in the same payload
 
 ## [1.4.0] - 2024-11-27
 

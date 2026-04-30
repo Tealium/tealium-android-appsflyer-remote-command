@@ -73,7 +73,7 @@ class InitializeSettingsForwardingTest {
     fun initialize_forwardsCustomData() {
         val custom = JSONObject().put("a", "1").put("b", "2")
         initializeWithSettings(JSONObject().put(Settings.CUSTOM_DATA, custom))
-        assertEquals(custom, mockInstance.initializeSettingsParam?.get(Settings.CUSTOM_DATA))
+        assertEquals(mapOf("a" to "1", "b" to "2"), mockInstance.initializeSettingsParam?.get(Settings.CUSTOM_DATA))
     }
 
     @Test
@@ -92,7 +92,7 @@ class InitializeSettingsForwardingTest {
     fun initialize_forwardsPushNotificationDeepLinkPath() {
         val paths = JSONArray().put("a").put("b")
         initializeWithSettings(JSONObject().put(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH, paths))
-        assertEquals(paths, mockInstance.initializeSettingsParam?.get(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH))
+        assertEquals(listOf("a", "b"), mockInstance.initializeSettingsParam?.get(Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH))
     }
 
     @Test
@@ -105,7 +105,7 @@ class InitializeSettingsForwardingTest {
     fun initialize_forwardsOneLinkCustomDomains() {
         val domains = JSONArray().put("custom.example.com").put("other.example.com")
         initializeWithSettings(JSONObject().put(Settings.ONE_LINK_CUSTOM_DOMAINS, domains))
-        assertEquals(domains, mockInstance.initializeSettingsParam?.get(Settings.ONE_LINK_CUSTOM_DOMAINS))
+        assertEquals(listOf("custom.example.com", "other.example.com"), mockInstance.initializeSettingsParam?.get(Settings.ONE_LINK_CUSTOM_DOMAINS))
     }
 
     @Test
@@ -146,7 +146,10 @@ class InitializeSettingsForwardingTest {
                 .put(DeepLinkParameterEntry.PARAMETERS, JSONObject().put("af_dp", "x"))
         )
         initializeWithSettings(JSONObject().put(Settings.DEEP_LINK_PARAMETERS, entries))
-        assertEquals(entries, mockInstance.initializeSettingsParam?.get(Settings.DEEP_LINK_PARAMETERS))
+        val forwarded = mockInstance.initializeSettingsParam?.get(Settings.DEEP_LINK_PARAMETERS)
+        val entry = (forwarded as? List<*>)?.firstOrNull() as? Map<*, *>
+        assertEquals("discount", entry?.get(DeepLinkParameterEntry.CONTAINS))
+        assertEquals(mapOf("af_dp" to "x"), entry?.get(DeepLinkParameterEntry.PARAMETERS))
     }
 
     @Test
@@ -172,14 +175,23 @@ class InitializeSettingsForwardingTest {
     }
 
     @Test
-    fun initialize_devKeyFromConstructor_usedWhenPayloadOmitsIt() {
-        // When the payload supplies app_dev_key, the initialize() call is dispatched
-        // even if the SDK-level fallback (constructor key) is also set.
+    fun initialize_payloadKeyTakesPrecedenceOverConstructorKey() {
+        // When the payload supplies app_dev_key, it wins over the constructor fallback.
         val payload = JSONObject().put(Config.DEV_KEY, "payload_key")
         remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
 
         assertEquals(1, mockInstance.initializeCallCount)
         assertEquals("payload_key", mockInstance.initializeDevKeyParam)
         assertNotNull(mockInstance.initializeSettingsParam)
+    }
+
+    @Test
+    fun initialize_devKeyFromConstructor_usedWhenPayloadOmitsIt() {
+        // When the payload omits app_dev_key, initialize() falls back to the constructor key.
+        val payload = JSONObject()
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+
+        assertEquals(1, mockInstance.initializeCallCount)
+        assertEquals("testKey", mockInstance.initializeDevKeyParam)
     }
 }

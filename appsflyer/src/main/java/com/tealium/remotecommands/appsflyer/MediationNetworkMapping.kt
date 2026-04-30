@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.MediationNetwork
+import java.util.Locale
 
 /**
  * Maps lowercase payload strings to SDK enum values.
@@ -38,6 +39,6 @@ internal val mediationNetworkValidValues: List<String>
  */
 internal fun String.toMediationNetwork(): MediationNetwork? {
     val trimmed = this.trim()
-    return networkNames[trimmed.lowercase()]
+    return networkNames[trimmed.lowercase(Locale.ROOT)]
         ?: MediationNetwork.entries.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
 }

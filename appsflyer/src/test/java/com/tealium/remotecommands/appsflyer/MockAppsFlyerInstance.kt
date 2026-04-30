@@ -94,7 +94,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         trackLocationLongitudeParam = longitude
     }
 
-    override fun setHost(host: String, hostPrefix: String?) {
+    override fun setHost(host: String, hostPrefix: String) {
         setHostCallCount++
         setHostHostParam = host
         setHostPrefixParam = hostPrefix

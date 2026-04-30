@@ -98,10 +98,9 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
     }
 
     private fun initialize(payload: JSONObject) {
-        if (!payload.has(Config.DEV_KEY)) {
-            throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
-        }
-        val devKey: String = payload.optString(Config.DEV_KEY)
+        val devKey: String = payload.optString(Config.DEV_KEY).takeIf { it.isNotBlank() }
+            ?: appsFlyerDevKey?.takeIf { it.isNotBlank() }
+            ?: throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any> = jsonToMap(config)
         RemoteCommandLogger.debug("Initializing AppsFlyer SDK")
@@ -328,7 +327,8 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
     }
 
     private fun dispatchCustomEvent(commandString: String, payload: JSONObject) {
-        val eventType = standardEvent(commandString) ?: commandString
+        val normalizedCommand = commandString.trim().lowercase(Locale.ROOT)
+        val eventType = standardEvent(normalizedCommand) ?: commandString
         val eventParameters: JSONObject =
             payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
                 ?: payload.optJSONObject(StandardEvents.EVENT_PARAMETERS_SHORT)
@@ -363,21 +363,24 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
 
     private fun jsonToMap(jsonObject: JSONObject?): Map<String, Any> {
         val map = HashMap<String, Any>()
-
         jsonObject?.let {
             it.keys().forEach { key ->
-                val value = it[key]
-                map[key] = value
+                map[key] = convertJsonValue(it[key])
             }
         }
         return map
     }
 
+    private fun convertJsonValue(value: Any): Any = when (value) {
+        is JSONObject -> jsonToMap(value)
+        is JSONArray -> (0 until value.length()).map { convertJsonValue(value[it]) }
+        else -> value
+    }
+
     private fun toList(jsonArray: JSONArray): List<String> {
         val list = mutableListOf<String>()
         for (i in 0 until jsonArray.length()) {
-            val item = jsonArray.getString(i)
-            list.add(i, item)
+            list.add(jsonArray.getString(i))
         }
         return list
     }
@@ -389,8 +392,8 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             Config.DEV_KEY,
             Config.SETTINGS,
             Commands.COMMAND_KEY,
-            METHOD_KEY,
-            APP_ID_KEY,
+            Commands.METHOD_KEY,
+            Config.APP_ID,
         )
         for (key in jsonObject.keys()) {
             if (toRemove.contains(key)) continue
@@ -401,6 +404,3 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
         return JSONObject(jsonObject, toCopy.toTypedArray())
     }
 }
-
-private const val METHOD_KEY = "method"
-private const val APP_ID_KEY = "app_id"

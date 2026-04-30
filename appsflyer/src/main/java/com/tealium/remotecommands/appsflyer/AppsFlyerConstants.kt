@@ -3,9 +3,11 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFInAppEventType
+import java.util.Locale
 
 object Commands {
     const val COMMAND_KEY = "command_name"
+    const val METHOD_KEY = "method"
     const val SEPARATOR = ","
     const val INITIALIZE = "initialize"
     const val TRACK_LOCATION = "tracklocation"
@@ -207,7 +209,7 @@ enum class Command(val commandName: String) {
          * not a built-in command — callers should fall back to treating it as a
          * custom event name.
          */
-        fun fromString(command: String): Command? = BY_NAME[command.lowercase().trim()]
+        fun fromString(command: String): Command? = BY_NAME[command.lowercase(Locale.ROOT).trim()]
     }
 }
 

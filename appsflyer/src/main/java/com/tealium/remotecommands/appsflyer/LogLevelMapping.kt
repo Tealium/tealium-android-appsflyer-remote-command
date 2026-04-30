@@ -1,6 +1,7 @@
 package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFLogger
+import java.util.Locale
 
 /**
  * Maps payload string values to [AFLogger.LogLevel] enum values.
@@ -22,7 +23,7 @@ internal object LogLevelMapping {
 
     fun fromString(value: String): AFLogger.LogLevel? {
         val trimmed = value.trim()
-        return stringMap[trimmed.lowercase()]
+        return stringMap[trimmed.lowercase(Locale.ROOT)]
             ?: AFLogger.LogLevel.entries.firstOrNull { it.name.equals(trimmed, ignoreCase = true) }
     }
 }

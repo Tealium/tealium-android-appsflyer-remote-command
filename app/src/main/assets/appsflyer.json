@@ -111,7 +111,6 @@
     "set_app_invite_onelink": "setappinviteonelink",
     "set_preinstall_attribution": "setpreinstallattribution",
     "set_is_update": "setisupdate",
-    "set_log_level": "setloglevel",
     "ad_revenue": "logadrevenue",
     "set_consent": "setconsentdata",
     "set_partner_data": "setpartnerdata",

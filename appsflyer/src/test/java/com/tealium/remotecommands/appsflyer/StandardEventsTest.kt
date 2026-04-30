@@ -63,9 +63,9 @@ class StandardEventsTest {
     }
 
     @Test
-    fun eventNames_keysAreLowercaseAndUnderscoreFree() {
-        // The dispatch path lowercases the incoming command — any key that contained
-        // uppercase or whitespace would silently never match.
+    fun eventNames_keysAreLowercase() {
+        // The dispatch path lowercases the incoming command — any key with uppercase
+        // would silently never match.
         StandardEvents.eventNames.keys.forEach { key ->
             assertEquals("'$key' must be lowercase", key.lowercase(), key)
         }

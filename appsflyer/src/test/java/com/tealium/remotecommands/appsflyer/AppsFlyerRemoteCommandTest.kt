@@ -44,8 +44,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.appsFlyerInstance = mockInstance
     }
 
-    // region splitCommands
-
     @Test
     fun splitCommands_splitsAndNormalises() {
         val json = JSONObject()
@@ -65,10 +63,6 @@ class AppsFlyerRemoteCommandTest {
         // An empty command_name results in no commands — trailing-empty dropped.
         assertEquals(0, commands.size)
     }
-
-    // endregion
-
-    // region initialize
 
     @Test
     fun initialize_minimalPayload_dispatchesWithEmptySettings() {
@@ -100,13 +94,11 @@ class AppsFlyerRemoteCommandTest {
 
     @Test
     fun initialize_missingDevKey_skipsCall() {
-        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject())
+        val commandWithoutKey = AppsFlyerRemoteCommand(mockApplication, null)
+        commandWithoutKey.appsFlyerInstance = mockInstance
+        commandWithoutKey.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject())
         assertEquals(0, mockInstance.initializeCallCount)
     }
-
-    // endregion
-
-    // region trackLocation
 
     @Test
     fun trackLocation_validCoordinates_dispatchesCall() {
@@ -135,10 +127,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.trackLocationCallCount)
     }
 
-    // endregion
-
-    // region setHost
-
     @Test
     fun setHost_valid_callsSDK() {
         val payload = JSONObject()
@@ -165,10 +153,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.SET_HOST), payload)
         assertEquals(0, mockInstance.setHostCallCount)
     }
-
-    // endregion
-
-    // region setUserEmails
 
     @Test
     fun setUserEmails_validCryptTypeNone_dispatchesCall() {
@@ -222,10 +206,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.setUserEmailsCallCount)
     }
 
-    // endregion
-
-    // region setCurrencyCode
-
     @Test
     fun setCurrencyCode_valid_callsSDK() {
         val payload = JSONObject().put(TransactionProperties.CURRENCY, "USD")
@@ -239,10 +219,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.SET_CURRENCY_CODE), JSONObject())
         assertEquals(0, mockInstance.setCurrencyCodeCallCount)
     }
-
-    // endregion
-
-    // region setCustomerId
 
     @Test
     fun setCustomerId_valid_callsSDK() {
@@ -258,10 +234,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.setCustomerIdCallCount)
     }
 
-    // endregion
-
-    // region setPhoneNumber
-
     @Test
     fun setPhoneNumber_valid_callsSDK() {
         val payload = JSONObject().put(PhoneNumberParam.PHONE_NUMBER, "+1234567890")
@@ -275,10 +247,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), JSONObject())
         assertEquals(0, mockInstance.setPhoneNumberCallCount)
     }
-
-    // endregion
-
-    // region logAdRevenue
 
     @Test
     fun logAdRevenue_allRequiredParams_dispatchesCall() {
@@ -360,10 +328,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.logAdRevenueCallCount)
     }
 
-    // endregion
-
-    // region setConsentData
-
     @Test
     fun setConsentData_allFlagsProvided_dispatchesCall() {
         val payload = JSONObject()
@@ -421,10 +385,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.setConsentDataCallCount)
     }
 
-    // endregion
-
-    // region setPartnerData
-
     @Test
     fun setPartnerData_valid_callsSDK() {
         val partnerInfo = JSONObject().put("key1", "value1").put("key2", "value2")
@@ -454,10 +414,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(emptyMap<String, Any>(), mockInstance.setPartnerDataInfoParam)
     }
 
-    // endregion
-
-    // region setSharingFilterForPartners
-
     @Test
     fun setSharingFilter_valid_callsSDK() {
         val sharingFilter = JSONArray().put("partner1").put("partner2")
@@ -475,10 +431,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(1, mockInstance.setSharingFilterForPartnersCallCount)
         assertNull(mockInstance.setSharingFilterForPartnersParam)
     }
-
-    // endregion
-
-    // region anonymizeUser
 
     @Test
     fun anonymizeUser_true_callsSDK() {
@@ -501,10 +453,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(1, mockInstance.anonymizeUserCallCount)
         assertEquals(true, mockInstance.anonymizeUserParam)
     }
-
-    // endregion
-
-    // region resolveDeepLinkUrls
 
     @Test
     fun resolveDeepLinkUrls_valid_callsSDK() {
@@ -533,10 +481,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.RESOLVE_DEEPLINK_URLS), JSONObject())
         assertEquals(0, mockInstance.resolveDeepLinkUrlsCallCount)
     }
-
-    // endregion
-
-    // region start / stopTracking / logSession
 
     @Test
     fun start_dispatchesCall() {
@@ -579,10 +523,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.LOG_SESSION), JSONObject())
         assertEquals(1, mockInstance.logSessionCallCount)
     }
-
-    // endregion
-
-    // region single-string setters
 
     @Test
     fun setOaid_valid_callsSDK() {
@@ -682,10 +622,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(0, mockInstance.setIsUpdateCallCount)
     }
 
-    // endregion
-
-    // region setPreinstallAttribution
-
     @Test
     fun setPreinstallAttribution_valid_callsSDK() {
         val payload = JSONObject()
@@ -727,10 +663,6 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.SET_PREINSTALL_ATTRIBUTION), payload)
         assertEquals(0, mockInstance.setPreinstallAttributionCallCount)
     }
-
-    // endregion
-
-    // region custom / standard event dispatch
 
     @Test
     fun unknownCommand_mappedToStandardEvent() {
@@ -813,10 +745,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(emptyMap<String, Any>(), mockInstance.trackEventParametersParam)
     }
 
-    // endregion
-
-    // region parseCommands control flow
-
     @Test
     fun blankCommand_isIgnored() {
         remoteCommand.parseCommands(arrayOf(" ", "\t", ""), JSONObject())
@@ -874,10 +802,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals("EUR", mockInstance.setCurrencyCodeParam)
     }
 
-    // endregion
-
-    // region standardEvent resolver
-
     @Test
     fun standardEvent_knownName_returnsMappedAfEvent() {
         assertEquals(AFInAppEventType.LEVEL_ACHIEVED, remoteCommand.standardEvent("levelachieved"))
@@ -888,10 +812,6 @@ class AppsFlyerRemoteCommandTest {
         assertNull(remoteCommand.standardEvent("not_a_standard_event"))
     }
 
-    // endregion
-
-    // region constructor / log level
-
     @Test
     fun logLevel_constructor_setsLoggerLevel() {
         AppsFlyerRemoteCommand(mockApplication, "key", logLevel = RemoteCommandLogLevel.DEBUG)
@@ -900,10 +820,6 @@ class AppsFlyerRemoteCommandTest {
         AppsFlyerRemoteCommand(mockApplication, "key", logLevel = RemoteCommandLogLevel.SILENT)
         assertEquals(RemoteCommandLogLevel.SILENT, RemoteCommandLogger.logLevel)
     }
-
-    // endregion
-
-    // region boolean commands — false branch
 
     @Test
     fun anonymizeUser_false_callsSDK() {
@@ -928,10 +844,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(1, mockInstance.setIsUpdateCallCount)
         assertEquals(false, mockInstance.setIsUpdateParam)
     }
-
-    // endregion
-
-    // region logAdRevenue — data field verification
 
     @Test
     fun logAdRevenue_allRequiredParams_forwardsCorrectFields() {
@@ -963,8 +875,6 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(1, mockInstance.logAdRevenueCallCount)
         assertEquals(emptyMap<String, Any>(), mockInstance.logAdRevenueAdditionalParamsParam)
     }
-
-    // endregion
 
     // Small helper for array comparison — Kotlin's Assert.assertEquals doesn't
     // deep-compare arrays (it would use equals() on Array<*>).

@@ -148,8 +148,8 @@ class AppsFlyerInstance(
         AppsFlyerLib.getInstance().logEvent(application, eventType, eventParameters)
     }
 
-    override fun setHost(host: String, hostPrefix: String?) {
-        AppsFlyerLib.getInstance().setHost(hostPrefix ?: "", host)
+    override fun setHost(host: String, hostPrefix: String) {
+        AppsFlyerLib.getInstance().setHost(hostPrefix, host)
     }
 
     override fun setUserEmails(emails: List<String>, cryptType: Int) {
