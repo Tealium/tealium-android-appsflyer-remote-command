@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `deep_link_parameters` — calls `appendParametersToDeepLinkingURL` before `start()`
   - `enable_facebook_deferred_applinks`, `enable_tcf_data_collection`, `one_link_custom_domains`
   - `disable_advertising_identifiers` (`disable_ad_tracking` as iOS alias), `disable_app_set_id`
-  - `collect_android_id`, `collect_imei`, `collect_oaid`
+  - `collect_android_id`, `collect_imei`
 - `AppsFlyerCommandError` for structured per-command error handling
 - `RemoteCommandLogger` and `RemoteCommandLogLevel` for controllable internal logging
 - Comprehensive unit test coverage for all new commands and settings
