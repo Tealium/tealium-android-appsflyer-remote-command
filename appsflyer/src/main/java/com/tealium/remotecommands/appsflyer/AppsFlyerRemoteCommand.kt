@@ -11,19 +11,24 @@ import java.util.*
 import kotlin.collections.HashMap
 import kotlin.jvm.Throws
 
-open class AppsFlyerRemoteCommand @JvmOverloads constructor(
+open class AppsFlyerRemoteCommand internal constructor(
     private val application: Application,
-    private val appsFlyerDevKey: String? = null,
-    commandId: String = DEFAULT_COMMAND_ID,
-    description: String = DEFAULT_COMMAND_DESCRIPTION,
-    logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.SILENT
+    private val appsFlyerDevKey: String?,
+    commandId: String,
+    description: String,
+    internal val logger: RemoteCommandLogger
 ) : RemoteCommand(commandId, description, BuildConfig.TEALIUM_APPSFLYER_VERSION) {
 
-    lateinit var appsFlyerInstance: AppsFlyerCommand
+    @JvmOverloads
+    constructor(
+        application: Application,
+        appsFlyerDevKey: String? = null,
+        commandId: String = DEFAULT_COMMAND_ID,
+        description: String = DEFAULT_COMMAND_DESCRIPTION,
+        logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.SILENT
+    ) : this(application, appsFlyerDevKey, commandId, description, RemoteCommandLogger(logLevel))
 
-    init {
-        RemoteCommandLogger.logLevel = logLevel
-    }
+    lateinit var appsFlyerInstance: AppsFlyerCommand
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
@@ -83,7 +88,7 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
                     null -> dispatchCustomEvent(commandString, payload)
                 }
             } catch (e: AppsFlyerCommandError) {
-                RemoteCommandLogger.error("Command '$commandString' failed: ${e.message}")
+                logger.error("Command '$commandString' failed: ${e.message}")
             }
         }
     }
@@ -103,7 +108,7 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             ?: throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
         val configSettings: Map<String, Any> = jsonToMap(config)
-        RemoteCommandLogger.debug("Initializing AppsFlyer SDK")
+        logger.debug("Initializing AppsFlyer SDK")
         appsFlyerInstance.initialize(devKey, configSettings)
     }
 
@@ -356,7 +361,8 @@ open class AppsFlyerRemoteCommand @JvmOverloads constructor(
             appsFlyerInstance = AppsFlyerInstance(
                 application,
                 appsFlyerDevKey,
-                it
+                it,
+                logger
             )
         }
     }

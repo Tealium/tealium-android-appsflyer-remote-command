@@ -13,10 +13,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class AppsFlyerInstance(
+class AppsFlyerInstance internal constructor(
     private val application: Application,
     private var appsFlyerDevKey: String? = null,
-    private val remoteCommandContext: RemoteCommandContext
+    private val remoteCommandContext: RemoteCommandContext,
+    private val logger: RemoteCommandLogger = RemoteCommandLogger()
 ) : AppsFlyerCommand {
 
     private var weakActivity: WeakReference<Activity>? = null
@@ -136,7 +137,7 @@ class AppsFlyerInstance(
         appsFlyerDevKey?.let {
             initAndStartAppsFlyer(it)
         } ?: run {
-            RemoteCommandLogger.error("${Config.DEV_KEY} is a required key")
+            logger.error("${Config.DEV_KEY} is a required key")
         }
     }
 
@@ -245,7 +246,7 @@ class AppsFlyerInstance(
 
     private fun setLogLevel(logLevel: String) {
         val level = LogLevelMapping.fromString(logLevel) ?: run {
-            RemoteCommandLogger.error(
+            logger.error(
                 "Invalid log_level: '$logLevel'. Accepted values: ${LogLevelMapping.validValues.joinToString()}"
             )
             return
@@ -274,7 +275,7 @@ class AppsFlyerInstance(
                 }
             }
         } catch (ex: JSONException) {
-            RemoteCommandLogger.error("Error in JSON Config", ex)
+            logger.error("Error in JSON Config", ex)
         }
 
         return map.toMap()

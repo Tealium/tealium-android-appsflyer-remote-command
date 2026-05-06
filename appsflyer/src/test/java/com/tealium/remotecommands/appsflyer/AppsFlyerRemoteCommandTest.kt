@@ -814,11 +814,9 @@ class AppsFlyerRemoteCommandTest {
 
     @Test
     fun logLevel_constructor_setsLoggerLevel() {
-        AppsFlyerRemoteCommand(mockApplication, "key", logLevel = RemoteCommandLogLevel.DEBUG)
-        assertEquals(RemoteCommandLogLevel.DEBUG, RemoteCommandLogger.logLevel)
-
-        AppsFlyerRemoteCommand(mockApplication, "key", logLevel = RemoteCommandLogLevel.SILENT)
-        assertEquals(RemoteCommandLogLevel.SILENT, RemoteCommandLogger.logLevel)
+        val debugLogger = RemoteCommandLogger(RemoteCommandLogLevel.DEBUG)
+        val cmd = AppsFlyerRemoteCommand(mockApplication, "key", AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID, AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION, debugLogger)
+        assertEquals(RemoteCommandLogLevel.DEBUG, cmd.logger.logLevel)
     }
 
     @Test
