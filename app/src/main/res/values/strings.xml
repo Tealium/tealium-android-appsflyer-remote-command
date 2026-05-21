@@ -8,4 +8,18 @@
     <string name="track_location">Track Location</string>
     <string name="standard_events">Check Standard Events</string>
     <string name="custom_event">Custom Event</string>
+    <string name="set_phone_number">Set Phone Number</string>
+    <string name="log_ad_revenue">Log Ad Revenue</string>
+    <string name="set_consent_data">Set Consent Data</string>
+    <string name="set_partner_data">Set Partner Data</string>
+    <string name="anonymize_user">Anonymize User</string>
+    <string name="sharing_filter">Set Sharing Filter</string>
+    <string name="log_session">Log Session</string>
+    <string name="set_oaid">Set OAID</string>
+    <string name="set_out_of_store">Set Out Of Store</string>
+    <string name="set_disable_network_data">Set Disable Network Data</string>
+    <string name="set_app_invite_onelink">Set App Invite OneLink</string>
+    <string name="set_preinstall_attribution">Set Preinstall Attribution</string>
+    <string name="set_is_update">Set Is Update</string>
+    <string name="set_log_level">Set Log Level</string>
 </resources>
