@@ -165,7 +165,7 @@ class AppsFlyerRemoteCommandTest {
 
         assertEquals(1, mockInstance.setUserEmailsCallCount)
         assertEquals(listOf("a@x.com", "b@x.com"), mockInstance.setUserEmailsParam)
-        assertEquals(0, mockInstance.setUserEmailsCryptTypeParam)
+        assertEquals(EmailCryptTypeMapping.fromInt(0), mockInstance.setUserEmailsCryptTypeParam)
     }
 
     @Test
@@ -178,7 +178,7 @@ class AppsFlyerRemoteCommandTest {
         remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
 
         assertEquals(1, mockInstance.setUserEmailsCallCount)
-        assertEquals(3, mockInstance.setUserEmailsCryptTypeParam)
+        assertEquals(EmailCryptTypeMapping.fromInt(3), mockInstance.setUserEmailsCryptTypeParam)
     }
 
     @Test
@@ -356,33 +356,17 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun setConsentData_missingDataUsage_skipsCall() {
+    fun setConsentData_onlyGdprFlag_dispatchesCallWithNullDetails() {
         val payload = JSONObject()
-            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, true)
-        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
-        assertEquals(0, mockInstance.setConsentDataCallCount)
-    }
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, false)
 
-    @Test
-    fun setConsentData_missingAdsPersonalization_skipsCall() {
-        val payload = JSONObject()
-            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, true)
         remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
-        assertEquals(0, mockInstance.setConsentDataCallCount)
-    }
 
-    @Test
-    fun setConsentData_missingAdStorage_skipsCall() {
-        val payload = JSONObject()
-            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, true)
-            .put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, true)
-        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
-        assertEquals(0, mockInstance.setConsentDataCallCount)
+        assertEquals(1, mockInstance.setConsentDataCallCount)
+        assertEquals(false, mockInstance.setConsentGdprParam)
+        assertNull(mockInstance.setConsentDataUsageParam)
+        assertNull(mockInstance.setConsentAdsPersonalizationParam)
+        assertNull(mockInstance.setConsentAdStorageParam)
     }
 
     @Test

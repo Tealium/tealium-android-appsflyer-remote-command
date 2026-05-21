@@ -17,7 +17,7 @@ internal object EmailCryptTypeMapping {
         3 to AppsFlyerProperties.EmailsCryptType.SHA256
     )
 
-    val validValues: List<Int> get() = intMap.keys.toList()
+    val validValues: List<Int> = intMap.keys.sorted()
 
     fun fromInt(value: Int): AppsFlyerProperties.EmailsCryptType? = intMap[value]
 }

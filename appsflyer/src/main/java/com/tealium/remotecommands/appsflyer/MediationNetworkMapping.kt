@@ -29,7 +29,7 @@ private val networkNames: Map<String, MediationNetwork> = mapOf(
  * an unknown value is received. Also accepts enum names (e.g. "GOOGLE_ADMOB").
  */
 internal val mediationNetworkValidValues: List<String>
-    get() = networkNames.keys.toList()
+    get() = networkNames.keys.sorted()
 
 /**
  * Converts a payload string to the AppsFlyer [MediationNetwork] enum.

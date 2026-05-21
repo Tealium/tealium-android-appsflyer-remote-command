@@ -3,6 +3,7 @@ package com.tealium.remotecommands.appsflyer
 import android.app.Application
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AppsFlyerConsent
+import com.appsflyer.AppsFlyerProperties
 import com.tealium.remotecommands.RemoteCommand
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONArray
@@ -143,14 +144,13 @@ open class AppsFlyerRemoteCommand internal constructor(
         val cryptTypeInt = payload.optInt(Customer.EMAIL_HASH_TYPE, -1)
             .takeIf { payload.has(Customer.EMAIL_HASH_TYPE) }
             ?: throw AppsFlyerCommandError.missingParameter(Customer.EMAIL_HASH_TYPE)
-        if (EmailCryptTypeMapping.fromInt(cryptTypeInt) == null) {
-            throw AppsFlyerCommandError.invalidParameterValue(
+        val cryptType = EmailCryptTypeMapping.fromInt(cryptTypeInt)
+            ?: throw AppsFlyerCommandError.invalidParameterValue(
                 key = Customer.EMAIL_HASH_TYPE,
                 value = cryptTypeInt.toString(),
                 allowedValues = EmailCryptTypeMapping.validValues.map { it.toString() }
             )
-        }
-        appsFlyerInstance.setUserEmails(toList(emails), cryptTypeInt)
+        appsFlyerInstance.setUserEmails(toList(emails), cryptType)
     }
 
     private fun setCurrencyCode(payload: JSONObject) {
@@ -215,12 +215,11 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setConsentData(payload: JSONObject) {
-        val consent = AppsFlyerConsent(
-            requireBoolean(payload, ConsentDataParams.IS_USER_SUBJECT_TO_GDPR),
-            requireBoolean(payload, ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE),
-            requireBoolean(payload, ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION),
-            requireBoolean(payload, ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE)
-        )
+        val isUserSubjectToGDPR = requireBoolean(payload, ConsentDataParams.IS_USER_SUBJECT_TO_GDPR)
+        val hasConsentForDataUsage = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE) else null
+        val hasConsentForAdsPersonalization = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION) else null
+        val hasConsentForAdStorage = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE) else null
+        val consent = AppsFlyerConsent(isUserSubjectToGDPR, hasConsentForDataUsage, hasConsentForAdsPersonalization, hasConsentForAdStorage)
         appsFlyerInstance.setConsentData(consent)
     }
 

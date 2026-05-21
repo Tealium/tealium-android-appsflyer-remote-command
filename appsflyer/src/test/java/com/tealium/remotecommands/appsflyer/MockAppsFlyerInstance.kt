@@ -2,6 +2,7 @@ package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AppsFlyerConsent
+import com.appsflyer.AppsFlyerProperties
 
 /**
  * Fully inspectable test double for [AppsFlyerCommand].
@@ -46,7 +47,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var trackEventTypeParam: String? = null
     var trackEventParametersParam: Map<String, Any>? = null
     var setUserEmailsParam: List<String>? = null
-    var setUserEmailsCryptTypeParam: Int? = null
+    var setUserEmailsCryptTypeParam: AppsFlyerProperties.EmailsCryptType? = null
     var setCurrencyCodeParam: String? = null
     var setCustomerIdParam: String? = null
     var setPhoneNumberParam: String? = null
@@ -107,7 +108,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         trackEventCalls.add(TrackEventCall(eventType, eventParameters))
     }
 
-    override fun setUserEmails(emails: List<String>, cryptType: Int) {
+    override fun setUserEmails(emails: List<String>, cryptType: AppsFlyerProperties.EmailsCryptType) {
         setUserEmailsCallCount++
         setUserEmailsParam = emails
         setUserEmailsCryptTypeParam = cryptType

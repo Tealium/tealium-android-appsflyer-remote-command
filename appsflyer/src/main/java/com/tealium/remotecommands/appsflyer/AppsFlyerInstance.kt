@@ -153,9 +153,8 @@ class AppsFlyerInstance internal constructor(
         AppsFlyerLib.getInstance().setHost(hostPrefix, host)
     }
 
-    override fun setUserEmails(emails: List<String>, cryptType: Int) {
-        val emailCryptType = EmailCryptTypeMapping.fromInt(cryptType) ?: AppsFlyerProperties.EmailsCryptType.NONE
-        AppsFlyerLib.getInstance().setUserEmails(emailCryptType, *emails.toTypedArray())
+    override fun setUserEmails(emails: List<String>, cryptType: AppsFlyerProperties.EmailsCryptType) {
+        AppsFlyerLib.getInstance().setUserEmails(cryptType, *emails.toTypedArray())
     }
 
     override fun setCurrencyCode(currency: String) {

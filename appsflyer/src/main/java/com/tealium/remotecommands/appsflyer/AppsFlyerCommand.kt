@@ -2,13 +2,14 @@ package com.tealium.remotecommands.appsflyer
 
 import com.appsflyer.AFAdRevenueData
 import com.appsflyer.AppsFlyerConsent
+import com.appsflyer.AppsFlyerProperties
 
 interface AppsFlyerCommand {
     fun initialize(devKey: String? = null, configSettings: Map<String, Any>? = null)
     fun trackLocation(latitude: Double, longitude: Double)
     fun setHost(host: String, hostPrefix: String = "")
     fun trackEvent(eventType: String, eventParameters: Map<String, Any>? = null)
-    fun setUserEmails(emails: List<String>, cryptType: Int)
+    fun setUserEmails(emails: List<String>, cryptType: AppsFlyerProperties.EmailsCryptType)
     fun setCurrencyCode(currency: String)
     fun setCustomerId(id: String)
     fun setPhoneNumber(phoneNumber: String)
