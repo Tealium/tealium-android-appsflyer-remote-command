@@ -20,7 +20,7 @@
         android:text="@string/set_host"/>
 
     <Button
-        android:id="@+id/button_setUserEmails"
+        android:id="@+id/button_setUserEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/register_user" />
@@ -63,7 +63,7 @@
         android:text="@string/custom_event" />
 
     <Button
-        android:id="@+id/button_setPhoneNumber"
+        android:id="@+id/button_setUserPhone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_phone_number" />
@@ -139,11 +139,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/set_is_update" />
-
-    <Button
-        android:id="@+id/button_setLogLevel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/set_log_level" />
 
 </LinearLayout>

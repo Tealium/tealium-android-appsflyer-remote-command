@@ -2,7 +2,7 @@
 
 package com.tealium.remotecommands.appsflyer
 
-import com.appsflyer.AFInAppEventType
+import com.appsflyer.share.AFInAppEventType
 import java.util.Locale
 
 object Commands {
@@ -12,10 +12,14 @@ object Commands {
     const val INITIALIZE = "initialize"
     const val TRACK_LOCATION = "tracklocation"
     const val SET_HOST = "sethost"
-    const val SET_USER_EMAILS = "setuseremails"
+    const val SET_USER_EMAIL = "setuseremail"
+    const val SET_USER_FIRST_NAME = "setuserfirstname"
+    const val SET_USER_LAST_NAME = "setuserlastname"
+    const val SET_USER_FB_LOGIN_ID = "setuserfbloginid"
+    const val CLEAR_USER_PII = "clearuserpii"
     const val SET_CURRENCY_CODE = "setcurrencycode"
     const val SET_CUSTOMER_ID = "setcustomerid"
-    const val SET_PHONE_NUMBER = "setphonenumber"
+    const val SET_USER_PHONE = "setuserphone"
     const val LOG_AD_REVENUE = "logadrevenue"
     const val SET_CONSENT_DATA = "setconsentdata"
     const val SET_PARTNER_DATA = "setpartnerdata"
@@ -23,7 +27,6 @@ object Commands {
     const val ANONYMIZE_USER = "anonymizeuser"
     const val DISABLE_DEVICE_TRACKING = "disabledevicetracking"
     const val RESOLVE_DEEPLINK_URLS = "resolvedeeplinkurls"
-    const val START = "start"
     const val STOP_TRACKING = "stoptracking"
     const val DISABLE_TRACKING = "disabletracking"
     const val LOG_SESSION = "logsession"
@@ -45,13 +48,13 @@ object Commands {
 enum class Command(val commandName: String) {
     /**
      * Initializes the AppsFlyer SDK with a dev key and optional settings.
-     * @see https://dev.appsflyer.com/hc/docs/integrate-android-sdk
+     * @see https://dev.appsflyer.com/hc/docs/integrate-android-sdk-7
      */
     INITIALIZE("initialize"),
 
     /**
      * Logs a location event with latitude and longitude.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#tracklocation
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#loglocation
      */
     TRACK_LOCATION("tracklocation"),
 
@@ -62,10 +65,34 @@ enum class Command(val commandName: String) {
     SET_HOST("sethost"),
 
     /**
-     * Sets user email addresses for cross-platform attribution.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremails
+     * Sets the user's email address. The SDK normalizes and SHA-256 hashes it before sending.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremail
      */
-    SET_USER_EMAILS("setuseremails"),
+    SET_USER_EMAIL("setuseremail"),
+
+    /**
+     * Sets the user's first name. The SDK normalizes and SHA-256 hashes it before sending.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuserfirstname
+     */
+    SET_USER_FIRST_NAME("setuserfirstname"),
+
+    /**
+     * Sets the user's last name. The SDK normalizes and SHA-256 hashes it before sending.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuserlastname
+     */
+    SET_USER_LAST_NAME("setuserlastname"),
+
+    /**
+     * Sets the user's Facebook Login ID (app-scoped ID). The SDK sends it as-is, without hashing.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuserfbloginid
+     */
+    SET_USER_FB_LOGIN_ID("setuserfbloginid"),
+
+    /**
+     * Clears every PII value set by the setuser* commands, e.g. on logout.
+     * Not on the AppsFlyer web reference; see the SDK javadoc of `AppsFlyerLib.clearUserPii()` (added in 7.0.1).
+     */
+    CLEAR_USER_PII("clearuserpii"),
 
     /**
      * Sets the currency code for in-app purchase events.
@@ -80,10 +107,10 @@ enum class Command(val commandName: String) {
     SET_CUSTOMER_ID("setcustomerid"),
 
     /**
-     * Sets the user's phone number for attribution.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setphonenumber
+     * Sets the user's country code and phone number. The SDK normalizes and SHA-256 hashes them before sending.
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuserphone
      */
-    SET_PHONE_NUMBER("setphonenumber"),
+    SET_USER_PHONE("setuserphone"),
 
     /**
      * Logs ad revenue from a mediation network.
@@ -124,19 +151,13 @@ enum class Command(val commandName: String) {
 
     /**
      * Registers URLs that should be resolved as deep links.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#resolvedeeplinkurls
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setresolvedeeplinkurls
      */
     RESOLVE_DEEPLINK_URLS("resolvedeeplinkurls"),
 
     /**
-     * Explicitly starts the SDK — useful after stoptracking to resume attribution.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#start
-     */
-    START("start"),
-
-    /**
      * Stops the AppsFlyer SDK from sending attribution data.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stoptracking
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stop
      */
     STOP_TRACKING("stoptracking"),
 
@@ -215,7 +236,7 @@ enum class Command(val commandName: String) {
 
 /**
  * Standard AppsFlyer in-app event names.
- * @see https://dev.appsflyer.com/hc/docs/in-app-events-android
+ * @see https://dev.appsflyer.com/hc/docs/sending-events-android-7
  */
 object StandardEvents {
     const val EVENT_PARAMETERS = "event_parameters"
@@ -260,7 +281,7 @@ object StandardEvents {
 
 /**
  * Keys used during SDK initialization.
- * @see https://dev.appsflyer.com/hc/docs/integrate-android-sdk
+ * @see https://dev.appsflyer.com/hc/docs/integrate-android-sdk-7
  */
 object Config {
     const val DEV_KEY = "app_dev_key"
@@ -290,8 +311,10 @@ object Settings {
     const val DISABLE_AD_TRACKING_ALIAS = "disable_ad_tracking"
     const val DISABLE_APP_SET_ID = "disable_app_set_id"
     const val COLLECT_ANDROID_ID = "collect_android_id"
-    const val COLLECT_IMEI = "collect_imei"
     const val DEEP_LINK_PARAMETERS = "deep_link_parameters"
+
+    /** Milliseconds the SDK waits for a deep link to resolve. Negative values are ignored; 0 makes the SDK use its 3000 ms default. */
+    const val DEEP_LINK_TIMEOUT = "deep_link_timeout"
 
     // More granular than the boolean `debug` flag — one of NONE, ERROR, WARNING, INFO, DEBUG, VERBOSE.
     const val LOG_LEVEL = "log_level"
@@ -302,13 +325,17 @@ object Customer {
      * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setcustomeruserid */
     const val USER_ID = "af_customer_user_id"
 
-    /** List of email addresses for cross-platform attribution.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremails */
-    const val EMAILS = "customer_emails"
+    /** Plain-text email address; the SDK hashes it. */
+    const val EMAIL = "email"
 
-    /** Encryption type for user emails. Integer matching iOS EmailCryptType raw values (0 = NONE, 3 = SHA256).
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setuseremails */
-    const val EMAIL_HASH_TYPE = "email_hash_type"
+    /** Plain-text first name; the SDK hashes it. */
+    const val FIRST_NAME = "first_name"
+
+    /** Plain-text last name; the SDK hashes it. */
+    const val LAST_NAME = "last_name"
+
+    /** Facebook Login ID (app-scoped ID), as a whole number or a numeric String. Sent without hashing. */
+    const val FB_LOGIN_ID = "fb_login_id"
 }
 
 object Location {
@@ -336,7 +363,7 @@ object TransactionProperties {
 
 object DeepLink {
     /** List of URL schemes to register as deep links.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#resolvedeeplinkurls */
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setresolvedeeplinkurls */
     const val URLS = "af_deep_link"
     // TiQ UI labels this key as "resolve_deep_links" — accepted as a fallback to avoid silent failures.
     const val URLS_LEGACY_TIQ = "resolve_deep_links"
@@ -348,7 +375,7 @@ object Tracking {
     const val ANONYMIZE_USER = "anonymize_user"
 
     /** When true, stops the SDK from sending attribution data.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stoptracking */
+     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#stop */
     const val STOP_TRACKING = "stop_tracking"
 
     const val GCD_IS_FIRST_LAUNCH = "is_first_launch"
@@ -356,7 +383,7 @@ object Tracking {
 
 /**
  * Event names surfaced to Tealium when the AppsFlyer SDK reports attribution data
- * or errors through its conversion listener.
+ * or errors through its conversion or deep link listener.
  */
 object AttributionEvents {
     const val CONVERSION_DATA_RECEIVED = "conversion_data_received"
@@ -370,8 +397,10 @@ object AttributionEvents {
 }
 
 object PhoneNumberParam {
-    /** E.164-formatted phone number for attribution.
-     * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#setphonenumber */
+    /** Country dialing code, e.g. "1" or "44". */
+    const val COUNTRY_CODE = "country_code"
+
+    /** Local phone number without the country code. */
     const val PHONE_NUMBER = "phone_number"
 }
 
@@ -465,5 +494,4 @@ object StringCommandParams {
     const val APP_INVITE_ONE_LINK_ID = "app_invite_onelink_id"
     const val DISABLE_NETWORK_DATA = "disable_network_data"
     const val IS_UPDATE = "is_update"
-    const val LOG_LEVEL = "log_level"
 }

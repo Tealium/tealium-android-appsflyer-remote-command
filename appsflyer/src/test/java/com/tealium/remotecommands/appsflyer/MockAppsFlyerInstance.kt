@@ -1,8 +1,8 @@
 package com.tealium.remotecommands.appsflyer
 
-import com.appsflyer.AFAdRevenueData
-import com.appsflyer.AppsFlyerConsent
-import com.appsflyer.AppsFlyerProperties
+import com.appsflyer.share.AFAdRevenueData
+import com.appsflyer.share.AppsFlyerConsent
+import com.appsflyer.share.deeplink.DeepLinkResult
 
 /**
  * Fully inspectable test double for [AppsFlyerCommand].
@@ -15,17 +15,20 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var trackLocationCallCount = 0
     var setHostCallCount = 0
     var trackEventCallCount = 0
-    var setUserEmailsCallCount = 0
+    var setUserEmailCallCount = 0
+    var setUserFirstNameCallCount = 0
+    var setUserLastNameCallCount = 0
+    var setUserFbLoginIdCallCount = 0
+    var clearUserPiiCallCount = 0
     var setCurrencyCodeCallCount = 0
     var setCustomerIdCallCount = 0
-    var setPhoneNumberCallCount = 0
+    var setUserPhoneCallCount = 0
     var logAdRevenueCallCount = 0
     var setConsentDataCallCount = 0
     var setPartnerDataCallCount = 0
     var setSharingFilterForPartnersCallCount = 0
     var anonymizeUserCallCount = 0
     var resolveDeepLinkUrlsCallCount = 0
-    var startCallCount = 0
     var stopTrackingCallCount = 0
     var addPushNotificationDeepLinkPathCallCount = 0
     var logSessionCallCount = 0
@@ -37,6 +40,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setAppInviteOneLinkCallCount = 0
     var setPreinstallAttributionCallCount = 0
     var setIsUpdateCallCount = 0
+    var onDeepLinkingCallCount = 0
 
     var initializeDevKeyParam: String? = null
     var initializeSettingsParam: Map<String, Any>? = null
@@ -46,11 +50,14 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setHostPrefixParam: String? = null
     var trackEventTypeParam: String? = null
     var trackEventParametersParam: Map<String, Any>? = null
-    var setUserEmailsParam: List<String>? = null
-    var setUserEmailsCryptTypeParam: AppsFlyerProperties.EmailsCryptType? = null
+    var setUserEmailParam: String? = null
+    var setUserFirstNameParam: String? = null
+    var setUserLastNameParam: String? = null
+    var setUserFbLoginIdParam: Long? = null
     var setCurrencyCodeParam: String? = null
     var setCustomerIdParam: String? = null
-    var setPhoneNumberParam: String? = null
+    var setUserPhoneCountryCodeParam: String? = null
+    var setUserPhoneNumberParam: String? = null
     var logAdRevenueDataParam: AFAdRevenueData? = null
     var logAdRevenueAdditionalParamsParam: Map<String, Any>? = null
     var setConsentDataParam: AppsFlyerConsent? = null
@@ -71,6 +78,7 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     var setPreinstallCampaignParam: String? = null
     var setPreinstallSiteIdParam: String? = null
     var setIsUpdateParam: Boolean? = null
+    var onDeepLinkingParam: DeepLinkResult? = null
 
     // Convenience accessors — AppsFlyerConsent's boxed Booleans surface as non-null via the builder
     // path exercised by AppsFlyerRemoteCommand (requireBoolean() unboxes before construction).
@@ -108,10 +116,28 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         trackEventCalls.add(TrackEventCall(eventType, eventParameters))
     }
 
-    override fun setUserEmails(emails: List<String>, cryptType: AppsFlyerProperties.EmailsCryptType) {
-        setUserEmailsCallCount++
-        setUserEmailsParam = emails
-        setUserEmailsCryptTypeParam = cryptType
+    override fun setUserEmail(email: String) {
+        setUserEmailCallCount++
+        setUserEmailParam = email
+    }
+
+    override fun setUserFirstName(firstName: String) {
+        setUserFirstNameCallCount++
+        setUserFirstNameParam = firstName
+    }
+
+    override fun setUserLastName(lastName: String) {
+        setUserLastNameCallCount++
+        setUserLastNameParam = lastName
+    }
+
+    override fun setUserFbLoginId(fbLoginId: Long) {
+        setUserFbLoginIdCallCount++
+        setUserFbLoginIdParam = fbLoginId
+    }
+
+    override fun clearUserPii() {
+        clearUserPiiCallCount++
     }
 
     override fun setCurrencyCode(currency: String) {
@@ -124,9 +150,10 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         setCustomerIdParam = id
     }
 
-    override fun setPhoneNumber(phoneNumber: String) {
-        setPhoneNumberCallCount++
-        setPhoneNumberParam = phoneNumber
+    override fun setUserPhone(countryCode: String, phoneNumber: String) {
+        setUserPhoneCallCount++
+        setUserPhoneCountryCodeParam = countryCode
+        setUserPhoneNumberParam = phoneNumber
     }
 
     override fun logAdRevenue(adRevenueData: AFAdRevenueData, additionalParameters: Map<String, Any>?) {
@@ -159,10 +186,6 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
     override fun resolveDeepLinkUrls(links: List<String>) {
         resolveDeepLinkUrlsCallCount++
         resolveDeepLinkUrlsParam = links
-    }
-
-    override fun start() {
-        startCallCount++
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
@@ -221,21 +244,29 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
         setIsUpdateParam = isUpdate
     }
 
+    override fun onDeepLinking(result: DeepLinkResult) {
+        onDeepLinkingCallCount++
+        onDeepLinkingParam = result
+    }
+
     fun verifyNoCalls(): Boolean = initializeCallCount == 0 &&
             trackLocationCallCount == 0 &&
             setHostCallCount == 0 &&
             trackEventCallCount == 0 &&
-            setUserEmailsCallCount == 0 &&
+            setUserEmailCallCount == 0 &&
+            setUserFirstNameCallCount == 0 &&
+            setUserLastNameCallCount == 0 &&
+            setUserFbLoginIdCallCount == 0 &&
+            clearUserPiiCallCount == 0 &&
             setCurrencyCodeCallCount == 0 &&
             setCustomerIdCallCount == 0 &&
-            setPhoneNumberCallCount == 0 &&
+            setUserPhoneCallCount == 0 &&
             logAdRevenueCallCount == 0 &&
             setConsentDataCallCount == 0 &&
             setPartnerDataCallCount == 0 &&
             setSharingFilterForPartnersCallCount == 0 &&
             anonymizeUserCallCount == 0 &&
             resolveDeepLinkUrlsCallCount == 0 &&
-            startCallCount == 0 &&
             stopTrackingCallCount == 0 &&
             addPushNotificationDeepLinkPathCallCount == 0 &&
             logSessionCallCount == 0 &&
@@ -246,5 +277,6 @@ class MockAppsFlyerInstance : AppsFlyerCommand {
             setDisableNetworkDataCallCount == 0 &&
             setAppInviteOneLinkCallCount == 0 &&
             setPreinstallAttributionCallCount == 0 &&
-            setIsUpdateCallCount == 0
+            setIsUpdateCallCount == 0 &&
+            onDeepLinkingCallCount == 0
 }

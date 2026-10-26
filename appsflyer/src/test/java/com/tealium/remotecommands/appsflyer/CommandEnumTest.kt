@@ -1,5 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
+import com.appsflyer.share.MediationNetwork
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -50,10 +51,14 @@ class CommandEnumTest {
         assertEquals(Commands.INITIALIZE, Command.INITIALIZE.commandName)
         assertEquals(Commands.TRACK_LOCATION, Command.TRACK_LOCATION.commandName)
         assertEquals(Commands.SET_HOST, Command.SET_HOST.commandName)
-        assertEquals(Commands.SET_USER_EMAILS, Command.SET_USER_EMAILS.commandName)
+        assertEquals(Commands.SET_USER_EMAIL, Command.SET_USER_EMAIL.commandName)
+        assertEquals(Commands.SET_USER_FIRST_NAME, Command.SET_USER_FIRST_NAME.commandName)
+        assertEquals(Commands.SET_USER_LAST_NAME, Command.SET_USER_LAST_NAME.commandName)
+        assertEquals(Commands.SET_USER_FB_LOGIN_ID, Command.SET_USER_FB_LOGIN_ID.commandName)
+        assertEquals(Commands.CLEAR_USER_PII, Command.CLEAR_USER_PII.commandName)
         assertEquals(Commands.SET_CURRENCY_CODE, Command.SET_CURRENCY_CODE.commandName)
         assertEquals(Commands.SET_CUSTOMER_ID, Command.SET_CUSTOMER_ID.commandName)
-        assertEquals(Commands.SET_PHONE_NUMBER, Command.SET_PHONE_NUMBER.commandName)
+        assertEquals(Commands.SET_USER_PHONE, Command.SET_USER_PHONE.commandName)
         assertEquals(Commands.LOG_AD_REVENUE, Command.LOG_AD_REVENUE.commandName)
         assertEquals(Commands.SET_CONSENT_DATA, Command.SET_CONSENT_DATA.commandName)
         assertEquals(Commands.SET_PARTNER_DATA, Command.SET_PARTNER_DATA.commandName)
@@ -61,7 +66,6 @@ class CommandEnumTest {
         assertEquals(Commands.ANONYMIZE_USER, Command.ANONYMIZE_USER.commandName)
         assertEquals(Commands.DISABLE_DEVICE_TRACKING, Command.DISABLE_DEVICE_TRACKING.commandName)
         assertEquals(Commands.RESOLVE_DEEPLINK_URLS, Command.RESOLVE_DEEPLINK_URLS.commandName)
-        assertEquals(Commands.START, Command.START.commandName)
         assertEquals(Commands.STOP_TRACKING, Command.STOP_TRACKING.commandName)
         assertEquals(Commands.DISABLE_TRACKING, Command.DISABLE_TRACKING.commandName)
         assertEquals(Commands.LOG_SESSION, Command.LOG_SESSION.commandName)
@@ -83,11 +87,13 @@ class CommandEnumTest {
         val constantsByName = mutableSetOf<String>()
         listOf(
             Commands.INITIALIZE, Commands.TRACK_LOCATION, Commands.SET_HOST,
-            Commands.SET_USER_EMAILS, Commands.SET_CURRENCY_CODE, Commands.SET_CUSTOMER_ID,
-            Commands.SET_PHONE_NUMBER, Commands.LOG_AD_REVENUE, Commands.SET_CONSENT_DATA,
+            Commands.SET_USER_EMAIL, Commands.SET_USER_FIRST_NAME, Commands.SET_USER_LAST_NAME,
+            Commands.SET_USER_FB_LOGIN_ID, Commands.CLEAR_USER_PII,
+            Commands.SET_CURRENCY_CODE, Commands.SET_CUSTOMER_ID,
+            Commands.SET_USER_PHONE, Commands.LOG_AD_REVENUE, Commands.SET_CONSENT_DATA,
             Commands.SET_PARTNER_DATA, Commands.SET_SHARING_FILTER_FOR_PARTNERS,
             Commands.ANONYMIZE_USER, Commands.DISABLE_DEVICE_TRACKING,
-            Commands.RESOLVE_DEEPLINK_URLS, Commands.START, Commands.STOP_TRACKING,
+            Commands.RESOLVE_DEEPLINK_URLS, Commands.STOP_TRACKING,
             Commands.DISABLE_TRACKING, Commands.LOG_SESSION, Commands.SET_OAID,
             Commands.SET_ANDROID_ID, Commands.SET_IMEI, Commands.SET_OUT_OF_STORE,
             Commands.SET_DISABLE_NETWORK_DATA, Commands.SET_APP_INVITE_ONE_LINK,
@@ -109,6 +115,12 @@ class CommandEnumTest {
     }
 
     @Test
+    fun mediationNetwork_resolvesGoogleAdManagerAndCloudX() {
+        assertEquals(MediationNetwork.GOOGLE_AD_MANAGER, "googleadmanager".toMediationNetwork())
+        assertEquals(MediationNetwork.CLOUD_X, "CloudX".toMediationNetwork())
+    }
+
+    @Test
     fun mediationNetwork_returnsNullForUnknown() {
         assertNull("not_a_network".toMediationNetwork())
         assertNull("".toMediationNetwork())
@@ -127,7 +139,7 @@ class CommandEnumTest {
         val expected = listOf(
             "googleadmob", "ironsource", "applovinmax", "fyber", "appodeal",
             "admost", "topon", "tradplus", "yandex", "chartboost", "unity",
-            "toponpte", "custom", "direct"
+            "toponpte", "custom", "direct", "googleadmanager", "cloudx"
         )
         assertEquals(expected.sorted(), mediationNetworkValidValues.sorted())
     }

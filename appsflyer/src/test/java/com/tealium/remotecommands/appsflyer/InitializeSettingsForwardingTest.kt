@@ -30,7 +30,8 @@ class InitializeSettingsForwardingTest {
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @MockK
+    // The command registers Activity lifecycle callbacks on the Application when it is constructed.
+    @MockK(relaxUnitFun = true)
     lateinit var mockApplication: Application
 
     private lateinit var mockInstance: MockAppsFlyerInstance
@@ -39,7 +40,7 @@ class InitializeSettingsForwardingTest {
     @Before
     fun setUp() {
         mockInstance = MockAppsFlyerInstance()
-        remoteCommand = AppsFlyerRemoteCommand(mockApplication, "testKey")
+        remoteCommand = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.AUTOMATIC, "testKey")
         remoteCommand.appsFlyerInstance = mockInstance
     }
 
@@ -133,12 +134,6 @@ class InitializeSettingsForwardingTest {
     }
 
     @Test
-    fun initialize_forwardsCollectImei() {
-        initializeWithSettings(JSONObject().put(Settings.COLLECT_IMEI, true))
-        assertEquals(true, mockInstance.initializeSettingsParam?.get(Settings.COLLECT_IMEI))
-    }
-
-    @Test
     fun initialize_forwardsDeepLinkParameters() {
         val entries = JSONArray().put(
             JSONObject()
@@ -160,18 +155,16 @@ class InitializeSettingsForwardingTest {
             .put(Settings.TIME_BETWEEN_SESSIONS, 42)
             .put(Settings.ANONYMIZE_USER, false)
             .put(Settings.COLLECT_ANDROID_ID, true)
-            .put(Settings.COLLECT_IMEI, false)
 
         initializeWithSettings(settings)
 
         val forwarded = mockInstance.initializeSettingsParam!!
-        assertEquals(6, forwarded.size)
+        assertEquals(5, forwarded.size)
         assertTrue(forwarded.containsKey(Settings.DEBUG))
         assertTrue(forwarded.containsKey(Settings.LOG_LEVEL))
         assertTrue(forwarded.containsKey(Settings.TIME_BETWEEN_SESSIONS))
         assertTrue(forwarded.containsKey(Settings.ANONYMIZE_USER))
         assertTrue(forwarded.containsKey(Settings.COLLECT_ANDROID_ID))
-        assertTrue(forwarded.containsKey(Settings.COLLECT_IMEI))
     }
 
     @Test

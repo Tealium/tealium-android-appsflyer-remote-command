@@ -11,9 +11,9 @@ enum class RemoteCommandLogLevel {
     /** Warning and error messages only. */
     WARNING,
 
-    /** Error messages only. */
+    /** Error messages only. Default. */
     ERROR,
 
-    /** No output. Default. */
+    /** No output. */
     SILENT
 }

@@ -1,17 +1,22 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
-import com.appsflyer.AFInAppEventParameterName
-import com.appsflyer.AFInAppEventType
-import com.appsflyer.MediationNetwork
+import com.appsflyer.share.AFInAppEventParameterName
+import com.appsflyer.share.AFInAppEventType
+import com.appsflyer.share.MediationNetwork
+import com.tealium.remotecommands.RemoteCommandContext
+import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
+import io.mockk.mockk
+import io.mockk.verify
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -31,7 +36,8 @@ class AppsFlyerRemoteCommandTest {
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @MockK
+    // The command registers Activity lifecycle callbacks on the Application when it is constructed.
+    @MockK(relaxUnitFun = true)
     lateinit var mockApplication: Application
 
     private lateinit var mockInstance: MockAppsFlyerInstance
@@ -40,12 +46,12 @@ class AppsFlyerRemoteCommandTest {
     @Before
     fun setUp() {
         mockInstance = MockAppsFlyerInstance()
-        remoteCommand = AppsFlyerRemoteCommand(mockApplication, "testKey")
+        remoteCommand = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.AUTOMATIC, "testKey")
         remoteCommand.appsFlyerInstance = mockInstance
     }
 
     @Test
-    fun splitCommands_splitsAndNormalises() {
+    fun splitCommands_splitsTrimsAndPreservesCase() {
         val json = JSONObject()
         json.put(Commands.COMMAND_KEY, "initialize, LogPurchase, add_to_cart")
 
@@ -53,7 +59,7 @@ class AppsFlyerRemoteCommandTest {
 
         assertEquals(3, commands.size)
         assertEquals("initialize", commands[0])
-        assertEquals("logpurchase", commands[1])
+        assertEquals("LogPurchase", commands[1])
         assertEquals("add_to_cart", commands[2])
     }
 
@@ -94,7 +100,7 @@ class AppsFlyerRemoteCommandTest {
 
     @Test
     fun initialize_missingDevKey_skipsCall() {
-        val commandWithoutKey = AppsFlyerRemoteCommand(mockApplication, null)
+        val commandWithoutKey = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.AUTOMATIC, null)
         commandWithoutKey.appsFlyerInstance = mockInstance
         commandWithoutKey.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject())
         assertEquals(0, mockInstance.initializeCallCount)
@@ -155,55 +161,138 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun setUserEmails_validCryptTypeNone_dispatchesCall() {
-        val emails = JSONArray().put("a@x.com").put("b@x.com")
-        val payload = JSONObject()
-            .put(Customer.EMAILS, emails)
-            .put(Customer.EMAIL_HASH_TYPE, 0)
-
-        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-
-        assertEquals(1, mockInstance.setUserEmailsCallCount)
-        assertEquals(listOf("a@x.com", "b@x.com"), mockInstance.setUserEmailsParam)
-        assertEquals(EmailCryptTypeMapping.fromInt(0), mockInstance.setUserEmailsCryptTypeParam)
+    fun setUserEmail_valid_callsSDK() {
+        val payload = JSONObject().put(Customer.EMAIL, "user@example.com")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAIL), payload)
+        assertEquals(1, mockInstance.setUserEmailCallCount)
+        assertEquals("user@example.com", mockInstance.setUserEmailParam)
     }
 
     @Test
-    fun setUserEmails_validCryptTypeSha256_dispatchesCall() {
-        val emails = JSONArray().put("a@x.com")
-        val payload = JSONObject()
-            .put(Customer.EMAILS, emails)
-            .put(Customer.EMAIL_HASH_TYPE, 3)
-
-        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-
-        assertEquals(1, mockInstance.setUserEmailsCallCount)
-        assertEquals(EmailCryptTypeMapping.fromInt(3), mockInstance.setUserEmailsCryptTypeParam)
+    fun setUserEmail_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAIL), JSONObject())
+        assertTrue(mockInstance.verifyNoCalls())
     }
 
     @Test
-    fun setUserEmails_missingArray_skipsCall() {
-        val payload = JSONObject().put(Customer.EMAIL_HASH_TYPE, 0)
-        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-        assertEquals(0, mockInstance.setUserEmailsCallCount)
+    fun setUserEmail_nonString_skipsCall() {
+        val payload = JSONObject().put(Customer.EMAIL, JSONArray().put("user@example.com"))
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAIL), payload)
+        assertTrue(mockInstance.verifyNoCalls())
     }
 
     @Test
-    fun setUserEmails_missingCryptType_skipsCall() {
-        val emails = JSONArray().put("a@x.com")
-        val payload = JSONObject().put(Customer.EMAILS, emails)
-        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-        assertEquals(0, mockInstance.setUserEmailsCallCount)
+    fun setUserFirstName_valid_callsSDK() {
+        val payload = JSONObject().put(Customer.FIRST_NAME, "Jane")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FIRST_NAME), payload)
+        assertEquals(1, mockInstance.setUserFirstNameCallCount)
+        assertEquals("Jane", mockInstance.setUserFirstNameParam)
     }
 
     @Test
-    fun setUserEmails_invalidCryptType_skipsCall() {
-        val emails = JSONArray().put("a@x.com")
-        val payload = JSONObject()
-            .put(Customer.EMAILS, emails)
-            .put(Customer.EMAIL_HASH_TYPE, 99)
-        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_EMAILS), payload)
-        assertEquals(0, mockInstance.setUserEmailsCallCount)
+    fun setUserFirstName_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FIRST_NAME), JSONObject())
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFirstName_nonString_skipsCall() {
+        val payload = JSONObject().put(Customer.FIRST_NAME, 42)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FIRST_NAME), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserLastName_valid_callsSDK() {
+        val payload = JSONObject().put(Customer.LAST_NAME, "Doe")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_LAST_NAME), payload)
+        assertEquals(1, mockInstance.setUserLastNameCallCount)
+        assertEquals("Doe", mockInstance.setUserLastNameParam)
+    }
+
+    @Test
+    fun setUserLastName_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_LAST_NAME), JSONObject())
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserLastName_nonString_skipsCall() {
+        val payload = JSONObject().put(Customer.LAST_NAME, true)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_LAST_NAME), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFbLoginId_long_callsSDK() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, 10_000_000_000L)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertEquals(1, mockInstance.setUserFbLoginIdCallCount)
+        assertEquals(10_000_000_000L, mockInstance.setUserFbLoginIdParam)
+    }
+
+    @Test
+    fun setUserFbLoginId_int_callsSDK() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, 12345)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertEquals(1, mockInstance.setUserFbLoginIdCallCount)
+        assertEquals(12345L, mockInstance.setUserFbLoginIdParam)
+    }
+
+    @Test
+    fun setUserFbLoginId_numericString_callsSDK() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, "10000000000")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertEquals(1, mockInstance.setUserFbLoginIdCallCount)
+        assertEquals(10_000_000_000L, mockInstance.setUserFbLoginIdParam)
+    }
+
+    @Test
+    fun setUserFbLoginId_wholeDouble_callsSDK() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, 12345.0)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertEquals(1, mockInstance.setUserFbLoginIdCallCount)
+        assertEquals(12345L, mockInstance.setUserFbLoginIdParam)
+    }
+
+    @Test
+    fun setUserFbLoginId_missing_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), JSONObject())
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFbLoginId_wrongType_skipsCall() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, true)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFbLoginId_fractional_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), JSONObject().put(Customer.FB_LOGIN_ID, 123.5))
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), JSONObject().put(Customer.FB_LOGIN_ID, "123.5"))
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFbLoginId_nonNumericString_skipsCall() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, "abc123")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserFbLoginId_outOfRange_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), JSONObject().put(Customer.FB_LOGIN_ID, "9223372036854775808"))
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), JSONObject().put(Customer.FB_LOGIN_ID, 1.0e19))
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun clearUserPii_dispatchesCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.CLEAR_USER_PII), JSONObject())
+        assertEquals(1, mockInstance.clearUserPiiCallCount)
     }
 
     @Test
@@ -235,17 +324,65 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun setPhoneNumber_valid_callsSDK() {
-        val payload = JSONObject().put(PhoneNumberParam.PHONE_NUMBER, "+1234567890")
-        remoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), payload)
-        assertEquals(1, mockInstance.setPhoneNumberCallCount)
-        assertEquals("+1234567890", mockInstance.setPhoneNumberParam)
+    fun setUserPhone_valid_callsSDK() {
+        val payload = JSONObject()
+            .put(PhoneNumberParam.COUNTRY_CODE, "1")
+            .put(PhoneNumberParam.PHONE_NUMBER, "2345678900")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_PHONE), payload)
+        assertEquals(1, mockInstance.setUserPhoneCallCount)
+        assertEquals("1", mockInstance.setUserPhoneCountryCodeParam)
+        assertEquals("2345678900", mockInstance.setUserPhoneNumberParam)
     }
 
     @Test
-    fun setPhoneNumber_missing_skipsCall() {
-        remoteCommand.parseCommands(arrayOf(Commands.SET_PHONE_NUMBER), JSONObject())
-        assertEquals(0, mockInstance.setPhoneNumberCallCount)
+    fun setUserPhone_missingCountryCode_skipsCall() {
+        val payload = JSONObject().put(PhoneNumberParam.PHONE_NUMBER, "2345678900")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_PHONE), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserPhone_missingPhoneNumber_skipsCall() {
+        val payload = JSONObject().put(PhoneNumberParam.COUNTRY_CODE, "1")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_PHONE), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserPhone_bothMissing_reportsCountryCodeFirst() {
+        val logger = mockk<RemoteCommandLogger>(relaxed = true)
+        val command = AppsFlyerRemoteCommand(
+            mockApplication,
+            AppsFlyerSessionMode.AUTOMATIC,
+            "testKey",
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID,
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION,
+            logger
+        )
+        command.appsFlyerInstance = mockInstance
+
+        command.parseCommands(arrayOf(Commands.SET_USER_PHONE), JSONObject())
+
+        verify(exactly = 1) { logger.error(match { it.contains(PhoneNumberParam.COUNTRY_CODE) }) }
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserPhone_numericPhoneNumber_skipsCall() {
+        val payload = JSONObject()
+            .put(PhoneNumberParam.COUNTRY_CODE, "1")
+            .put(PhoneNumberParam.PHONE_NUMBER, 2345678900L)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_PHONE), payload)
+        assertTrue(mockInstance.verifyNoCalls())
+    }
+
+    @Test
+    fun setUserPhone_numericCountryCode_skipsCall() {
+        val payload = JSONObject()
+            .put(PhoneNumberParam.COUNTRY_CODE, 1)
+            .put(PhoneNumberParam.PHONE_NUMBER, "2345678900")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_PHONE), payload)
+        assertTrue(mockInstance.verifyNoCalls())
     }
 
     @Test
@@ -356,6 +493,88 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
+    fun setConsentData_nonBooleanGdprFlag_skipsCallWithoutThrowing() {
+        val payload = JSONObject()
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, "yes")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+        assertEquals(0, mockInstance.setConsentDataCallCount)
+    }
+
+    @Test
+    fun setConsentData_nonBooleanOptionalFlags_forwardedAsNull() {
+        val payload = JSONObject()
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, true)
+            .put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, "maybe")
+            .put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, 1)
+            .put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, JSONObject.NULL)
+
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+
+        assertEquals(1, mockInstance.setConsentDataCallCount)
+        assertEquals(true, mockInstance.setConsentGdprParam)
+        assertNull(mockInstance.setConsentDataUsageParam)
+        assertNull(mockInstance.setConsentAdsPersonalizationParam)
+        assertNull(mockInstance.setConsentAdStorageParam)
+    }
+
+    @Test
+    fun setConsentData_stringBooleanFlags_areCoerced() {
+        val payload = JSONObject()
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, "TRUE")
+            .put(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE, "true")
+            .put(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION, "False")
+            .put(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE, "false")
+
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+
+        assertEquals(1, mockInstance.setConsentDataCallCount)
+        assertEquals(true, mockInstance.setConsentGdprParam)
+        assertEquals(true, mockInstance.setConsentDataUsageParam)
+        assertEquals(false, mockInstance.setConsentAdsPersonalizationParam)
+        assertEquals(false, mockInstance.setConsentAdStorageParam)
+    }
+
+    @Test
+    fun setConsentData_stringFalseGdprFlag_dispatchesCallWithFalse() {
+        val payload = JSONObject()
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, "false")
+
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+
+        assertEquals(1, mockInstance.setConsentDataCallCount)
+        assertEquals(false, mockInstance.setConsentGdprParam)
+    }
+
+    @Test
+    fun setConsentData_numericGdprFlag_skipsCall() {
+        val payload = JSONObject()
+            .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, 1)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CONSENT_DATA), payload)
+        assertEquals(0, mockInstance.setConsentDataCallCount)
+    }
+
+    @Test
+    fun parseCommands_unexpectedException_logsAndContinuesWithNextCommand() {
+        val logger = mockk<RemoteCommandLogger>(relaxed = true)
+        val instance = mockk<AppsFlyerCommand>(relaxed = true)
+        every { instance.clearUserPii() } throws IllegalStateException("boom")
+        val command = AppsFlyerRemoteCommand(
+            mockApplication,
+            AppsFlyerSessionMode.AUTOMATIC,
+            "testKey",
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID,
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION,
+            logger
+        )
+        command.appsFlyerInstance = instance
+
+        command.parseCommands(arrayOf(Commands.CLEAR_USER_PII, Commands.LOG_SESSION), JSONObject())
+
+        verify(exactly = 1) { logger.error(match { it.contains("'${Commands.CLEAR_USER_PII}'") }, any<Throwable>()) }
+        verify(exactly = 1) { instance.logSession() }
+    }
+
+    @Test
     fun setConsentData_onlyGdprFlag_dispatchesCallWithNullDetails() {
         val payload = JSONObject()
             .put(ConsentDataParams.IS_USER_SUBJECT_TO_GDPR, false)
@@ -431,6 +650,21 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
+    fun anonymizeUser_stringTrue_callsSDK() {
+        val payload = JSONObject().put(Tracking.ANONYMIZE_USER, "TRUE")
+        remoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)
+        assertEquals(1, mockInstance.anonymizeUserCallCount)
+        assertEquals(true, mockInstance.anonymizeUserParam)
+    }
+
+    @Test
+    fun anonymizeUser_wrongType_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), JSONObject().put(Tracking.ANONYMIZE_USER, "yes"))
+        remoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), JSONObject().put(Tracking.ANONYMIZE_USER, 1))
+        assertEquals(0, mockInstance.anonymizeUserCallCount)
+    }
+
+    @Test
     fun disableDeviceTracking_aliasCallsAnonymizeUser() {
         val payload = JSONObject().put(Tracking.ANONYMIZE_USER, true)
         remoteCommand.parseCommands(arrayOf(Commands.DISABLE_DEVICE_TRACKING), payload)
@@ -467,9 +701,31 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun start_dispatchesCall() {
-        remoteCommand.parseCommands(arrayOf(Commands.START), JSONObject())
-        assertEquals(1, mockInstance.startCallCount)
+    fun setContext_calledTwice_keepsFirstInstanceAndContext() {
+        val logger = mockk<RemoteCommandLogger>(relaxed = true)
+        val command = AppsFlyerRemoteCommand(
+            mockApplication,
+            AppsFlyerSessionMode.AUTOMATIC,
+            "testKey",
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID,
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION,
+            logger
+        )
+        val firstContext = mockk<RemoteCommandContext>()
+        command.setContext(firstContext)
+        val firstInstance = command.appsFlyerInstance
+
+        command.setContext(mockk())
+
+        assertSame(firstInstance, command.appsFlyerInstance)
+        assertSame(firstContext, command.context)
+        verify(exactly = 1) { logger.warning(match { it.contains("RemoteCommandContext") }) }
+    }
+
+    @Test
+    fun publicConstructor_defaultLogLevel_isError() {
+        val command = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.APP_MANAGED)
+        assertEquals(RemoteCommandLogLevel.ERROR, command.logger.logLevel)
     }
 
     @Test
@@ -491,6 +747,13 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun stopTracking_missing_skipsCall() {
         remoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), JSONObject())
+        assertEquals(0, mockInstance.stopTrackingCallCount)
+    }
+
+    @Test
+    fun stopTracking_wrongType_skipsCall() {
+        remoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), JSONObject().put(Tracking.STOP_TRACKING, "yes"))
+        remoteCommand.parseCommands(arrayOf(Commands.STOP_TRACKING), JSONObject().put(Tracking.STOP_TRACKING, 1))
         assertEquals(0, mockInstance.stopTrackingCallCount)
     }
 
@@ -659,6 +922,45 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
+    fun customEventName_preservesCase() {
+        val payload = JSONObject().put(Commands.COMMAND_KEY, " MyEvent ")
+        remoteCommand.parseCommands(remoteCommand.splitCommands(payload), payload)
+
+        assertEquals(1, mockInstance.trackEventCallCount)
+        assertEquals("MyEvent", mockInstance.trackEventTypeParam)
+    }
+
+    @Test
+    fun cancelPurchase_passesThroughUnchanged() {
+        val payload = JSONObject().put(Commands.COMMAND_KEY, "cancel_purchase")
+        remoteCommand.parseCommands(remoteCommand.splitCommands(payload), payload)
+
+        assertEquals(1, mockInstance.trackEventCallCount)
+        assertEquals("cancel_purchase", mockInstance.trackEventTypeParam)
+    }
+
+    @Test
+    fun standardEventName_isMatchedCaseInsensitively() {
+        val payload = JSONObject().put(Commands.COMMAND_KEY, "AddToCart")
+        remoteCommand.parseCommands(remoteCommand.splitCommands(payload), payload)
+
+        assertEquals(1, mockInstance.trackEventCallCount)
+        assertEquals(AFInAppEventType.ADD_TO_CART, mockInstance.trackEventTypeParam)
+    }
+
+    @Test
+    fun builtInCommand_isMatchedCaseInsensitivelyThroughSplit() {
+        val payload = JSONObject()
+            .put(Commands.COMMAND_KEY, "SetCustomerId")
+            .put(Customer.USER_ID, "user-1")
+        remoteCommand.parseCommands(remoteCommand.splitCommands(payload), payload)
+
+        assertEquals(1, mockInstance.setCustomerIdCallCount)
+        assertEquals("user-1", mockInstance.setCustomerIdParam)
+        assertEquals(0, mockInstance.trackEventCallCount)
+    }
+
+    @Test
     fun unknownCommand_dispatchedAsCustomEvent() {
         val payload = JSONObject().put(Commands.COMMAND_KEY, "my_custom_event")
         remoteCommand.parseCommands(arrayOf("my_custom_event"), payload)
@@ -777,9 +1079,8 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
-    fun mixedCaseCommand_isNormalisedViaSplit() {
-        // When clients call parseCommands directly they must pre-normalise, but the
-        // Command.fromString resolver accepts arbitrary casing.
+    fun mixedCaseCommand_resolvesBuiltInCommand() {
+        // The Command.fromString resolver accepts arbitrary casing.
         val payload = JSONObject().put(TransactionProperties.CURRENCY, "EUR")
         remoteCommand.parseCommands(arrayOf("SetCurrencyCode"), payload)
         assertEquals(1, mockInstance.setCurrencyCodeCallCount)
@@ -799,7 +1100,7 @@ class AppsFlyerRemoteCommandTest {
     @Test
     fun logLevel_constructor_setsLoggerLevel() {
         val debugLogger = RemoteCommandLogger(RemoteCommandLogLevel.DEBUG)
-        val cmd = AppsFlyerRemoteCommand(mockApplication, "key", AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID, AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION, debugLogger)
+        val cmd = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.AUTOMATIC, "key", AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID, AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION, debugLogger)
         assertEquals(RemoteCommandLogLevel.DEBUG, cmd.logger.logLevel)
     }
 

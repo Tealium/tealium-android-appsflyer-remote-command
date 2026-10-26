@@ -1,6 +1,6 @@
 package com.tealium.remotecommands.appsflyer
 
-import com.appsflyer.AFInAppEventType
+import com.appsflyer.share.AFInAppEventType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull

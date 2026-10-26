@@ -1,11 +1,11 @@
 package com.tealium.remotecommands.appsflyer
 
-import com.appsflyer.MediationNetwork
+import com.appsflyer.share.MediationNetwork
 import java.util.Locale
 
 /**
  * Maps lowercase payload strings to SDK enum values.
- * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-mediationnetworktype
+ * @see https://dev.appsflyer.com/hc/docs/android-sdk-reference-appsflyerlib#mediationnetwork
  */
 private val networkNames: Map<String, MediationNetwork> = mapOf(
     "googleadmob" to MediationNetwork.GOOGLE_ADMOB,
@@ -21,7 +21,9 @@ private val networkNames: Map<String, MediationNetwork> = mapOf(
     "unity" to MediationNetwork.UNITY,
     "toponpte" to MediationNetwork.TOPON_PTE,
     "custom" to MediationNetwork.CUSTOM_MEDIATION,
-    "direct" to MediationNetwork.DIRECT_MONETIZATION_NETWORK
+    "direct" to MediationNetwork.DIRECT_MONETIZATION_NETWORK,
+    "googleadmanager" to MediationNetwork.GOOGLE_AD_MANAGER,
+    "cloudx" to MediationNetwork.CLOUD_X
 )
 
 /**

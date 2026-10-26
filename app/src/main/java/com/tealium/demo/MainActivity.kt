@@ -2,6 +2,7 @@ package com.tealium.demo
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.appsflyer.AppsFlyerLib
 import com.tealium.demo.databinding.ActivityMainBinding
 import com.tealium.remotecommands.appsflyer.Host
 import com.tealium.remotecommands.appsflyer.StringCommandParams
@@ -13,6 +14,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // SDK 7 collects app-open and web referrer data only through this call, which the RemoteCommand leaves to the app.
+        AppsFlyerLib.getInstance().collectDataFromLauncherActivity(this)
         binding = ActivityMainBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
@@ -28,13 +31,10 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        binding.buttonSetUserEmails.setOnClickListener {
-            val emails = JSONArray()
-            emails.put("test@tester.com")
-            emails.put("othertest@tester.com")
+        binding.buttonSetUserEmail.setOnClickListener {
             TealiumHelper.trackEvent(
                 "user_register",
-                mapOf("customer_email" to emails, "customer_id" to "userId123")
+                mapOf("customer_email" to "test@tester.com", "customer_id" to "userId123")
             )
         }
 
@@ -74,8 +74,8 @@ class MainActivity : AppCompatActivity() {
             TealiumHelper.trackEvent("custom_event", mapOf())
         }
 
-        binding.buttonSetPhoneNumber.setOnClickListener {
-            TealiumHelper.trackEvent("set_phone_number", mapOf("phone_number" to "+1234567890"))
+        binding.buttonSetUserPhone.setOnClickListener {
+            TealiumHelper.trackEvent("set_phone_number", mapOf("country_code" to "1", "phone_number" to "2345678900"))
         }
 
         binding.buttonLogAdRevenue.setOnClickListener {
@@ -84,8 +84,8 @@ class MainActivity : AppCompatActivity() {
                 "mediation_network" to "googleadmob", 
                 "ad_revenue_currency" to "USD",
                 "ad_revenue_amount" to 1.99,
-                "ad_revenue_ad_unit_id" to "test_ad_unit",
-                "ad_revenue_ad_format" to "banner"
+                "ad_revenue_ad_unit" to "test_ad_unit",
+                "ad_revenue_ad_type" to "banner"
             ))
         }
 
@@ -148,10 +148,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.buttonSetIsUpdate.setOnClickListener {
             TealiumHelper.trackEvent("set_is_update", mapOf(StringCommandParams.IS_UPDATE to "true"))
-        }
-
-        binding.buttonSetLogLevel.setOnClickListener {
-            TealiumHelper.trackEvent("launch", mapOf(StringCommandParams.LOG_LEVEL to "VERBOSE"))
         }
     }
 }

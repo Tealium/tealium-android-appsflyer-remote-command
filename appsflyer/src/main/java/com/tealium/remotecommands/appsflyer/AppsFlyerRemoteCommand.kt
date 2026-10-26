@@ -1,35 +1,48 @@
 package com.tealium.remotecommands.appsflyer
 
 import android.app.Application
-import com.appsflyer.AFAdRevenueData
-import com.appsflyer.AppsFlyerConsent
-import com.appsflyer.AppsFlyerProperties
+import com.appsflyer.share.AFAdRevenueData
+import com.appsflyer.share.AppsFlyerConsent
+import com.appsflyer.share.deeplink.DeepLinkListener
+import com.appsflyer.share.deeplink.DeepLinkResult
 import com.tealium.remotecommands.RemoteCommand
 import com.tealium.remotecommands.RemoteCommandContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.jvm.Throws
 
 open class AppsFlyerRemoteCommand internal constructor(
     private val application: Application,
+    private val sessionMode: AppsFlyerSessionMode,
     private val appsFlyerDevKey: String?,
     commandId: String,
     description: String,
     internal val logger: RemoteCommandLogger
-) : RemoteCommand(commandId, description, BuildConfig.TEALIUM_APPSFLYER_VERSION) {
+) : RemoteCommand(commandId, description, BuildConfig.TEALIUM_APPSFLYER_VERSION), DeepLinkListener {
 
+    /**
+     * @param application The host application, passed to the AppsFlyer SDK as its context.
+     * @param sessionMode Who registers the SDK's session-ready listener and calls `AppsFlyerLib.start()`
+     *   in it. See [AppsFlyerSessionMode].
+     * @param appsFlyerDevKey Dev key used when the `initialize` payload has no `app_dev_key`.
+     * @param commandId The remote command ID.
+     * @param description The remote command description.
+     * @param logLevel Log verbosity of the command and its instance. Defaults to [RemoteCommandLogLevel.ERROR] (errors only).
+     */
     @JvmOverloads
     constructor(
         application: Application,
+        sessionMode: AppsFlyerSessionMode,
         appsFlyerDevKey: String? = null,
         commandId: String = DEFAULT_COMMAND_ID,
         description: String = DEFAULT_COMMAND_DESCRIPTION,
-        logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.SILENT
-    ) : this(application, appsFlyerDevKey, commandId, description, RemoteCommandLogger(logLevel))
+        logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.ERROR
+    ) : this(application, sessionMode, appsFlyerDevKey, commandId, description, RemoteCommandLogger(logLevel))
 
     lateinit var appsFlyerInstance: AppsFlyerCommand
+
+    private val activityTracker = ResumedActivityTracker().also { application.registerActivityLifecycleCallbacks(it) }
 
     companion object {
         const val DEFAULT_COMMAND_ID = "appsflyer"
@@ -63,10 +76,14 @@ open class AppsFlyerRemoteCommand internal constructor(
                     Command.INITIALIZE -> initialize(payload)
                     Command.TRACK_LOCATION -> trackLocation(payload)
                     Command.SET_HOST -> setHost(payload)
-                    Command.SET_USER_EMAILS -> setUserEmails(payload)
+                    Command.SET_USER_EMAIL -> appsFlyerInstance.setUserEmail(requireString(payload, Customer.EMAIL))
+                    Command.SET_USER_FIRST_NAME -> appsFlyerInstance.setUserFirstName(requireString(payload, Customer.FIRST_NAME))
+                    Command.SET_USER_LAST_NAME -> appsFlyerInstance.setUserLastName(requireString(payload, Customer.LAST_NAME))
+                    Command.SET_USER_FB_LOGIN_ID -> appsFlyerInstance.setUserFbLoginId(requireLong(payload, Customer.FB_LOGIN_ID))
+                    Command.CLEAR_USER_PII -> appsFlyerInstance.clearUserPii()
                     Command.SET_CURRENCY_CODE -> setCurrencyCode(payload)
                     Command.SET_CUSTOMER_ID -> setCustomerId(payload)
-                    Command.SET_PHONE_NUMBER -> setPhoneNumber(payload)
+                    Command.SET_USER_PHONE -> setUserPhone(payload)
                     Command.LOG_AD_REVENUE -> logAdRevenue(payload)
                     Command.SET_CONSENT_DATA -> setConsentData(payload)
                     Command.SET_PARTNER_DATA -> setPartnerData(payload)
@@ -74,7 +91,6 @@ open class AppsFlyerRemoteCommand internal constructor(
                     Command.ANONYMIZE_USER,
                     Command.DISABLE_DEVICE_TRACKING -> anonymizeUser(payload) // DISABLE_DEVICE_TRACKING is a backwards-compatible alias
                     Command.RESOLVE_DEEPLINK_URLS -> resolveDeepLinkUrls(payload)
-                    Command.START -> appsFlyerInstance.start()
                     Command.STOP_TRACKING,
                     Command.DISABLE_TRACKING -> stopTracking(payload) // DISABLE_TRACKING is the iOS command name accepted here for cross-platform payloads
                     Command.LOG_SESSION -> appsFlyerInstance.logSession()
@@ -90,6 +106,9 @@ open class AppsFlyerRemoteCommand internal constructor(
                 }
             } catch (e: AppsFlyerCommandError) {
                 logger.error("Command '$commandString' failed: ${e.message}")
+            } catch (e: Exception) {
+                // One misbehaving command must not abort the remaining commands in the list.
+                logger.error("Command '$commandString' failed unexpectedly: ${e.message}", e)
             }
         }
     }
@@ -97,10 +116,42 @@ open class AppsFlyerRemoteCommand internal constructor(
     /**
      * Validate and return standard event name for AppsFlyer events
      *
-     * @param commandName - name of Tealium command name
+     * @param commandName - name of Tealium command name, matched case-insensitively
      */
     fun standardEvent(commandName: String): String? {
-        return StandardEvents.eventNames[commandName]
+        return StandardEvents.eventNames[commandName.lowercase(Locale.ROOT)]
+    }
+
+    /**
+     * Tracks app-open attribution from a resolved AppsFlyer deep link: `app_open_attribution` with the OneLink
+     * click event as payload, or `appsflyer_error` with `error_name` `app_open_attribution_failure`. Deferred deep
+     * links are skipped, because `conversion_data_received` reports them.
+     *
+     * The RemoteCommand never subscribes itself, so app-open attribution is opt-in. The SDK holds a single
+     * [DeepLinkListener] and drops results that arrive with no listener set, so subscribe in
+     * `Application.onCreate`, before the first Activity resumes:
+     *
+     * ```kotlin
+     * AppsFlyerLib.getInstance().subscribeForDeepLink(command)
+     * ```
+     *
+     * An app that routes deep links itself subscribes its own listener and forwards every result:
+     *
+     * ```kotlin
+     * AppsFlyerLib.getInstance().subscribeForDeepLink { result ->
+     *     // The app's own deep link routing.
+     *     command.onDeepLinking(result)
+     * }
+     * ```
+     *
+     * Called on an SDK background thread. A result that arrives before the command is added to Tealium is dropped.
+     */
+    override fun onDeepLinking(result: DeepLinkResult) {
+        if (!::appsFlyerInstance.isInitialized) {
+            logger.debug("Dropping a deep link result: the command has not been added to Tealium yet.")
+            return
+        }
+        appsFlyerInstance.onDeepLinking(result)
     }
 
     private fun initialize(payload: JSONObject) {
@@ -108,7 +159,7 @@ open class AppsFlyerRemoteCommand internal constructor(
             ?: appsFlyerDevKey?.takeIf { it.isNotBlank() }
             ?: throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
-        val configSettings: Map<String, Any> = jsonToMap(config)
+        val configSettings: Map<String, Any> = config.toMap()
         logger.debug("Initializing AppsFlyer SDK")
         appsFlyerInstance.initialize(devKey, configSettings)
     }
@@ -138,21 +189,6 @@ open class AppsFlyerRemoteCommand internal constructor(
         appsFlyerInstance.setHost(host, hostPrefix)
     }
 
-    private fun setUserEmails(payload: JSONObject) {
-        val emails: JSONArray = payload.optJSONArray(Customer.EMAILS)
-            ?: throw AppsFlyerCommandError.missingParameter(Customer.EMAILS)
-        val cryptTypeInt = payload.optInt(Customer.EMAIL_HASH_TYPE, -1)
-            .takeIf { payload.has(Customer.EMAIL_HASH_TYPE) }
-            ?: throw AppsFlyerCommandError.missingParameter(Customer.EMAIL_HASH_TYPE)
-        val cryptType = EmailCryptTypeMapping.fromInt(cryptTypeInt)
-            ?: throw AppsFlyerCommandError.invalidParameterValue(
-                key = Customer.EMAIL_HASH_TYPE,
-                value = cryptTypeInt.toString(),
-                allowedValues = EmailCryptTypeMapping.validValues.map { it.toString() }
-            )
-        appsFlyerInstance.setUserEmails(toList(emails), cryptType)
-    }
-
     private fun setCurrencyCode(payload: JSONObject) {
         if (!payload.has(TransactionProperties.CURRENCY)) {
             throw AppsFlyerCommandError.missingParameter(TransactionProperties.CURRENCY)
@@ -169,12 +205,10 @@ open class AppsFlyerRemoteCommand internal constructor(
         appsFlyerInstance.setCustomerId(id)
     }
 
-    private fun setPhoneNumber(payload: JSONObject) {
-        if (!payload.has(PhoneNumberParam.PHONE_NUMBER)) {
-            throw AppsFlyerCommandError.missingParameter(PhoneNumberParam.PHONE_NUMBER)
-        }
-        val phoneNumber: String = payload.optString(PhoneNumberParam.PHONE_NUMBER)
-        appsFlyerInstance.setPhoneNumber(phoneNumber)
+    private fun setUserPhone(payload: JSONObject) {
+        val countryCode = requireString(payload, PhoneNumberParam.COUNTRY_CODE)
+        val phoneNumber = requireString(payload, PhoneNumberParam.PHONE_NUMBER)
+        appsFlyerInstance.setUserPhone(countryCode, phoneNumber)
     }
 
     private fun logAdRevenue(payload: JSONObject) {
@@ -210,15 +244,15 @@ open class AppsFlyerRemoteCommand internal constructor(
             currency,
             revenue
         )
-        val additionalParams = jsonToMap(payload.optJSONObject(AdRevenueParams.AD_REVENUE_ADDITIONAL_PARAMS))
+        val additionalParams = payload.optJSONObject(AdRevenueParams.AD_REVENUE_ADDITIONAL_PARAMS).toMap()
         appsFlyerInstance.logAdRevenue(adRevenueData, additionalParams)
     }
 
     private fun setConsentData(payload: JSONObject) {
         val isUserSubjectToGDPR = requireBoolean(payload, ConsentDataParams.IS_USER_SUBJECT_TO_GDPR)
-        val hasConsentForDataUsage = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE) else null
-        val hasConsentForAdsPersonalization = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION) else null
-        val hasConsentForAdStorage = if (payload.has(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE)) payload.getBoolean(ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE) else null
+        val hasConsentForDataUsage = optBooleanValue(payload, ConsentDataParams.HAS_CONSENT_FOR_DATA_USAGE)
+        val hasConsentForAdsPersonalization = optBooleanValue(payload, ConsentDataParams.HAS_CONSENT_FOR_ADS_PERSONALIZATION)
+        val hasConsentForAdStorage = optBooleanValue(payload, ConsentDataParams.HAS_CONSENT_FOR_AD_STORAGE)
         val consent = AppsFlyerConsent(isUserSubjectToGDPR, hasConsentForDataUsage, hasConsentForAdsPersonalization, hasConsentForAdStorage)
         appsFlyerInstance.setConsentData(consent)
     }
@@ -228,7 +262,7 @@ open class AppsFlyerRemoteCommand internal constructor(
             throw AppsFlyerCommandError.missingParameter(PartnerDataParams.PARTNER_ID)
         }
         val partnerId: String = payload.optString(PartnerDataParams.PARTNER_ID)
-        val partnerInfoMap = jsonToMap(payload.optJSONObject(PartnerDataParams.PARTNER_INFO))
+        val partnerInfoMap = payload.optJSONObject(PartnerDataParams.PARTNER_INFO).toMap()
         appsFlyerInstance.setPartnerData(partnerId, partnerInfoMap)
     }
 
@@ -240,10 +274,7 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun anonymizeUser(payload: JSONObject) {
-        if (!payload.has(Tracking.ANONYMIZE_USER)) {
-            throw AppsFlyerCommandError.missingParameter(Tracking.ANONYMIZE_USER)
-        }
-        appsFlyerInstance.anonymizeUser(payload.optBoolean(Tracking.ANONYMIZE_USER, false))
+        appsFlyerInstance.anonymizeUser(requireBoolean(payload, Tracking.ANONYMIZE_USER))
     }
 
     private fun resolveDeepLinkUrls(payload: JSONObject) {
@@ -254,10 +285,7 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun stopTracking(payload: JSONObject) {
-        if (!payload.has(Tracking.STOP_TRACKING)) {
-            throw AppsFlyerCommandError.missingParameter(Tracking.STOP_TRACKING)
-        }
-        appsFlyerInstance.stopTracking(payload.optBoolean(Tracking.STOP_TRACKING))
+        appsFlyerInstance.stopTracking(requireBoolean(payload, Tracking.STOP_TRACKING))
     }
 
     private fun setOaid(payload: JSONObject) {
@@ -293,10 +321,7 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setDisableNetworkData(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.DISABLE_NETWORK_DATA)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.DISABLE_NETWORK_DATA)
-        }
-        appsFlyerInstance.setDisableNetworkData(payload.optBoolean(StringCommandParams.DISABLE_NETWORK_DATA))
+        appsFlyerInstance.setDisableNetworkData(requireBoolean(payload, StringCommandParams.DISABLE_NETWORK_DATA))
     }
 
     private fun setAppInviteOneLink(payload: JSONObject) {
@@ -324,62 +349,79 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setIsUpdate(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.IS_UPDATE)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.IS_UPDATE)
-        }
-        appsFlyerInstance.setIsUpdate(payload.optBoolean(StringCommandParams.IS_UPDATE))
+        appsFlyerInstance.setIsUpdate(requireBoolean(payload, StringCommandParams.IS_UPDATE))
     }
 
     private fun dispatchCustomEvent(commandString: String, payload: JSONObject) {
-        val normalizedCommand = commandString.trim().lowercase(Locale.ROOT)
-        val eventType = standardEvent(normalizedCommand) ?: commandString
+        // Only the standard-event lookup is case-insensitive; a custom event keeps its original case.
+        val eventName = commandString.trim()
+        val eventType = standardEvent(eventName) ?: eventName
         val eventParameters: JSONObject =
             payload.optJSONObject(StandardEvents.EVENT_PARAMETERS)
                 ?: payload.optJSONObject(StandardEvents.EVENT_PARAMETERS_SHORT)
                 ?: filterPayload(payload)
-        appsFlyerInstance.trackEvent(eventType, jsonToMap(eventParameters))
+        appsFlyerInstance.trackEvent(eventType, eventParameters.toMap())
     }
 
     private fun requireBoolean(payload: JSONObject, key: String): Boolean {
         if (!payload.has(key)) {
             throw AppsFlyerCommandError.missingParameter(key)
         }
-        return payload.optBoolean(key, false)
+        return optBooleanValue(payload, key)
+            ?: throw AppsFlyerCommandError.invalidParameterType(key, "Boolean")
     }
+
+    private fun requireString(payload: JSONObject, key: String): String {
+        if (!payload.has(key)) {
+            throw AppsFlyerCommandError.missingParameter(key)
+        }
+        return payload.opt(key) as? String
+            ?: throw AppsFlyerCommandError.invalidParameterType(key, "String")
+    }
+
+    // Webview data layers send numeric variables as Strings, so a numeric String is accepted as on iOS.
+    // A Double is accepted only when it is a whole number within the Long range.
+    private fun requireLong(payload: JSONObject, key: String): Long {
+        if (!payload.has(key)) {
+            throw AppsFlyerCommandError.missingParameter(key)
+        }
+        return when (val value = payload.opt(key)) {
+            is Int -> value.toLong()
+            is Long -> value
+            is Double -> value.takeIf { it % 1.0 == 0.0 && it >= Long.MIN_VALUE && it < Long.MAX_VALUE }?.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        } ?: throw AppsFlyerCommandError.invalidParameterType(key, "Long or numeric String")
+    }
+
+    private fun optBooleanValue(payload: JSONObject, key: String): Boolean? = toBooleanValue(payload.opt(key))
 
     internal fun splitCommands(payload: JSONObject): Array<String> {
         val command = payload.optString(Commands.COMMAND_KEY, "")
         return command.split(Commands.SEPARATOR)
             .dropLastWhile { it.isEmpty() }
-            .map { it.trim().lowercase(Locale.ROOT) }
+            .map { it.trim() }
             .toTypedArray()
     }
 
     override fun setContext(context: RemoteCommandContext?) {
-        context?.let {
-            appsFlyerInstance = AppsFlyerInstance(
-                application,
-                appsFlyerDevKey,
-                it,
-                logger
-            )
-        }
-    }
-
-    private fun jsonToMap(jsonObject: JSONObject?): Map<String, Any> {
-        val map = HashMap<String, Any>()
-        jsonObject?.let {
-            it.keys().forEach { key ->
-                map[key] = convertJsonValue(it[key])
+        context ?: return
+        // A second instance would re-register the SDK listeners, reset readiness and drop queued calls.
+        getContext()?.let { current ->
+            if (current !== context) {
+                logger.warning("Ignoring a new RemoteCommandContext; the AppsFlyer command keeps the context it was first added with.")
             }
+            return
         }
-        return map
-    }
-
-    private fun convertJsonValue(value: Any): Any = when (value) {
-        is JSONObject -> jsonToMap(value)
-        is JSONArray -> (0 until value.length()).map { convertJsonValue(value[it]) }
-        else -> value
+        super.setContext(context)
+        appsFlyerInstance = AppsFlyerInstance(
+            application,
+            sessionMode,
+            appsFlyerDevKey,
+            context,
+            logger,
+            activityTracker::currentActivity
+        )
     }
 
     private fun toList(jsonArray: JSONArray): List<String> {
