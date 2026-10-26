@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `custom_data` forwards values that are not Strings (numbers, Booleans, lists and nested objects); 1.4.0 silently dropped them
 - One failing command no longer aborts the remaining commands in the same payload
 - A setting with the wrong type no longer throws during `initialize`; it is ignored. Boolean settings also accept `"true"`/`"false"` and log a warning for any other invalid value
+- `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array (e.g. `"all"`) instead of resetting the filter; omit it or send null to reset
+- `deep_link_parameters` entries whose `parameters` contain non-String keys or values are skipped with a warning, matching iOS
 
 ### Changed
 - AppsFlyer Android SDK `[7.0.2,8)` (SDK 6 is no longer supported); Tealium `remotecommands` 1.0.3 (was 1.0.1)

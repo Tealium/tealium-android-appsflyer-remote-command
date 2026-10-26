@@ -64,10 +64,17 @@ class AppsFlyerInstance internal constructor(
                 (settings[Settings.DEEP_LINK_PARAMETERS] as? List<*>)?.forEach { entry ->
                     (entry as? Map<*, *>)?.let { map ->
                         val contains = map[DeepLinkParameterEntry.CONTAINS] as? String
-                        @Suppress("UNCHECKED_CAST")
-                        val parameters = map[DeepLinkParameterEntry.PARAMETERS] as? Map<String, String>
+                        val rawParameters = map[DeepLinkParameterEntry.PARAMETERS] as? Map<*, *>
+                        // The SDK expects Map<String, String>, so an entry with any other type is skipped.
+                        val parameters = rawParameters?.takeIf { raw ->
+                            raw.all { (key, value) -> key is String && value is String }
+                        }
+                        if (rawParameters != null && parameters == null) {
+                            logger.warning("Skipping ${Settings.DEEP_LINK_PARAMETERS} entry: ${DeepLinkParameterEntry.PARAMETERS} must contain only String keys and values.")
+                        }
                         if (!contains.isNullOrEmpty() && (parameters != null)) {
-                            AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(contains, parameters)
+                            @Suppress("UNCHECKED_CAST")
+                            AppsFlyerLib.getInstance().appendParametersToDeepLinkingURL(contains, parameters as Map<String, String>)
                         }
                     }
                 }
@@ -87,22 +94,9 @@ class AppsFlyerInstance internal constructor(
                     AppsFlyerLib.getInstance().setDeepLinkTimeout(timeout.toLong())
                 }
             }
-        }
 
-        devKey?.takeIf { it.isNotBlank() }?.let { appsFlyerDevKey = it }
-        val validDevKey = appsFlyerDevKey?.takeIf { it.isNotBlank() }
-        if (validDevKey != null) {
-            if (isReady()) {
-                logger.warning("AppsFlyer is already initialized. Initializing again with the configured dev key; initialize should only be called once.")
-            }
-            // init() only treats the app as foregrounded when it receives an Activity, otherwise the first
-            // session waits for the next foreground.
-            AppsFlyerLib.getInstance().init(validDevKey, createConversionListener(), currentActivity() ?: application)
-        } else {
-            logger.error("${Config.DEV_KEY} is a required key")
-        }
-
-        configSettings?.let { settings ->
+            // In APP_MANAGED mode the app's own session-ready listener may call start() on an SDK background thread
+            // as soon as init() runs, so every setting that affects the first session must be applied before it.
             if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
                 nonNegativeIntSetting(settings, Settings.TIME_BETWEEN_SESSIONS)?.let { timeBetweenSessions ->
                     setMinsBetweenSessions(timeBetweenSessions)
@@ -150,6 +144,19 @@ class AppsFlyerInstance internal constructor(
                     AppsFlyerLib.getInstance().setCollectAndroidID(shouldCollect)
                 }
             }
+        }
+
+        devKey?.takeIf { it.isNotBlank() }?.let { appsFlyerDevKey = it }
+        val validDevKey = appsFlyerDevKey?.takeIf { it.isNotBlank() }
+        if (validDevKey != null) {
+            if (isReady()) {
+                logger.warning("AppsFlyer is already initialized. Initializing again with the configured dev key; initialize should only be called once.")
+            }
+            // init() only treats the app as foregrounded when it receives an Activity, otherwise the first
+            // session waits for the next foreground.
+            AppsFlyerLib.getInstance().init(validDevKey, createConversionListener(), currentActivity() ?: application)
+        } else {
+            logger.error("${Config.DEV_KEY} is a required key")
         }
 
         if (validDevKey == null) return

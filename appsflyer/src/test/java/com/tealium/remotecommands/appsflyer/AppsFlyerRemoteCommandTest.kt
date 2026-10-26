@@ -636,6 +636,21 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
+    fun setSharingFilter_jsonNull_resetsFilter() {
+        val payload = JSONObject().put(SharingFilterParams.SHARING_FILTER, JSONObject.NULL)
+        remoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+        assertEquals(1, mockInstance.setSharingFilterForPartnersCallCount)
+        assertNull(mockInstance.setSharingFilterForPartnersParam)
+    }
+
+    @Test
+    fun setSharingFilter_wrongType_doesNotResetFilter() {
+        val payload = JSONObject().put(SharingFilterParams.SHARING_FILTER, "all")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+        assertEquals(0, mockInstance.setSharingFilterForPartnersCallCount)
+    }
+
+    @Test
     fun anonymizeUser_true_callsSDK() {
         val payload = JSONObject().put(Tracking.ANONYMIZE_USER, true)
         remoteCommand.parseCommands(arrayOf(Commands.ANONYMIZE_USER), payload)

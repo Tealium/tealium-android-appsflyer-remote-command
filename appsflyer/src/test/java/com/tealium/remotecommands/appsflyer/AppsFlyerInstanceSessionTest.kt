@@ -222,8 +222,8 @@ class AppsFlyerInstanceSessionTest {
             appsFlyerLib.setDebugLog(true)
             appsFlyerLib.setLogLevel(AFLogger.LogLevel.DEBUG)
             appsFlyerLib.enableFacebookDeferredApplinks(true)
-            appsFlyerLib.init("key", any(), any())
             appsFlyerLib.anonymizeUser(true)
+            appsFlyerLib.init("key", any(), any())
             appsFlyerLib.registerSessionReadyListener(any())
         }
     }
@@ -249,10 +249,47 @@ class AppsFlyerInstanceSessionTest {
             appsFlyerLib.appendParametersToDeepLinkingURL("promo", parameters)
             appsFlyerLib.addPushNotificationDeepLinkPath("af_push_link")
             appsFlyerLib.setDeepLinkTimeout(1500L)
-            appsFlyerLib.init("key", any(), any())
             appsFlyerLib.anonymizeUser(true)
+            appsFlyerLib.init("key", any(), any())
             appsFlyerLib.registerSessionReadyListener(any())
         }
+    }
+
+    @Test
+    fun initialize_firstSessionSettings_appliedBeforeInit() {
+        instance(AppsFlyerSessionMode.APP_MANAGED).initialize(
+            "key",
+            mapOf(
+                Settings.ANONYMIZE_USER to true,
+                Settings.DISABLE_ADVERTISING_IDENTIFIERS to true,
+                Settings.TIME_BETWEEN_SESSIONS to 10
+            )
+        )
+
+        verifyOrder {
+            appsFlyerLib.setMinTimeBetweenSessions(10)
+            appsFlyerLib.anonymizeUser(true)
+            appsFlyerLib.setDisableAdvertisingIdentifiers(true)
+            appsFlyerLib.init("key", any(), any())
+        }
+    }
+
+    @Test
+    fun initialize_deepLinkParametersWithNonStringValue_entryIsSkippedWithWarning() {
+        val valid = mapOf("pid" to "email")
+        instance().initialize(
+            "key",
+            mapOf(
+                Settings.DEEP_LINK_PARAMETERS to listOf(
+                    mapOf(DeepLinkParameterEntry.CONTAINS to "retarget", DeepLinkParameterEntry.PARAMETERS to mapOf("is_retargeting" to true)),
+                    mapOf(DeepLinkParameterEntry.CONTAINS to "promo", DeepLinkParameterEntry.PARAMETERS to valid)
+                )
+            )
+        )
+
+        verify(exactly = 0) { appsFlyerLib.appendParametersToDeepLinkingURL("retarget", any()) }
+        verify(exactly = 1) { appsFlyerLib.appendParametersToDeepLinkingURL("promo", valid) }
+        verify(exactly = 1) { logger.warning(match { it.contains(Settings.DEEP_LINK_PARAMETERS) }) }
     }
 
     @Test

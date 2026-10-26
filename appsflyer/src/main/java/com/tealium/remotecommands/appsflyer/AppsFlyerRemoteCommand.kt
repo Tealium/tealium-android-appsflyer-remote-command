@@ -267,9 +267,15 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setSharingFilterForPartners(payload: JSONObject) {
-        val sharingFilterJsonArray: JSONArray? = payload.optJSONArray(SharingFilterParams.SHARING_FILTER)
-        // A missing array resets the filter — the wrapper calls setSharingFilterForPartners() with no arguments.
-        val sharingFilterArray = sharingFilterJsonArray?.let { toList(it).toTypedArray() }
+        // A missing or null array resets the filter — the wrapper calls setSharingFilterForPartners() with no
+        // arguments. Any other type is rejected, otherwise a value like "all" would silently re-enable sharing.
+        val sharingFilterArray = if (payload.isNull(SharingFilterParams.SHARING_FILTER)) {
+            null
+        } else {
+            val sharingFilterJsonArray = payload.opt(SharingFilterParams.SHARING_FILTER) as? JSONArray
+                ?: throw AppsFlyerCommandError.invalidParameterType(SharingFilterParams.SHARING_FILTER, "Array of Strings")
+            toList(sharingFilterJsonArray).toTypedArray()
+        }
         appsFlyerInstance.setSharingFilterForPartners(sharingFilterArray)
     }
 
