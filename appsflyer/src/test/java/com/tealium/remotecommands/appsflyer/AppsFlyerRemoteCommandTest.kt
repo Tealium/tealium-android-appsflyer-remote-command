@@ -1181,6 +1181,182 @@ class AppsFlyerRemoteCommandTest {
         assertEquals(expected.toList(), actual!!.toList())
     }
 
+    // Values that org.json's optString would have converted to a String in 1.4.0.
+    private val nonStringValues: List<Any> =
+        listOf(JSONObject.NULL, 123, true, JSONObject().put("k", "v"), JSONArray().put("v"))
+
+    private fun assertNonStringRejected(command: String, key: String, others: JSONObject = JSONObject()) {
+        for (value in nonStringValues) {
+            val payload = JSONObject(others.toString()).put(key, value)
+            remoteCommand.parseCommands(arrayOf(command), payload)
+            assertTrue("$command accepted $key = $value", mockInstance.verifyNoCalls())
+        }
+    }
+
+    @Test
+    fun setHost_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_HOST, Host.HOST, JSONObject().put(Host.HOST_PREFIX, "my_prefix"))
+        assertNonStringRejected(Commands.SET_HOST, Host.HOST_PREFIX, JSONObject().put(Host.HOST, "example.com"))
+    }
+
+    @Test
+    fun setHost_emptyStrings_callsSDK() {
+        val payload = JSONObject().put(Host.HOST, "").put(Host.HOST_PREFIX, "")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_HOST), payload)
+        assertEquals(1, mockInstance.setHostCallCount)
+        assertEquals("", mockInstance.setHostHostParam)
+        assertEquals("", mockInstance.setHostPrefixParam)
+    }
+
+    @Test
+    fun setCurrencyCode_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_CURRENCY_CODE, TransactionProperties.CURRENCY)
+    }
+
+    @Test
+    fun setCurrencyCode_emptyString_callsSDK() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CURRENCY_CODE), JSONObject().put(TransactionProperties.CURRENCY, ""))
+        assertEquals(1, mockInstance.setCurrencyCodeCallCount)
+        assertEquals("", mockInstance.setCurrencyCodeParam)
+    }
+
+    @Test
+    fun setCustomerId_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_CUSTOMER_ID, Customer.USER_ID)
+    }
+
+    @Test
+    fun setCustomerId_emptyString_callsSDK() {
+        remoteCommand.parseCommands(arrayOf(Commands.SET_CUSTOMER_ID), JSONObject().put(Customer.USER_ID, ""))
+        assertEquals(1, mockInstance.setCustomerIdCallCount)
+        assertEquals("", mockInstance.setCustomerIdParam)
+    }
+
+    @Test
+    fun logAdRevenue_nonStringValue_skipsCall() {
+        val valid = JSONObject()
+            .put(AdRevenueParams.MONETIZATION_NETWORK, "TestNetwork")
+            .put(AdRevenueParams.MEDIATION_NETWORK, "googleadmob")
+            .put(AdRevenueParams.AD_REVENUE_CURRENCY, "USD")
+            .put(AdRevenueParams.AD_REVENUE_AMOUNT, 1.99)
+        assertNonStringRejected(Commands.LOG_AD_REVENUE, AdRevenueParams.MONETIZATION_NETWORK, valid)
+        assertNonStringRejected(Commands.LOG_AD_REVENUE, AdRevenueParams.MEDIATION_NETWORK, valid)
+        assertNonStringRejected(Commands.LOG_AD_REVENUE, AdRevenueParams.AD_REVENUE_CURRENCY, valid)
+    }
+
+    @Test
+    fun setPartnerData_nonStringId_skipsCall() {
+        assertNonStringRejected(Commands.SET_PARTNER_DATA, PartnerDataParams.PARTNER_ID)
+    }
+
+    @Test
+    fun setOaid_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_OAID, StringCommandParams.OAID)
+    }
+
+    @Test
+    fun setAndroidId_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_ANDROID_ID, StringCommandParams.ANDROID_ID)
+    }
+
+    @Test
+    fun setImei_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_IMEI, StringCommandParams.IMEI)
+    }
+
+    @Test
+    fun setOutOfStore_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_OUT_OF_STORE, StringCommandParams.STORE_NAME)
+    }
+
+    @Test
+    fun setAppInviteOneLink_nonStringValue_skipsCall() {
+        assertNonStringRejected(Commands.SET_APP_INVITE_ONE_LINK, StringCommandParams.APP_INVITE_ONE_LINK_ID)
+    }
+
+    @Test
+    fun setPreinstallAttribution_nonStringValue_skipsCall() {
+        val valid = JSONObject()
+            .put(PreinstallParams.MEDIA_SOURCE, "email")
+            .put(PreinstallParams.CAMPAIGN, "summer_promo")
+            .put(PreinstallParams.SITE_ID, "site_001")
+        assertNonStringRejected(Commands.SET_PREINSTALL_ATTRIBUTION, PreinstallParams.MEDIA_SOURCE, valid)
+        assertNonStringRejected(Commands.SET_PREINSTALL_ATTRIBUTION, PreinstallParams.CAMPAIGN, valid)
+        assertNonStringRejected(Commands.SET_PREINSTALL_ATTRIBUTION, PreinstallParams.SITE_ID, valid)
+    }
+
+    @Test
+    fun setSharingFilter_nonStringElement_skipsCall() {
+        for (element in listOf(5, JSONObject.NULL, true)) {
+            val payload = JSONObject().put(SharingFilterParams.SHARING_FILTER, JSONArray().put("partner1").put(element))
+            remoteCommand.parseCommands(arrayOf(Commands.SET_SHARING_FILTER_FOR_PARTNERS), payload)
+        }
+        assertEquals(0, mockInstance.setSharingFilterForPartnersCallCount)
+    }
+
+    @Test
+    fun resolveDeepLinkUrls_nonStringElement_skipsCall() {
+        for (key in listOf(DeepLink.URLS, DeepLink.URLS_LEGACY_TIQ)) {
+            for (element in listOf(5, JSONObject.NULL, true)) {
+                val payload = JSONObject().put(key, JSONArray().put("click.example.com").put(element))
+                remoteCommand.parseCommands(arrayOf(Commands.RESOLVE_DEEPLINK_URLS), payload)
+            }
+        }
+        assertEquals(0, mockInstance.resolveDeepLinkUrlsCallCount)
+    }
+
+    @Test
+    fun resolveDeepLinkUrls_nonStringElement_errorNamesTheKeyUsed() {
+        val logger = mockk<RemoteCommandLogger>(relaxed = true)
+        val command = AppsFlyerRemoteCommand(
+            mockApplication,
+            AppsFlyerSessionMode.AUTOMATIC,
+            "testKey",
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID,
+            AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION,
+            logger
+        )
+        command.appsFlyerInstance = mockInstance
+
+        command.parseCommands(
+            arrayOf(Commands.RESOLVE_DEEPLINK_URLS),
+            JSONObject().put(DeepLink.URLS_LEGACY_TIQ, JSONArray().put(5))
+        )
+
+        verify(exactly = 1) { logger.error(match { it.contains(DeepLink.URLS_LEGACY_TIQ) }) }
+    }
+
+    @Test
+    fun initialize_jsonNullDevKey_usesConstructorKey() {
+        val payload = JSONObject().put(Config.DEV_KEY, JSONObject.NULL)
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+        assertEquals(1, mockInstance.initializeCallCount)
+        assertEquals("testKey", mockInstance.initializeDevKeyParam)
+    }
+
+    @Test
+    fun initialize_blankDevKey_usesConstructorKey() {
+        val payload = JSONObject().put(Config.DEV_KEY, " ")
+        remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), payload)
+        assertEquals("testKey", mockInstance.initializeDevKeyParam)
+    }
+
+    @Test
+    fun initialize_nonStringDevKey_skipsCall() {
+        for (value in listOf(123, true, JSONObject(), JSONArray())) {
+            remoteCommand.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject().put(Config.DEV_KEY, value))
+        }
+        assertEquals(0, mockInstance.initializeCallCount)
+    }
+
+    @Test
+    fun initialize_jsonNullDevKeyAndNoConstructorKey_skipsCall() {
+        val commandWithoutKey = AppsFlyerRemoteCommand(mockApplication, AppsFlyerSessionMode.AUTOMATIC, null)
+        commandWithoutKey.appsFlyerInstance = mockInstance
+        commandWithoutKey.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject().put(Config.DEV_KEY, JSONObject.NULL))
+        assertEquals(0, mockInstance.initializeCallCount)
+    }
+
     @Suppress("unused")
     private fun assertFalseStub(msg: String, value: Boolean) = assertFalse(msg, value)
 }

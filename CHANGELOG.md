@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `conversion_data_received` omits null values
 - Nested JSON objects and arrays in event parameters, `custom_data`, `partner_info` and `ad_revenue_additional_params` are converted to Maps and Lists before they reach the SDK
 - A missing or invalid required parameter skips that command and logs an error naming the key. Boolean keys (`stop_tracking`, `anonymize_user`, `disable_network_data`, `is_update`, `is_user_subject_to_gdpr`) take a Boolean or the String `"true"`/`"false"`; anything else is invalid
+- **Breaking:** String parameters must be Strings, as on iOS. A number, Boolean, JSON null or non-String array element (`sharing_filter`, `af_deep_link`) is rejected with an invalid-type error; 1.4.0 converted them (JSON null became `"null"`)
+- `sethost`, `setcurrencycode` and `setcustomerid` forward an empty String to the SDK; 1.4.0 skipped the call and logged an error
 - Internal: built with Kotlin 2.0.21, compileSdk and targetSdk 35 and a Java 11 target; the example app runs in `AUTOMATIC` mode, uses `setuseremail`, maps the new commands and maps location to `af_lat` and `af_long`
 
 ### Removed

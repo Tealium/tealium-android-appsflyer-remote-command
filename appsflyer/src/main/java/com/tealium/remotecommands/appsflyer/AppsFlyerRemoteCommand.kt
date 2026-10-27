@@ -155,7 +155,9 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun initialize(payload: JSONObject) {
-        val devKey: String = payload.optString(Config.DEV_KEY).takeIf { it.isNotBlank() }
+        // An absent or null key falls back to the constructor key; any other non-String value is rejected.
+        val payloadDevKey = if (payload.isNull(Config.DEV_KEY)) null else requireString(payload, Config.DEV_KEY)
+        val devKey: String = payloadDevKey?.takeIf { it.isNotBlank() }
             ?: appsFlyerDevKey?.takeIf { it.isNotBlank() }
             ?: throw AppsFlyerCommandError.missingParameter(Config.DEV_KEY)
         val config: JSONObject? = payload.optJSONObject(Config.SETTINGS)
@@ -178,30 +180,18 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setHost(payload: JSONObject) {
-        if (!payload.has(Host.HOST)) {
-            throw AppsFlyerCommandError.missingParameter(Host.HOST)
-        }
-        if (!payload.has(Host.HOST_PREFIX)) {
-            throw AppsFlyerCommandError.missingParameter(Host.HOST_PREFIX)
-        }
-        val host: String = payload.optString(Host.HOST)
-        val hostPrefix: String = payload.optString(Host.HOST_PREFIX)
+        val host: String = requireString(payload, Host.HOST)
+        val hostPrefix: String = requireString(payload, Host.HOST_PREFIX)
         appsFlyerInstance.setHost(host, hostPrefix)
     }
 
     private fun setCurrencyCode(payload: JSONObject) {
-        if (!payload.has(TransactionProperties.CURRENCY)) {
-            throw AppsFlyerCommandError.missingParameter(TransactionProperties.CURRENCY)
-        }
-        val currencyCode: String = payload.optString(TransactionProperties.CURRENCY)
+        val currencyCode: String = requireString(payload, TransactionProperties.CURRENCY)
         appsFlyerInstance.setCurrencyCode(currencyCode)
     }
 
     private fun setCustomerId(payload: JSONObject) {
-        if (!payload.has(Customer.USER_ID)) {
-            throw AppsFlyerCommandError.missingParameter(Customer.USER_ID)
-        }
-        val id: String = payload.optString(Customer.USER_ID)
+        val id: String = requireString(payload, Customer.USER_ID)
         appsFlyerInstance.setCustomerId(id)
     }
 
@@ -212,19 +202,9 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun logAdRevenue(payload: JSONObject) {
-        if (!payload.has(AdRevenueParams.MONETIZATION_NETWORK)) {
-            throw AppsFlyerCommandError.missingParameter(AdRevenueParams.MONETIZATION_NETWORK)
-        }
-        if (!payload.has(AdRevenueParams.MEDIATION_NETWORK)) {
-            throw AppsFlyerCommandError.missingParameter(AdRevenueParams.MEDIATION_NETWORK)
-        }
-        if (!payload.has(AdRevenueParams.AD_REVENUE_CURRENCY)) {
-            throw AppsFlyerCommandError.missingParameter(AdRevenueParams.AD_REVENUE_CURRENCY)
-        }
-
-        val monetizationNetwork = payload.optString(AdRevenueParams.MONETIZATION_NETWORK)
-        val mediationNetworkString = payload.optString(AdRevenueParams.MEDIATION_NETWORK)
-        val currency = payload.optString(AdRevenueParams.AD_REVENUE_CURRENCY)
+        val monetizationNetwork = requireString(payload, AdRevenueParams.MONETIZATION_NETWORK)
+        val mediationNetworkString = requireString(payload, AdRevenueParams.MEDIATION_NETWORK)
+        val currency = requireString(payload, AdRevenueParams.AD_REVENUE_CURRENCY)
         val revenue = payload.optDouble(AdRevenueParams.AD_REVENUE_AMOUNT)
 
         if (revenue.isNaN()) {
@@ -258,10 +238,7 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setPartnerData(payload: JSONObject) {
-        if (!payload.has(PartnerDataParams.PARTNER_ID)) {
-            throw AppsFlyerCommandError.missingParameter(PartnerDataParams.PARTNER_ID)
-        }
-        val partnerId: String = payload.optString(PartnerDataParams.PARTNER_ID)
+        val partnerId: String = requireString(payload, PartnerDataParams.PARTNER_ID)
         val partnerInfoMap = payload.optJSONObject(PartnerDataParams.PARTNER_INFO).toMap()
         appsFlyerInstance.setPartnerData(partnerId, partnerInfoMap)
     }
@@ -274,7 +251,7 @@ open class AppsFlyerRemoteCommand internal constructor(
         } else {
             val sharingFilterJsonArray = payload.opt(SharingFilterParams.SHARING_FILTER) as? JSONArray
                 ?: throw AppsFlyerCommandError.invalidParameterType(SharingFilterParams.SHARING_FILTER, "Array of Strings")
-            toList(sharingFilterJsonArray).toTypedArray()
+            toList(sharingFilterJsonArray, SharingFilterParams.SHARING_FILTER).toTypedArray()
         }
         appsFlyerInstance.setSharingFilterForPartners(sharingFilterArray)
     }
@@ -284,10 +261,10 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun resolveDeepLinkUrls(payload: JSONObject) {
-        val deepLinkJsonArray: JSONArray = payload.optJSONArray(DeepLink.URLS)
-            ?: payload.optJSONArray(DeepLink.URLS_LEGACY_TIQ)
+        val (urlsKey, deepLinkJsonArray) = payload.optJSONArray(DeepLink.URLS)?.let { DeepLink.URLS to it }
+            ?: payload.optJSONArray(DeepLink.URLS_LEGACY_TIQ)?.let { DeepLink.URLS_LEGACY_TIQ to it }
             ?: throw AppsFlyerCommandError.missingParameter(DeepLink.URLS)
-        appsFlyerInstance.resolveDeepLinkUrls(toList(deepLinkJsonArray))
+        appsFlyerInstance.resolveDeepLinkUrls(toList(deepLinkJsonArray, urlsKey))
     }
 
     private fun stopTracking(payload: JSONObject) {
@@ -295,34 +272,22 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setOaid(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.OAID)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.OAID)
-        }
-        val oaid = payload.optString(StringCommandParams.OAID)
+        val oaid = requireString(payload, StringCommandParams.OAID)
         appsFlyerInstance.setOaid(oaid)
     }
 
     private fun setAndroidId(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.ANDROID_ID)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.ANDROID_ID)
-        }
-        val androidId = payload.optString(StringCommandParams.ANDROID_ID)
+        val androidId = requireString(payload, StringCommandParams.ANDROID_ID)
         appsFlyerInstance.setAndroidId(androidId)
     }
 
     private fun setImei(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.IMEI)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.IMEI)
-        }
-        val imei = payload.optString(StringCommandParams.IMEI)
+        val imei = requireString(payload, StringCommandParams.IMEI)
         appsFlyerInstance.setImei(imei)
     }
 
     private fun setOutOfStore(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.STORE_NAME)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.STORE_NAME)
-        }
-        val storeName = payload.optString(StringCommandParams.STORE_NAME)
+        val storeName = requireString(payload, StringCommandParams.STORE_NAME)
         appsFlyerInstance.setOutOfStore(storeName)
     }
 
@@ -331,26 +296,14 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun setAppInviteOneLink(payload: JSONObject) {
-        if (!payload.has(StringCommandParams.APP_INVITE_ONE_LINK_ID)) {
-            throw AppsFlyerCommandError.missingParameter(StringCommandParams.APP_INVITE_ONE_LINK_ID)
-        }
-        val oneLinkId = payload.optString(StringCommandParams.APP_INVITE_ONE_LINK_ID)
+        val oneLinkId = requireString(payload, StringCommandParams.APP_INVITE_ONE_LINK_ID)
         appsFlyerInstance.setAppInviteOneLink(oneLinkId)
     }
 
     private fun setPreinstallAttribution(payload: JSONObject) {
-        if (!payload.has(PreinstallParams.MEDIA_SOURCE)) {
-            throw AppsFlyerCommandError.missingParameter(PreinstallParams.MEDIA_SOURCE)
-        }
-        if (!payload.has(PreinstallParams.CAMPAIGN)) {
-            throw AppsFlyerCommandError.missingParameter(PreinstallParams.CAMPAIGN)
-        }
-        if (!payload.has(PreinstallParams.SITE_ID)) {
-            throw AppsFlyerCommandError.missingParameter(PreinstallParams.SITE_ID)
-        }
-        val mediaSource = payload.optString(PreinstallParams.MEDIA_SOURCE)
-        val campaign = payload.optString(PreinstallParams.CAMPAIGN)
-        val siteId = payload.optString(PreinstallParams.SITE_ID)
+        val mediaSource = requireString(payload, PreinstallParams.MEDIA_SOURCE)
+        val campaign = requireString(payload, PreinstallParams.CAMPAIGN)
+        val siteId = requireString(payload, PreinstallParams.SITE_ID)
         appsFlyerInstance.setPreinstallAttribution(mediaSource, campaign, siteId)
     }
 
@@ -430,12 +383,12 @@ open class AppsFlyerRemoteCommand internal constructor(
         )
     }
 
-    private fun toList(jsonArray: JSONArray): List<String> {
-        val list = mutableListOf<String>()
-        for (i in 0 until jsonArray.length()) {
-            list.add(jsonArray.getString(i))
+    // Elements must already be Strings; getString would turn 5 into "5" and null into "null".
+    private fun toList(jsonArray: JSONArray, key: String): List<String> {
+        return List(jsonArray.length()) { i ->
+            jsonArray.opt(i) as? String
+                ?: throw AppsFlyerCommandError.invalidParameterType(key, "Array of Strings")
         }
-        return list
     }
 
     private fun filterPayload(jsonObject: JSONObject): JSONObject {
