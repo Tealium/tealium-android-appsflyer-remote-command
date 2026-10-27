@@ -14,8 +14,6 @@ enum class AppsFlyerSessionMode {
     /**
      * When initialized, the remote command additionally registers the session-ready listener, which
      * calls `AppsFlyerLib.getInstance().start()`. The app must not register a listener of its own.
-     * If the SDK already reports the session as ready when the remote command gets there, it logs an
-     * error and registers nothing.
      *
      * The SDK calls the listener on a background thread.
      */
