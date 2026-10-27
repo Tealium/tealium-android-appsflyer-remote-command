@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A setting with the wrong type no longer throws during `initialize`; it is ignored. Boolean settings also accept `"true"`/`"false"` and log a warning for any other invalid value
 - `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array (e.g. `"all"`) instead of resetting the filter; omit it or send null to reset
 - `deep_link_parameters` entries whose `parameters` contain non-String keys or values are skipped with a warning, matching iOS
+- `sethost` passed `host` and `host_prefix` to the SDK in swapped order in 1.4.0 (`AppsFlyerLib.setHost(host, prefix)`, but the SDK signature is `setHost(hostPrefixName, hostName)`). If you swapped your `host` and `host_prefix` mappings to work around it, swap them back
 
 ### Changed
 - AppsFlyer Android SDK `[7.0.2,8)` (SDK 6 is no longer supported); Tealium `remotecommands` 1.0.3 (was 1.0.1)
