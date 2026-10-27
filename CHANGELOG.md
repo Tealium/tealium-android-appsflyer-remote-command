@@ -40,7 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** every command listed under Added is now built in, not a custom event. If your tag sends a custom event with one of those names, rename it
 - **Breaking:** custom event names keep their original case (1.4.0 lowercased them), so check your dashboards for the new names. Standard events are still matched case-insensitively
 - **Breaking:** app-open attribution now comes from the SDK's deep link listener (SDK 7 removed `onAppOpenAttribution`). To keep tracking `app_open_attribution`, subscribe the RemoteCommand: `AppsFlyerLib.getInstance().subscribeForDeepLink(command)`. Apps with their own listener forward every result to `command.onDeepLinking(result)`. Deferred links are skipped, because `conversion_data_received` reports them. The payload is the OneLink click event. See [Deep links](README.md#deep-links)
-- `app_open_attribution` failures are reported as `appsflyer_error` with `error_name` `app_open_attribution_failure`, and `error_message` is the SDK's deep link error name
+- **Breaking:** `appsflyer_error` uses the iOS keys: the error text is in `error_description` (was `error_message`), and a conversion data failure has `error_name` `conversion_data_failure` (was `conversion_data_request_failure`). Update any tag, rule or extension that reads them
+- `app_open_attribution` failures are reported as `appsflyer_error` with `error_name` `app_open_attribution_failure`, and `error_description` is the SDK's deep link error name
 - Events, `tracklocation` and `logadrevenue` queue until `initialize` has run with a dev key, then are sent in order
 - `stoptracking` with `stop_tracking` `false` calls `start()` after `stop(false)` in `AUTOMATIC` mode, once `initialize` has run. In `APP_MANAGED` mode the app restarts the session
 - `conversion_data_received` omits null values

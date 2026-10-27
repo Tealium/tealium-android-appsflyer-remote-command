@@ -391,8 +391,8 @@ object AttributionEvents {
     const val APPSFLYER_ERROR = "appsflyer_error"
 
     const val KEY_ERROR_NAME = "error_name"
-    const val KEY_ERROR_MESSAGE = "error_message"
-    const val ERROR_CONVERSION_DATA_REQUEST_FAILURE = "conversion_data_request_failure"
+    const val KEY_ERROR_DESCRIPTION = "error_description"
+    const val ERROR_CONVERSION_DATA_FAILURE = "conversion_data_failure"
     const val ERROR_APP_OPEN_ATTRIBUTION_FAILURE = "app_open_attribution_failure"
 }
 

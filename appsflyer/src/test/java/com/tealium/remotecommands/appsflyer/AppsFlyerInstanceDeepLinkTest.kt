@@ -124,7 +124,7 @@ class AppsFlyerInstanceDeepLinkTest {
                 AttributionEvents.APPSFLYER_ERROR,
                 mapOf(
                     AttributionEvents.KEY_ERROR_NAME to AttributionEvents.ERROR_APP_OPEN_ATTRIBUTION_FAILURE,
-                    AttributionEvents.KEY_ERROR_MESSAGE to "TIMEOUT"
+                    AttributionEvents.KEY_ERROR_DESCRIPTION to "TIMEOUT"
                 )
             )
         }
@@ -137,7 +137,7 @@ class AppsFlyerInstanceDeepLinkTest {
         verify(exactly = 1) {
             context.track(
                 AttributionEvents.APPSFLYER_ERROR,
-                match { it[AttributionEvents.KEY_ERROR_MESSAGE] == "DEVELOPER_ERROR" }
+                match { it[AttributionEvents.KEY_ERROR_DESCRIPTION] == "DEVELOPER_ERROR" }
             )
         }
     }

@@ -303,7 +303,7 @@ class AppsFlyerInstance internal constructor(
             DeepLinkResult.Status.ERROR -> {
                 val map = HashMap<String, Any>()
                 map[AttributionEvents.KEY_ERROR_NAME] = AttributionEvents.ERROR_APP_OPEN_ATTRIBUTION_FAILURE
-                map[AttributionEvents.KEY_ERROR_MESSAGE] = result.error?.name ?: ""
+                map[AttributionEvents.KEY_ERROR_DESCRIPTION] = result.error?.name ?: ""
 
                 remoteCommandContext.track(AttributionEvents.APPSFLYER_ERROR, map)
             }
@@ -435,8 +435,8 @@ class AppsFlyerInstance internal constructor(
 
             override fun onConversionDataFail(errorMessage: String) {
                 val map = HashMap<String, Any>()
-                map[AttributionEvents.KEY_ERROR_NAME] = AttributionEvents.ERROR_CONVERSION_DATA_REQUEST_FAILURE
-                map[AttributionEvents.KEY_ERROR_MESSAGE] = errorMessage
+                map[AttributionEvents.KEY_ERROR_NAME] = AttributionEvents.ERROR_CONVERSION_DATA_FAILURE
+                map[AttributionEvents.KEY_ERROR_DESCRIPTION] = errorMessage
 
                 remoteCommandContext.track(AttributionEvents.APPSFLYER_ERROR, map)
             }
