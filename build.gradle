@@ -1,10 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.9.23'
+    ext.kotlin_version = '2.0.21'
     ext.mockk_version = '1.13.9'
-    ext.tealium_appsflyer_version = '1.5.0'
-    ext.appsflyer_version = "[6.5,7)"
+    ext.tealium_appsflyer_version = '2.0.0'
+    ext.appsflyer_version = "[7.0.2,8)"
 
     repositories {
         google()
