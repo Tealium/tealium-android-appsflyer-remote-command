@@ -167,15 +167,8 @@ open class AppsFlyerRemoteCommand internal constructor(
     }
 
     private fun trackLocation(payload: JSONObject) {
-        val latitude: Double = payload.optDouble(Location.LATITUDE)
-        val longitude: Double = payload.optDouble(Location.LONGITUDE)
-
-        if (latitude.isNaN()) {
-            throw AppsFlyerCommandError.missingParameter(Location.LATITUDE)
-        }
-        if (longitude.isNaN()) {
-            throw AppsFlyerCommandError.missingParameter(Location.LONGITUDE)
-        }
+        val latitude: Double = requireDouble(payload, Location.LATITUDE)
+        val longitude: Double = requireDouble(payload, Location.LONGITUDE)
         appsFlyerInstance.trackLocation(latitude, longitude)
     }
 
@@ -205,11 +198,7 @@ open class AppsFlyerRemoteCommand internal constructor(
         val monetizationNetwork = requireString(payload, AdRevenueParams.MONETIZATION_NETWORK)
         val mediationNetworkString = requireString(payload, AdRevenueParams.MEDIATION_NETWORK)
         val currency = requireString(payload, AdRevenueParams.AD_REVENUE_CURRENCY)
-        val revenue = payload.optDouble(AdRevenueParams.AD_REVENUE_AMOUNT)
-
-        if (revenue.isNaN()) {
-            throw AppsFlyerCommandError.missingParameter(AdRevenueParams.AD_REVENUE_AMOUNT)
-        }
+        val revenue = requireDouble(payload, AdRevenueParams.AD_REVENUE_AMOUNT)
 
         val mediationNetwork = mediationNetworkString.toMediationNetwork()
             ?: throw AppsFlyerCommandError.invalidParameterValue(
@@ -351,6 +340,21 @@ open class AppsFlyerRemoteCommand internal constructor(
             is String -> value.toLongOrNull()
             else -> null
         } ?: throw AppsFlyerCommandError.invalidParameterType(key, "Long or numeric String")
+    }
+
+    // Webview data layers send numeric variables as Strings, so a numeric String is accepted as on iOS.
+    // A non-finite result is rejected, otherwise the String "Infinity" would reach the SDK as the ad revenue.
+    // A JSON null is present but not a number, so it is an invalid type, as on iOS.
+    private fun requireDouble(payload: JSONObject, key: String): Double {
+        if (!payload.has(key)) {
+            throw AppsFlyerCommandError.missingParameter(key)
+        }
+        return when (val value = payload.opt(key)) {
+            is Number -> value.toDouble()
+            is String -> value.trim().toDoubleOrNull()
+            else -> null
+        }?.takeIf { it.isFinite() }
+            ?: throw AppsFlyerCommandError.invalidParameterType(key, "Double, Int or numeric String")
     }
 
     private fun optBooleanValue(payload: JSONObject, key: String): Boolean? = toBooleanValue(payload.opt(key))
