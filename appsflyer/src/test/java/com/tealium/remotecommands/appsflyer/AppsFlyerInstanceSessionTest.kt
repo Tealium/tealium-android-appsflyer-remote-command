@@ -258,6 +258,20 @@ class AppsFlyerInstanceSessionTest {
     }
 
     @Test
+    fun deepLinkCommandsBeforeInitialize_reachSdkBeforeInit() {
+        val instance = instance()
+        instance.resolveDeepLinkUrls(listOf("click.example.com"))
+        instance.addPushNotificationDeepLinkPath(listOf("af_push_link"))
+        instance.initialize("key", null)
+
+        verifyOrder {
+            appsFlyerLib.setResolveDeepLinkURLs("click.example.com")
+            appsFlyerLib.addPushNotificationDeepLinkPath("af_push_link")
+            appsFlyerLib.init("key", any(), any())
+        }
+    }
+
+    @Test
     fun initialize_firstSessionSettings_appliedBeforeInit() {
         instance(AppsFlyerSessionMode.APP_MANAGED).initialize(
             "key",
@@ -448,9 +462,7 @@ class AppsFlyerInstanceSessionTest {
         instance.setPartnerData("partner", null)
         instance.setSharingFilterForPartners(null)
         instance.anonymizeUser(true)
-        instance.resolveDeepLinkUrls(listOf("click.example.com"))
         instance.stopTracking(false)
-        instance.addPushNotificationDeepLinkPath(listOf("af_push_link"))
         instance.logSession()
         instance.setOaid("oaid")
         instance.setAndroidId("androidId")

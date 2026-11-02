@@ -38,7 +38,7 @@ AppsFlyer SDK 7 keeps a single session-ready listener, and `AppsFlyerLib.getInst
 
 AppsFlyer SDK 7 does not keep setter values across launches. Send `setcustomerid`, `setconsentdata`, `anonymizeuser`, `setcurrencycode`, `setuseremail` and similar commands on every launch, from values your app stores itself, and send `setconsentdata` before `initialize` so consent is in place before the first session: `"launch": "setconsentdata,initialize"`. For a value such as the customer user ID or consent to reach the install event in `APP_MANAGED`, set it on `AppsFlyerLib.getInstance()` directly before you call `start()`: commands sent before `initialize` run right after `init()`, which can be after your listener's `start()`.
 
-"Initialized" means the `initialize` command ran with a dev key, from `app_dev_key` or the constructor's `appsFlyerDevKey`. It calls `AppsFlyerLib.init` and applies the settings, but no longer starts the session. The RemoteCommand does not detect an `init()` that the app calls itself, so keep `initialize` mapped in both modes. Every other command queues until it has run, then runs in command order.
+"Initialized" means the `initialize` command ran with a dev key, from `app_dev_key` or the constructor's `appsFlyerDevKey`. It calls `AppsFlyerLib.init` and applies the settings, but no longer starts the session. The RemoteCommand does not detect an `init()` that the app calls itself, so keep `initialize` mapped in both modes. Every other command queues until it has run, then runs in command order, except `resolvedeeplinkurls`, which runs immediately so that, sent before `initialize` (e.g. `"resolvedeeplinkurls,initialize"`), its domains reach the SDK before `init()`.
 
 ### Constructing the RemoteCommand
 

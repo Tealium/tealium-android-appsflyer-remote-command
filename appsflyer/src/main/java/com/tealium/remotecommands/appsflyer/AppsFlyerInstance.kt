@@ -84,8 +84,7 @@ class AppsFlyerInstance internal constructor(
                 (settings[Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH] as? List<*>)?.let { pathList ->
                     val stringPathList = pathList.filterIsInstance<String>()
                     if (stringPathList.isNotEmpty()) {
-                        // Calls the SDK directly, because the override would queue the call until after init().
-                        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*stringPathList.toTypedArray())
+                        addPushNotificationDeepLinkPath(stringPathList)
                     }
                 }
             }
@@ -232,8 +231,10 @@ class AppsFlyerInstance internal constructor(
         whenReady { AppsFlyerLib.getInstance().anonymizeUser(anonymize) }
     }
 
+    // Unlike the other commands, this and addPushNotificationDeepLinkPath skip the queue: they are deep link settings that
+    // must reach the SDK before init() starts processing the launch intent. Running out of command order is harmless.
     override fun resolveDeepLinkUrls(links: List<String>) {
-        whenReady { AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*links.toTypedArray()) }
+        AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*links.toTypedArray())
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
@@ -250,7 +251,7 @@ class AppsFlyerInstance internal constructor(
     }
 
     override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
-        whenReady { AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*deepLinkPath.toTypedArray()) }
+        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*deepLinkPath.toTypedArray())
     }
 
     override fun logSession() {
@@ -371,8 +372,9 @@ class AppsFlyerInstance internal constructor(
 
     private fun isReady(): Boolean = synchronized(lock) { readiness != Readiness.PENDING }
 
-    // The SDK has no isInitialized getter, so calls wait for our own init(). Every command waits, not only those that
-    // need credentials, so a setter cannot overtake an event mapped before it (e.g. clearUserPii before logout).
+    // The SDK has no isInitialized getter, so calls wait for our own init(). Every command except the deep link settings
+    // waits, not only those that need credentials, so a setter cannot overtake an event mapped before it (e.g.
+    // clearUserPii before logout).
     private fun whenReady(call: () -> Unit) {
         synchronized(lock) {
             if (readiness != Readiness.READY) {
