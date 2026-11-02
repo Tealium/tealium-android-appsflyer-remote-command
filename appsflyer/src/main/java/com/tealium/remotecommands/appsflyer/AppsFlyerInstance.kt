@@ -84,7 +84,8 @@ class AppsFlyerInstance internal constructor(
                 (settings[Settings.PUSH_NOTIFICATION_DEEP_LINK_PATH] as? List<*>)?.let { pathList ->
                     val stringPathList = pathList.filterIsInstance<String>()
                     if (stringPathList.isNotEmpty()) {
-                        addPushNotificationDeepLinkPath(stringPathList)
+                        // Calls the SDK directly, because the override would queue the call until after init().
+                        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*stringPathList.toTypedArray())
                     }
                 }
             }
@@ -105,7 +106,8 @@ class AppsFlyerInstance internal constructor(
 
             if (settings.containsKey(Settings.ANONYMIZE_USER)) {
                 booleanSetting(settings, Settings.ANONYMIZE_USER)?.let { shouldAnonymizeUser ->
-                    this.anonymizeUser(shouldAnonymizeUser)
+                    // Calls the SDK directly, because the override would queue the call until after init().
+                    AppsFlyerLib.getInstance().anonymizeUser(shouldAnonymizeUser)
                 }
             }
 
@@ -175,39 +177,39 @@ class AppsFlyerInstance internal constructor(
     }
 
     override fun setHost(host: String, hostPrefix: String) {
-        AppsFlyerLib.getInstance().setHost(hostPrefix, host)
+        whenReady { AppsFlyerLib.getInstance().setHost(hostPrefix, host) }
     }
 
     override fun setUserEmail(email: String) {
-        AppsFlyerLib.getInstance().setUserEmail(email)
+        whenReady { AppsFlyerLib.getInstance().setUserEmail(email) }
     }
 
     override fun setUserFirstName(firstName: String) {
-        AppsFlyerLib.getInstance().setUserFirstName(firstName)
+        whenReady { AppsFlyerLib.getInstance().setUserFirstName(firstName) }
     }
 
     override fun setUserLastName(lastName: String) {
-        AppsFlyerLib.getInstance().setUserLastName(lastName)
+        whenReady { AppsFlyerLib.getInstance().setUserLastName(lastName) }
     }
 
     override fun setUserFbLoginId(fbLoginId: Long) {
-        AppsFlyerLib.getInstance().setUserFbLoginId(fbLoginId)
+        whenReady { AppsFlyerLib.getInstance().setUserFbLoginId(fbLoginId) }
     }
 
     override fun clearUserPii() {
-        AppsFlyerLib.getInstance().clearUserPii()
+        whenReady { AppsFlyerLib.getInstance().clearUserPii() }
     }
 
     override fun setCurrencyCode(currency: String) {
-        AppsFlyerLib.getInstance().setCurrencyCode(currency)
+        whenReady { AppsFlyerLib.getInstance().setCurrencyCode(currency) }
     }
 
     override fun setCustomerId(id: String) {
-        AppsFlyerLib.getInstance().setCustomerUserId(id)
+        whenReady { AppsFlyerLib.getInstance().setCustomerUserId(id) }
     }
 
     override fun setUserPhone(countryCode: String, phoneNumber: String) {
-        AppsFlyerLib.getInstance().setUserPhone(countryCode, phoneNumber)
+        whenReady { AppsFlyerLib.getInstance().setUserPhone(countryCode, phoneNumber) }
     }
 
     override fun logAdRevenue(adRevenueData: AFAdRevenueData, additionalParameters: Map<String, Any>?) {
@@ -215,73 +217,76 @@ class AppsFlyerInstance internal constructor(
     }
 
     override fun setConsentData(consent: AppsFlyerConsent) {
-        AppsFlyerLib.getInstance().setConsentData(consent)
+        whenReady { AppsFlyerLib.getInstance().setConsentData(consent) }
     }
 
     override fun setPartnerData(partnerId: String, partnerInfo: Map<String, Any>?) {
-        AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerInfo)
+        whenReady { AppsFlyerLib.getInstance().setPartnerData(partnerId, partnerInfo) }
     }
 
     override fun setSharingFilterForPartners(partners: Array<String>?) {
-        AppsFlyerLib.getInstance().setSharingFilterForPartners(*(partners ?: emptyArray()))
+        whenReady { AppsFlyerLib.getInstance().setSharingFilterForPartners(*(partners ?: emptyArray())) }
     }
 
     override fun anonymizeUser(anonymize: Boolean) {
-        AppsFlyerLib.getInstance().anonymizeUser(anonymize)
+        whenReady { AppsFlyerLib.getInstance().anonymizeUser(anonymize) }
     }
 
     override fun resolveDeepLinkUrls(links: List<String>) {
-        val urlLinks = links.toTypedArray()
-        AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*urlLinks)
+        whenReady { AppsFlyerLib.getInstance().setResolveDeepLinkURLs(*links.toTypedArray()) }
     }
 
     override fun stopTracking(isTrackingStopped: Boolean) {
-        AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
-        // The SDK restarts tracking with stop(false) followed by start(). In APP_MANAGED mode the app restarts it.
-        if (!isTrackingStopped && (sessionMode == AppsFlyerSessionMode.AUTOMATIC) && isReady()) {
-            AppsFlyerLib.getInstance().start()
+        whenReady {
+            AppsFlyerLib.getInstance().stop(isTrackingStopped, application.applicationContext)
+            // The SDK restarts tracking with stop(false) followed by start(). In APP_MANAGED mode the app restarts it.
+            // While the queue flushes, start() would overtake later queued calls such as setConsentData, so it is
+            // left to the session-ready listener, which is registered after the flush.
+            val isFlushed = synchronized(lock) { readiness == Readiness.READY }
+            if (!isTrackingStopped && (sessionMode == AppsFlyerSessionMode.AUTOMATIC) && isFlushed) {
+                AppsFlyerLib.getInstance().start()
+            }
         }
     }
 
     override fun addPushNotificationDeepLinkPath(deepLinkPath: List<String>) {
-        val pathArray = deepLinkPath.toTypedArray()
-        AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*pathArray)
+        whenReady { AppsFlyerLib.getInstance().addPushNotificationDeepLinkPath(*deepLinkPath.toTypedArray()) }
     }
 
     override fun logSession() {
-        AppsFlyerLib.getInstance().logSession(application.applicationContext)
+        whenReady { AppsFlyerLib.getInstance().logSession(application.applicationContext) }
     }
 
     override fun setOaid(oaid: String) {
-        AppsFlyerLib.getInstance().setOaidData(oaid)
+        whenReady { AppsFlyerLib.getInstance().setOaidData(oaid) }
     }
 
     override fun setAndroidId(androidId: String) {
-        AppsFlyerLib.getInstance().setAndroidIdData(androidId)
+        whenReady { AppsFlyerLib.getInstance().setAndroidIdData(androidId) }
     }
 
     override fun setImei(imei: String) {
-        AppsFlyerLib.getInstance().setImeiData(imei)
+        whenReady { AppsFlyerLib.getInstance().setImeiData(imei) }
     }
 
     override fun setOutOfStore(storeName: String) {
-        AppsFlyerLib.getInstance().setOutOfStore(storeName)
+        whenReady { AppsFlyerLib.getInstance().setOutOfStore(storeName) }
     }
 
     override fun setDisableNetworkData(disable: Boolean) {
-        AppsFlyerLib.getInstance().setDisableNetworkData(disable)
+        whenReady { AppsFlyerLib.getInstance().setDisableNetworkData(disable) }
     }
 
     override fun setAppInviteOneLink(oneLinkId: String) {
-        AppsFlyerLib.getInstance().setAppInviteOneLink(oneLinkId)
+        whenReady { AppsFlyerLib.getInstance().setAppInviteOneLink(oneLinkId) }
     }
 
     override fun setPreinstallAttribution(mediaSource: String, campaign: String, siteId: String) {
-        AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId)
+        whenReady { AppsFlyerLib.getInstance().setPreinstallAttribution(mediaSource, campaign, siteId) }
     }
 
     override fun setIsUpdate(isUpdate: Boolean) {
-        AppsFlyerLib.getInstance().setIsUpdate(isUpdate)
+        whenReady { AppsFlyerLib.getInstance().setIsUpdate(isUpdate) }
     }
 
     // Called on an SDK background thread, like the conversion listener.
@@ -366,7 +371,8 @@ class AppsFlyerInstance internal constructor(
 
     private fun isReady(): Boolean = synchronized(lock) { readiness != Readiness.PENDING }
 
-    // The SDK has no isInitialized getter, so calls that need credentials wait for our own init().
+    // The SDK has no isInitialized getter, so calls wait for our own init(). Every command waits, not only those that
+    // need credentials, so a setter cannot overtake an event mapped before it (e.g. clearUserPii before logout).
     private fun whenReady(call: () -> Unit) {
         synchronized(lock) {
             if (readiness != Readiness.READY) {

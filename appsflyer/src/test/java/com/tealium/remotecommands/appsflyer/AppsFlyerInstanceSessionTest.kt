@@ -5,9 +5,11 @@ import android.app.Application
 import com.appsflyer.AFLogger
 import com.appsflyer.AppsFlyerLib
 import com.appsflyer.share.AFAdRevenueData
+import com.appsflyer.share.AppsFlyerConsent
 import com.appsflyer.share.AppsFlyerConversionListener
 import com.appsflyer.share.SessionReadyListener
 import com.tealium.remotecommands.RemoteCommandContext
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -387,11 +389,79 @@ class AppsFlyerInstanceSessionTest {
     }
 
     @Test
-    fun stopTrackingFalse_automaticBeforeInitialize_doesNotStart() {
-        instance().stopTracking(false)
+    fun stopTrackingFalse_queuedBeforeInitialize_leavesStartToListener() {
+        val consent = mockk<AppsFlyerConsent>()
+        val instance = instance()
+        instance.stopTracking(false)
+        instance.setConsentData(consent)
+        verify(exactly = 0) { appsFlyerLib.stop(any(), any()) }
 
-        verify(exactly = 1) { appsFlyerLib.stop(false, any()) }
+        instance.initialize("key", null)
+
+        // A start() during the flush would run ahead of the queued consent.
         verify(exactly = 0) { appsFlyerLib.start() }
+        verifyOrder {
+            appsFlyerLib.init("key", any(), any())
+            appsFlyerLib.stop(false, any())
+            appsFlyerLib.setConsentData(consent)
+            appsFlyerLib.registerSessionReadyListener(any())
+        }
+        val listener = slot<SessionReadyListener>()
+        verify(exactly = 1) { appsFlyerLib.registerSessionReadyListener(capture(listener)) }
+        listener.captured.onSessionReady()
+        verify(exactly = 1) { appsFlyerLib.start() }
+    }
+
+    @Test
+    fun commandsBeforeInitialize_runInCommandOrder() {
+        val instance = instance()
+        instance.trackEvent("logout", null)
+        instance.clearUserPii()
+        instance.trackEvent("optout", null)
+        instance.stopTracking(true)
+
+        instance.initialize("key", null)
+
+        verifyOrder {
+            appsFlyerLib.init("key", any(), any())
+            appsFlyerLib.logEvent(application, "logout", null)
+            appsFlyerLib.clearUserPii()
+            appsFlyerLib.logEvent(application, "optout", null)
+            appsFlyerLib.stop(true, any())
+            appsFlyerLib.registerSessionReadyListener(any())
+        }
+    }
+
+    @Test
+    fun everyCommandBeforeInitialize_isQueued() {
+        val instance = instance()
+        instance.setHost("example.com", "prefix")
+        instance.setUserEmail("user@example.com")
+        instance.setUserFirstName("First")
+        instance.setUserLastName("Last")
+        instance.setUserFbLoginId(1L)
+        instance.clearUserPii()
+        instance.setCurrencyCode("USD")
+        instance.setCustomerId("id")
+        instance.setUserPhone("1", "2345678900")
+        instance.setConsentData(mockk())
+        instance.setPartnerData("partner", null)
+        instance.setSharingFilterForPartners(null)
+        instance.anonymizeUser(true)
+        instance.resolveDeepLinkUrls(listOf("click.example.com"))
+        instance.stopTracking(false)
+        instance.addPushNotificationDeepLinkPath(listOf("af_push_link"))
+        instance.logSession()
+        instance.setOaid("oaid")
+        instance.setAndroidId("androidId")
+        instance.setImei("imei")
+        instance.setOutOfStore("store")
+        instance.setDisableNetworkData(true)
+        instance.setAppInviteOneLink("oneLinkId")
+        instance.setPreinstallAttribution("source", "campaign", "site")
+        instance.setIsUpdate(true)
+
+        verify { appsFlyerLib wasNot Called }
     }
 
     @Test

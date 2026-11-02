@@ -1355,4 +1355,71 @@ class AppsFlyerRemoteCommandTest {
         commandWithoutKey.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject().put(Config.DEV_KEY, JSONObject.NULL))
         assertEquals(0, mockInstance.initializeCallCount)
     }
+
+    private fun commandWithLogger(logger: RemoteCommandLogger) = AppsFlyerRemoteCommand(
+        mockApplication,
+        AppsFlyerSessionMode.AUTOMATIC,
+        "testKey",
+        AppsFlyerRemoteCommand.DEFAULT_COMMAND_ID,
+        AppsFlyerRemoteCommand.DEFAULT_COMMAND_DESCRIPTION,
+        logger
+    ).also { it.appsFlyerInstance = mockInstance }
+
+    // Sends `valid` with `key` removed, then set to each invalid value, then to a numeric String.
+    private fun assertDoubleParameter(command: String, key: String, valid: JSONObject, forwarded: () -> Double?) {
+        val logger = mockk<RemoteCommandLogger>(relaxed = true)
+        val commandWithLogger = commandWithLogger(logger)
+        fun send(value: Any?) {
+            val payload = JSONObject(valid.toString())
+            if (value == null) payload.remove(key) else payload.put(key, value)
+            commandWithLogger.parseCommands(arrayOf(command), payload)
+        }
+
+        send(null)
+        verify(exactly = 1) { logger.error(match { it.contains("$key is required") }) }
+
+        val invalidValues = listOf("abc", "Infinity", "-Infinity", "NaN", "", JSONObject.NULL, true)
+        invalidValues.forEach { send(it) }
+        verify(exactly = invalidValues.size) {
+            logger.error(match { it.contains("Unsupported type for '$key'") && it.contains("Double, Int or numeric String") })
+        }
+        assertNull(forwarded())
+
+        send(" 12.5 ")
+        assertEquals(12.5, forwarded()!!, 0.0)
+    }
+
+    @Test
+    fun trackLocation_latitude_isValidatedAsDouble() {
+        val valid = JSONObject().put(Location.LATITUDE, 1.0).put(Location.LONGITUDE, 2.0)
+        assertDoubleParameter(Commands.TRACK_LOCATION, Location.LATITUDE, valid) { mockInstance.trackLocationLatitudeParam }
+    }
+
+    @Test
+    fun trackLocation_longitude_isValidatedAsDouble() {
+        val valid = JSONObject().put(Location.LATITUDE, 1.0).put(Location.LONGITUDE, 2.0)
+        assertDoubleParameter(Commands.TRACK_LOCATION, Location.LONGITUDE, valid) { mockInstance.trackLocationLongitudeParam }
+    }
+
+    @Test
+    fun trackLocation_intCoordinates_areForwarded() {
+        remoteCommand.parseCommands(
+            arrayOf(Commands.TRACK_LOCATION),
+            JSONObject().put(Location.LATITUDE, 33).put(Location.LONGITUDE, -7)
+        )
+        assertEquals(33.0, mockInstance.trackLocationLatitudeParam!!, 0.0)
+        assertEquals(-7.0, mockInstance.trackLocationLongitudeParam!!, 0.0)
+    }
+
+    @Test
+    fun logAdRevenue_revenueAmount_isValidatedAsDouble() {
+        val valid = JSONObject()
+            .put(AdRevenueParams.MONETIZATION_NETWORK, "TestNetwork")
+            .put(AdRevenueParams.MEDIATION_NETWORK, "googleadmob")
+            .put(AdRevenueParams.AD_REVENUE_CURRENCY, "USD")
+            .put(AdRevenueParams.AD_REVENUE_AMOUNT, 1.99)
+        assertDoubleParameter(Commands.LOG_AD_REVENUE, AdRevenueParams.AD_REVENUE_AMOUNT, valid) {
+            mockInstance.logAdRevenueDataParam?.revenue
+        }
+    }
 }
