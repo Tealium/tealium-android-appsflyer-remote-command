@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tealium AppsFlyer Remote Commmand"
+            android:text="Tealium AppsFlyer Remote Command"
             android:textAlignment="center"/>
 
         <Button

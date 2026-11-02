@@ -99,7 +99,7 @@ class AppsFlyerInstance internal constructor(
             // as soon as init() runs, so every setting that affects the first session must be applied before it.
             if (settings.containsKey(Settings.TIME_BETWEEN_SESSIONS)) {
                 nonNegativeIntSetting(settings, Settings.TIME_BETWEEN_SESSIONS)?.let { timeBetweenSessions ->
-                    setMinsBetweenSessions(timeBetweenSessions)
+                    setMinTimeBetweenSessions(timeBetweenSessions)
                 }
             }
 
@@ -352,7 +352,7 @@ class AppsFlyerInstance internal constructor(
         AppsFlyerLib.getInstance().setLogLevel(level)
     }
 
-    private fun setMinsBetweenSessions(seconds: Int) {
+    private fun setMinTimeBetweenSessions(seconds: Int) {
         AppsFlyerLib.getInstance().setMinTimeBetweenSessions(seconds)
     }
 

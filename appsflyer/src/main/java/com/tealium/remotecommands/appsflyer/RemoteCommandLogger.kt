@@ -6,7 +6,7 @@ import android.util.Log
  * Centralized logging utility for the AppsFlyer Remote Command.
  * Log verbosity is controlled via [logLevel].
  */
-internal class RemoteCommandLogger(val logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.SILENT) {
+internal class RemoteCommandLogger(val logLevel: RemoteCommandLogLevel = RemoteCommandLogLevel.ERROR) {
     private companion object {
         const val TAG = "TealiumAppsFlyer"
     }

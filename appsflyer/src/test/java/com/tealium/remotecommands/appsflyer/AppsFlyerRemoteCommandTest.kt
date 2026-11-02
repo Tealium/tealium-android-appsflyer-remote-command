@@ -13,7 +13,6 @@ import io.mockk.verify
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -1356,7 +1355,4 @@ class AppsFlyerRemoteCommandTest {
         commandWithoutKey.parseCommands(arrayOf(Commands.INITIALIZE), JSONObject().put(Config.DEV_KEY, JSONObject.NULL))
         assertEquals(0, mockInstance.initializeCallCount)
     }
-
-    @Suppress("unused")
-    private fun assertFalseStub(msg: String, value: Boolean) = assertFalse(msg, value)
 }
