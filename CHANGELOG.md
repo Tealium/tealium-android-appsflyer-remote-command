@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - One failing command no longer aborts the remaining commands in the same payload
 - A setting with the wrong type no longer throws during `initialize`; it is ignored. Boolean settings also accept `"true"`/`"false"` and log a warning for any other invalid value
 - `setsharingfilterforpartners` rejects a `sharing_filter` that is not an array (e.g. `"all"`) instead of resetting the filter; omit it or send null to reset
-- `deep_link_parameters` entries whose `parameters` contain non-String keys or values are skipped with a warning, matching iOS
+- `deep_link_parameters` entries whose `parameters` contain non-String keys or values are skipped with a warning
 - `sethost` passed `host` and `host_prefix` to the SDK in swapped order in 1.4.0 (`AppsFlyerLib.setHost(host, prefix)`, but the SDK signature is `setHost(hostPrefixName, hostName)`). If you swapped your `host` and `host_prefix` mappings to work around it, swap them back
 
 ### Changed
@@ -40,14 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** every command listed under Added is now built in, not a custom event. If your tag sends a custom event with one of those names, rename it
 - **Breaking:** custom event names keep their original case (1.4.0 lowercased them), so check your dashboards for the new names. Standard events are still matched case-insensitively
 - **Breaking:** app-open attribution now comes from the SDK's deep link listener (SDK 7 removed `onAppOpenAttribution`). To keep tracking `app_open_attribution`, subscribe the RemoteCommand: `AppsFlyerLib.getInstance().subscribeForDeepLink(command)`. Apps with their own listener forward every result to `command.onDeepLinking(result)`. Deferred links are skipped, because `conversion_data_received` reports them. The payload is the OneLink click event. See [Deep links](README.md#deep-links)
-- **Breaking:** `appsflyer_error` uses the iOS keys: the error text is in `error_description` (was `error_message`), and a conversion data failure has `error_name` `conversion_data_failure` (was `conversion_data_request_failure`). Update any tag, rule or extension that reads them
+- **Breaking:** `appsflyer_error` keys changed: the error text is in `error_description` (was `error_message`), and a conversion data failure has `error_name` `conversion_data_failure` (was `conversion_data_request_failure`). Update any tag, rule or extension that reads them
 - `app_open_attribution` failures are reported as `appsflyer_error` with `error_name` `app_open_attribution_failure`, and `error_description` is the SDK's deep link error name
-- Events, `tracklocation` and `logadrevenue` queue until `initialize` has run with a dev key, then are sent in order
+- Every command except `initialize` and `resolvedeeplinkurls` queues until `initialize` has run with a dev key, then runs in command order, so `"logout,clearuserpii"` logs `logout` before it clears the PII. In `AUTOMATIC` mode the queue runs before the session starts; in `APP_MANAGED` mode it runs right after `init()`, so set what the first session needs on the SDK before `start()`. `resolvedeeplinkurls` runs immediately so that, sent before `initialize` (e.g. `"resolvedeeplinkurls,initialize"`), its domains reach the SDK before `init()`
 - `stoptracking` with `stop_tracking` `false` calls `start()` after `stop(false)` in `AUTOMATIC` mode, once `initialize` has run. In `APP_MANAGED` mode the app restarts the session
 - `conversion_data_received` omits null values
 - Nested JSON objects and arrays in event parameters, `custom_data`, `partner_info` and `ad_revenue_additional_params` are converted to Maps and Lists before they reach the SDK
 - A missing or invalid required parameter skips that command and logs an error naming the key. Boolean keys (`stop_tracking`, `anonymize_user`, `disable_network_data`, `is_update`, `is_user_subject_to_gdpr`) take a Boolean or the String `"true"`/`"false"`; anything else is invalid
-- **Breaking:** String parameters must be Strings, as on iOS. A number, Boolean, JSON null or non-String array element (`sharing_filter`, `af_deep_link`) is rejected with an invalid-type error; 1.4.0 converted them (JSON null became `"null"`)
+- `af_lat`, `af_long` and `ad_revenue_amount` take a number or a numeric String. Any other value, including `"NaN"` and `"Infinity"`, is rejected with an invalid-type error instead of being reported as missing or sent to the SDK
+- **Breaking:** String parameters must be Strings. A number, Boolean, JSON null or non-String array element (`sharing_filter`, `af_deep_link`) is rejected with an invalid-type error; 1.4.0 converted them (JSON null became `"null"`)
 - `sethost`, `setcurrencycode` and `setcustomerid` forward an empty String to the SDK; 1.4.0 skipped the call and logged an error
 - Internal: built with Kotlin 2.0.21, compileSdk and targetSdk 35 and a Java 11 target; the example app runs in `AUTOMATIC` mode, uses `setuseremail`, maps the new commands and maps location to `af_lat` and `af_long`
 
@@ -56,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Breaking:** the `disable_device_tracking` key. `disabledevicetracking` (now an alias of `anonymizeuser`) reads `anonymize_user`
 - **Breaking:** the `cancelpurchase` to `cancel_purchase` rename. Send `cancel_purchase` as the command name instead
 - **Breaking:** the `com.appsflyer.SingleInstallBroadcastReceiver` manifest entry, because SDK 7 no longer has the class. Remove it from your manifest too if you declared it
+- **Breaking:** the `ACCESS_WIFI_STATE` permission from the library manifest, because the AppsFlyer SDK neither declares nor documents it. If your app reads Wi-Fi state, declare it in your own manifest
 
 ## [1.4.0] - 2024-11-27
 
