@@ -247,6 +247,14 @@ class AppsFlyerRemoteCommandTest {
     }
 
     @Test
+    fun setUserFbLoginId_numericStringWithWhitespace_callsSDK() {
+        val payload = JSONObject().put(Customer.FB_LOGIN_ID, " 10000000000\n")
+        remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)
+        assertEquals(1, mockInstance.setUserFbLoginIdCallCount)
+        assertEquals(10_000_000_000L, mockInstance.setUserFbLoginIdParam)
+    }
+
+    @Test
     fun setUserFbLoginId_wholeDouble_callsSDK() {
         val payload = JSONObject().put(Customer.FB_LOGIN_ID, 12345.0)
         remoteCommand.parseCommands(arrayOf(Commands.SET_USER_FB_LOGIN_ID), payload)

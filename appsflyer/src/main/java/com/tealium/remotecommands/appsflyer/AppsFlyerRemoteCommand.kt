@@ -337,7 +337,7 @@ open class AppsFlyerRemoteCommand internal constructor(
             is Int -> value.toLong()
             is Long -> value
             is Double -> value.takeIf { it % 1.0 == 0.0 && it >= Long.MIN_VALUE && it < Long.MAX_VALUE }?.toLong()
-            is String -> value.toLongOrNull()
+            is String -> value.trim().toLongOrNull()
             else -> null
         } ?: throw AppsFlyerCommandError.invalidParameterType(key, "Long or numeric String")
     }
